@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.monitoring.module.v1",
+  "name": "tempo",
+  "name_full": "Tempo Distributed Tracing",
+  "description": "OpenTelemetry traces from all services. 30-day retention.",
+  "implementation_ref": "infrastructure/otel/",
+  "status": "production",
+  "backward_compatible": true
+}

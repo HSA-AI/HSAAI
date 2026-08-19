@@ -1,0 +1,27 @@
+{
+  "schema": "hsaai.ai-platform.submodule.v1",
+  "name": "vector-database",
+  "name_en": "Vector Database",
+  "name_ar": "قاعدة البيانات الشعاعية",
+  "description": "Qdrant cluster for embedding storage with hybrid search and metadata filtering.",
+  "components": [
+    "Qdrant Cluster",
+    "Collection Manager",
+    "Index Optimizer",
+    "Metadata Filter"
+  ],
+  "capabilities": [
+    "Dense vectors",
+    "Sparse vectors (BM25)",
+    "Hybrid search",
+    "Payload filtering",
+    "HNSW indexing"
+  ],
+  "kpis": [
+    "Vector count > 10M",
+    "Search latency < 50ms",
+    "Recall > 95%"
+  ],
+  "runtime_ref": "infrastructure/qdrant-cluster/",
+  "backward_compatible": true
+}

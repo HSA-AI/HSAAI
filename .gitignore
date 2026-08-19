@@ -1,0 +1,203 @@
+# ============================================================
+# HSAAI - Git Ignore Policy
+# ============================================================
+
+# ------------------------------------------------------------
+# Environment / Secrets
+# ------------------------------------------------------------
+.env
+.env.*
+!.env.example
+!.env.hsa-internal.example
+!.env.production.example
+
+# Local application environment
+apps/web/.env.local
+apps/web/.env.*.local
+
+# Secrets / credentials / certificates
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+secrets.json
+*credentials*
+*secret*
+
+# ------------------------------------------------------------
+# Python
+# ------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+.venv/
+venv/
+env/
+ENV/
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.pytype/
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+
+*.egg-info/
+.eggs/
+dist/
+build/
+wheels/
+
+# ------------------------------------------------------------
+# Node / Next.js
+# ------------------------------------------------------------
+node_modules/
+.next/
+.nuxt/
+.output/
+out/
+dist/
+build/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+.npm/
+.yarn/
+.pnpm-store/
+
+# ------------------------------------------------------------
+# Frontend local files
+# ------------------------------------------------------------
+apps/*/node_modules/
+apps/*/.next/
+apps/*/dist/
+apps/*/build/
+apps/*/.turbo/
+
+# ------------------------------------------------------------
+# IDE / Editors
+# ------------------------------------------------------------
+.vscode/
+.idea/
+*.iml
+*.swp
+*.swo
+*.swn
+
+# ------------------------------------------------------------
+# Operating System
+# ------------------------------------------------------------
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ------------------------------------------------------------
+# Logs
+# ------------------------------------------------------------
+*.log
+logs/
+log/
+*.out
+
+# ------------------------------------------------------------
+# Temporary files
+# ------------------------------------------------------------
+tmp/
+temp/
+.cache/
+.cache/**
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*.orig
+
+# ------------------------------------------------------------
+# Databases / Local runtime state
+# ------------------------------------------------------------
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+
+# Local persistent/runtime data
+runtime/
+runtime-data/
+local-data/
+
+# ------------------------------------------------------------
+# AI / ML model artifacts
+# ------------------------------------------------------------
+*.gguf
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+*.onnx
+*.bin
+*.tflite
+
+models/
+model/
+checkpoints/
+weights/
+
+huggingface/
+transformers_cache/
+
+# ------------------------------------------------------------
+# Archives
+# ------------------------------------------------------------
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+*.rar
+
+# ------------------------------------------------------------
+# Docker local artifacts
+# ------------------------------------------------------------
+docker-data/
+docker-volumes/
+volumes/
+*.pid
+
+# ------------------------------------------------------------
+# Coverage / reports
+# ------------------------------------------------------------
+coverage/
+htmlcov/
+reports/
+test-results/
+
+# ------------------------------------------------------------
+# Generated documentation / build artifacts
+# ------------------------------------------------------------
+site/
+docs/_build/
+
+# ------------------------------------------------------------
+# OS / deployment generated files
+# ------------------------------------------------------------
+*.pid
+*.seed
+
+# ------------------------------------------------------------
+# Runtime audit / observability data
+# ------------------------------------------------------------
+storage/audit_logs/*.jsonl
+storage/audit_logs/*.log
+
+# TypeScript incremental build cache
+*.tsbuildinfo

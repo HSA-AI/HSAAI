@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.department.v1",
+  "id": "DEPT-PROC",
+  "name_ar": "إدارة المشتريات",
+  "name_en": "Procurement",
+  "directory": "procurement",
+  "head_role": "Chief Procurement Officer",
+  "reports_to": "COO",
+  "mission_ar": "تأمين المشتريات بأفضل جودة وسعر وفق سياسات المجموعة",
+  "mission_en": "Procure goods and services at optimal quality/price per group policy",
+  "agent_ref": "AGENT-PROCUREMENT",
+  "integrations": [
+    "sap",
+    "oracle-erp",
+    "dynamics-365",
+    "sharepoint"
+  ],
+  "kpis": [
+    "Procure-to-Pay Cycle Days",
+    "Savings vs Budget %",
+    "PO Accuracy %",
+    "Supplier OTD %"
+  ],
+  "supported_by_modules": [
+    "services/backend_core/department_agents/",
+    "services/backend_core/integrations/",
+    "services/backend_core/enterprise_os/",
+    "services/backend_core/governance/",
+    "services/backend_core/knowledge/"
+  ],
+  "classification": "Internal"
+}

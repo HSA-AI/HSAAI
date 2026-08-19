@@ -1,0 +1,14 @@
+{
+  "schema": "hsaai.governance.module.v1",
+  "name": "approvals",
+  "name_full": "Approval Workflows",
+  "description": "Multi-level approval workflows for sensitive operations.",
+  "implementation_ref": "services/backend_core/approvals/, services/workflow_engine/",
+  "frameworks": [
+    "ISO 27001",
+    "ISO 42001",
+    "NIST AI RMF"
+  ],
+  "status": "production",
+  "backward_compatible": true
+}

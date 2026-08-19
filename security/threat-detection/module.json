@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.security.module.v1",
+  "name": "threat-detection",
+  "name_full": "Threat Detection",
+  "description": "Real-time threat detection via SIEM + behavioral analytics.",
+  "implementation_ref": "services/backend_core/security/siem_sink.py, infrastructure/waf/",
+  "status": "production",
+  "backward_compatible": true
+}

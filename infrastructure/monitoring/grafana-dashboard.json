@@ -1,0 +1,17 @@
+{
+  "title": "HSAAI",
+  "panels": [
+    {
+      "title": "Requests",
+      "type": "timeseries"
+    },
+    {
+      "title": "AI Tokens",
+      "type": "stat"
+    },
+    {
+      "title": "Agent Latency",
+      "type": "timeseries"
+    }
+  ]
+}

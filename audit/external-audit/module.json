@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.audit.module.v1",
+  "name": "external-audit",
+  "name_full": "External Audit",
+  "description": "External audit coordination: ISO, SOC 2, statutory audit.",
+  "implementation_ref": "compliance/",
+  "status": "production",
+  "backward_compatible": true
+}

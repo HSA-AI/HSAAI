@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.security.module.v1",
+  "name": "abac",
+  "name_full": "Attribute-Based Access Control",
+  "description": "Fine-grained attribute-based authorization via OPA Rego policies.",
+  "implementation_ref": "services/backend_core/security/abac/, infrastructure/opa/",
+  "status": "production",
+  "backward_compatible": true
+}

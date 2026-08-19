@@ -1,0 +1,36 @@
+# Tool registry — Finance Agent
+apiVersion: hsaaiv2/v1
+kind: AgentTools
+metadata:
+  name: finance-agent-tools
+spec:
+  agentId: AGENT-FINANCE
+  tools:
+    - id: rag_search
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: sap_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: oracle_erp_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: power_bi_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: sql_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: approve_journal_entry
+      enabled: true
+      audit: true
+      human_approval: true
+  defaultTimeout: 30s
+  retryPolicy:
+    maxRetries: 2
+    backoff: exponential

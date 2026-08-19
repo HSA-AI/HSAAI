@@ -1,0 +1,41 @@
+{
+  "schema": "hsaai.department-agent.v1",
+  "agent_id": "AGENT-KNOWLEDGE",
+  "name_ar": "مساعد المعرفة",
+  "name_en": "Knowledge Assistant",
+  "directory": "knowledge-assistant",
+  "department_ref": "DEPT-DATA",
+  "role_ar": "إدارة قاعدة المعرفة، الإجابة على الأسئلة، وتوثيق المعرفة المؤسسية",
+  "role_en": "Manage knowledge base, answer questions, document enterprise knowledge",
+  "model_tier": "premium",
+  "languages": [
+    "ar",
+    "en"
+  ],
+  "tools": [
+    "rag_search",
+    "knowledge_graph_query",
+    "vector_search",
+    "create_knowledge_article"
+  ],
+  "safety": {
+    "human_in_the_loop": true,
+    "audit_all_calls": true,
+    "pii_detection": true,
+    "prompt_firewall": true,
+    "constitutional_ai": true,
+    "kill_switch": true
+  },
+  "runtime": {
+    "service": "services/multi_agents/",
+    "registration": "AgentRegistry",
+    "config_source": "agent.json + prompt-system.md"
+  },
+  "evaluation_targets": {
+    "task_success_rate": 0.9,
+    "hallucination_rate_max": 0.05,
+    "csat_min": 4.5,
+    "latency_p95_seconds": 3,
+    "cost_per_query_max_usd": 0.05
+  }
+}

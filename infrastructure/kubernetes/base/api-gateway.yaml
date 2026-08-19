@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: api-gateway }
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+        app.kubernetes.io/part-of: hsaai
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+        - name: api-gateway
+          # FIX I-08: pinned tag (was :latest)
+          image: hsaai/api_gateway:4.0.0
+          imagePullPolicy: IfNotPresent
+          # FIX I-09: securityContext at container level
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            # FIX I-03/I-04: containerPort is 8060 (per Dockerfile CMD), not 8080
+            - containerPort: 8060
+              name: http
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests: { cpu: "250m", memory: "256Mi" }
+            limits: { cpu: "1", memory: "1Gi" }
+          volumeMounts:
+            - { name: tmp, mountPath: /tmp }
+      volumes:
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway
+spec:
+  selector: { app: api-gateway }
+  ports:
+    # FIX I-03: Service port 8060 (matches containerPort). Ingress now routes to 8060 too.
+    - name: http
+      port: 8060
+      targetPort: 8060

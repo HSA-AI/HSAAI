@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.security.module.v1",
+  "name": "rbac",
+  "name_full": "Role-Based Access Control",
+  "description": "Role-based permissions via Keycloak. Roles mapped to OPA policies.",
+  "implementation_ref": "services/backend_core/security/rbac.py, infrastructure/keycloak/",
+  "status": "production",
+  "backward_compatible": true
+}

@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.security.module.v1",
+  "name": "vault",
+  "name_full": "HashiCorp Vault",
+  "description": "Secrets management. All secrets stored in Vault, never in env files.",
+  "implementation_ref": "infrastructure/vault/",
+  "status": "production",
+  "backward_compatible": true
+}

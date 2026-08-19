@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.department.v1",
+  "id": "DEPT-HR",
+  "name_ar": "إدارة الموارد البشرية",
+  "name_en": "Human Resources",
+  "directory": "human-resources",
+  "head_role": "Group CHRO",
+  "reports_to": "CEO",
+  "mission_ar": "اجتذاب وتطوير والاحتفاظ بالكوادر البشرية للمجموعة",
+  "mission_en": "Attract, develop, and retain the human capital of the Group",
+  "agent_ref": "AGENT-HR",
+  "integrations": [
+    "oracle-hcm",
+    "m365",
+    "sharepoint",
+    "active-directory"
+  ],
+  "kpis": [
+    "Time-to-Fill Days",
+    "Voluntary Attrition %",
+    "eNPS",
+    "Training Hours per Employee"
+  ],
+  "supported_by_modules": [
+    "services/backend_core/department_agents/",
+    "services/backend_core/integrations/",
+    "services/backend_core/enterprise_os/",
+    "services/backend_core/governance/",
+    "services/backend_core/knowledge/"
+  ],
+  "classification": "Internal"
+}

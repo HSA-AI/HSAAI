@@ -1,0 +1,27 @@
+{
+  "schema": "hsaai.deployment.manifest.v1",
+  "module": "deployment",
+  "version": "7.0.0",
+  "total_submodules": 10,
+  "environments": [
+    "dev",
+    "staging",
+    "production"
+  ],
+  "strategies": [
+    "blue-green",
+    "canary",
+    "rolling"
+  ],
+  "backward_compatible_with": [
+    "docker-compose.yml",
+    "infrastructure/docker/",
+    "infrastructure/kubernetes/",
+    "infrastructure/helm/",
+    "infrastructure/argocd/",
+    "infrastructure/service-mesh/",
+    ".github/workflows/",
+    "deploy/",
+    "scripts/deploy-production.sh"
+  ]
+}

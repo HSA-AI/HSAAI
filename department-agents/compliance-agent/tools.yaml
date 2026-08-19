@@ -1,0 +1,28 @@
+# Tool registry — Compliance Agent
+apiVersion: hsaaiv2/v1
+kind: AgentTools
+metadata:
+  name: compliance-agent-tools
+spec:
+  agentId: AGENT-COMPLIANCE
+  tools:
+    - id: rag_search
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: knowledge_graph_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: sharepoint_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: create_compliance_issue
+      enabled: true
+      audit: true
+      human_approval: true
+  defaultTimeout: 30s
+  retryPolicy:
+    maxRetries: 2
+    backoff: exponential

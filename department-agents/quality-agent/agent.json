@@ -1,0 +1,42 @@
+{
+  "schema": "hsaai.department-agent.v1",
+  "agent_id": "AGENT-QUALITY",
+  "name_ar": "وكيل الجودة",
+  "name_en": "Quality Agent",
+  "directory": "quality-agent",
+  "department_ref": "DEPT-QA",
+  "role_ar": "تحليل بيانات الجودة، تتبع العيوب، ودعم تحسين الجودة المستمر",
+  "role_en": "Analyze quality data, track defects, support continuous quality improvement",
+  "model_tier": "standard",
+  "languages": [
+    "ar",
+    "en"
+  ],
+  "tools": [
+    "rag_search",
+    "mes_query",
+    "power_bi_query",
+    "anomaly_detect",
+    "create_quality_issue"
+  ],
+  "safety": {
+    "human_in_the_loop": true,
+    "audit_all_calls": true,
+    "pii_detection": true,
+    "prompt_firewall": true,
+    "constitutional_ai": true,
+    "kill_switch": true
+  },
+  "runtime": {
+    "service": "services/multi_agents/",
+    "registration": "AgentRegistry",
+    "config_source": "agent.json + prompt-system.md"
+  },
+  "evaluation_targets": {
+    "task_success_rate": 0.9,
+    "hallucination_rate_max": 0.05,
+    "csat_min": 4.5,
+    "latency_p95_seconds": 3,
+    "cost_per_query_max_usd": 0.05
+  }
+}

@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hsaai-enterprise-upgrade-config
+data:
+  ENTERPRISE_UPGRADE_ENABLED: "true"
+  AGENT_ORCHESTRATION_ENABLED: "true"
+  WORKFLOW_AUTOMATION_ENABLED: "true"
+  HUMAN_IN_LOOP_ENABLED: "true"
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: hsaai-backend-enterprise-metrics
+spec:
+  selector:
+    matchLabels:
+      app: hsaai-backend
+  endpoints:
+    - port: http
+      path: /metrics

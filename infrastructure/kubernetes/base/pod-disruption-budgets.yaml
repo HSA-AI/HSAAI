@@ -1,0 +1,93 @@
+# HSAAI PodDisruptionBudgets (v4.1)
+# SECURITY FIX v2.1 (P0): All selectors now match the actual Deployment labels
+# (app: backend, app: api-gateway, etc.) instead of the non-existent hsaai-* prefixed
+# labels. Previously PDBs would never select pods, providing zero protection during drains.
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: backend-pdb
+  namespace: hsaai
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: backend
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: api-gateway-pdb
+  namespace: hsaai
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: api-gateway
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: auth-service-pdb
+  namespace: hsaai
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: auth-service
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: rag-engine-pdb
+  namespace: hsaai
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: rag-engine
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: llm-gateway-pdb
+  namespace: hsaai
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: llm-gateway
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: multi-agents-pdb
+  namespace: hsaai
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: multi-agents
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: workflow-engine-pdb
+  namespace: hsaai
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: workflow-engine
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: frontend-pdb
+  namespace: hsaai
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: frontend

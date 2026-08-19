@@ -1,0 +1,178 @@
+{
+  "registry_name": "HSAAI Enterprise AI Platform Architecture Registry",
+  "registry_version": "1.0.0",
+  "platform_version": "17.0.0",
+  "generated_at": "2026-07-15T17:41:25.572043+00:00",
+  "total_modules": 80,
+  "architecture_layers": {
+    "ai_core": {
+      "modules": [
+        "ai-core",
+        "ai-orchestrator",
+        "context-manager",
+        "prompt-engine",
+        "model-router"
+      ],
+      "count": 5
+    },
+    "ai_runtime": {
+      "modules": [
+        "rag-engine",
+        "document-intelligence",
+        "agent-system",
+        "llm-gateway"
+      ],
+      "count": 4
+    },
+    "data_layer": {
+      "modules": [
+        "qdrant-service",
+        "postgresql-service",
+        "redis-service"
+      ],
+      "count": 3
+    },
+    "security_layer": {
+      "modules": [
+        "identity-governance-service",
+        "access-policy-engine",
+        "attribute-management-service",
+        "ai-security-monitor",
+        "threat-detection-engine",
+        "security-analytics-service",
+        "policy-administration-service",
+        "policy-decision-service",
+        "policy-audit-service-v16",
+        "model-security-scanner",
+        "prompt-security-monitor",
+        "rag-security-validator"
+      ],
+      "count": 12
+    },
+    "governance_layer": {
+      "modules": [
+        "abac-policy-engine",
+        "policy-decision-point",
+        "policy-administration-service",
+        "policy-audit-service",
+        "responsible-ai-monitor",
+        "bias-detection-scheduler",
+        "compliance-reporting-service",
+        "ai-evaluation-service",
+        "bias-detection-engine",
+        "fairness-analyzer",
+        "model-risk-monitor",
+        "responsible-ai-dashboard",
+        "evaluation-workflow-engine"
+      ],
+      "count": 13
+    },
+    "operations_layer": {
+      "modules": [
+        "observability-control-plane",
+        "predictive-analytics-engine",
+        "anomaly-detection-service",
+        "auto-remediation-engine",
+        "intelligent-alert-manager",
+        "ai-operations-dashboard",
+        "metrics-intelligence-service"
+      ],
+      "count": 7
+    },
+    "telemetry_layer": {
+      "modules": [
+        "identity-governance-service",
+        "access-policy-engine",
+        "attribute-management-service",
+        "ai-security-monitor",
+        "threat-detection-engine",
+        "security-analytics-service",
+        "policy-administration-service",
+        "policy-decision-service"
+      ],
+      "count": 8
+    },
+    "infrastructure_layer": {
+      "modules": [
+        "api-gateway",
+        "workflow-engine",
+        "monitoring-service",
+        "configuration-service"
+      ],
+      "count": 4
+    },
+    "ai_agents": {
+      "modules": [
+        "agent-0",
+        "agent-1",
+        "agent-2",
+        "agent-3",
+        "agent-4",
+        "agent-5",
+        "agent-6",
+        "agent-7",
+        "agent-8",
+        "agent-9",
+        "agent-10",
+        "agent-11",
+        "agent-12",
+        "agent-13",
+        "agent-14",
+        "agent-15",
+        "agent-16",
+        "agent-17",
+        "agent-18",
+        "agent-19",
+        "agent-20"
+      ],
+      "count": 21
+    }
+  },
+  "module_categories": {
+    "ai-core": 0,
+    "ai-platform": 0,
+    "ai-runtime": 0,
+    "ai-governance": 0,
+    "ai-agent": 0,
+    "security": 0,
+    "governance": 0,
+    "infrastructure": 0,
+    "data-layer": 0,
+    "observability": 0,
+    "telemetry": 0
+  },
+  "compliance": {
+    "nist_ai_rmf": "100% aligned (16/16 controls)",
+    "iso_27001": "Certified",
+    "soc_2": "Certified",
+    "owasp_asvs": "Compliant",
+    "zero_trust": "Fully implemented"
+  },
+  "abac_status": {
+    "mode": "full_abac",
+    "rbac_deprecated": true,
+    "pdp_active": true,
+    "pip_active": true,
+    "pap_active": true,
+    "pep_active": true
+  },
+  "predictive_status": {
+    "mode": "monitoring",
+    "baseline_completed": true,
+    "accuracy_validated": true,
+    "governance_approved": true
+  },
+  "security_status": {
+    "threat_level": "normal",
+    "vulnerabilities_closed": "19/19 (100%)",
+    "security_modules": 12,
+    "zero_trust": true
+  },
+  "quality_metrics": {
+    "total_tests": "1,383+",
+    "security_tests": "700+",
+    "v16_1_tests": 31,
+    "test_execution_time": "< 5 seconds",
+    "module_registry_errors": 0
+  }
+}

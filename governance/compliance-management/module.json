@@ -1,0 +1,14 @@
+{
+  "schema": "hsaai.governance.module.v1",
+  "name": "compliance-management",
+  "name_full": "Compliance Management",
+  "description": "Regulatory compliance tracking and reporting.",
+  "implementation_ref": "compliance/, enterprise/compliance/",
+  "frameworks": [
+    "ISO 27001",
+    "ISO 42001",
+    "NIST AI RMF"
+  ],
+  "status": "production",
+  "backward_compatible": true
+}

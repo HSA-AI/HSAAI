@@ -1,0 +1,25 @@
+{
+  "schema": "hsaai.ai-platform.submodule.v1",
+  "name": "ai-analytics",
+  "name_en": "AI Analytics",
+  "name_ar": "تحليلات الذكاء الاصطناعي",
+  "description": "Usage analytics, cost analytics, and quality analytics dashboards.",
+  "components": [
+    "Usage Analytics",
+    "Cost Analytics",
+    "Quality Analytics",
+    "Executive Dashboard"
+  ],
+  "capabilities": [
+    "Usage analytics",
+    "Cost analytics",
+    "Quality analytics",
+    "Executive dashboards"
+  ],
+  "kpis": [
+    "Cost visibility = 100%",
+    "Quality trends tracked = 100%"
+  ],
+  "runtime_ref": "services/backend_core/ai_operations/analytics.py",
+  "backward_compatible": true
+}

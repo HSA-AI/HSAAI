@@ -1,0 +1,31 @@
+{
+  "schema": "hsaai.enterprise.department.v1",
+  "id": "DEPT-INN",
+  "name_ar": "إدارة الابتكار",
+  "name_en": "Innovation",
+  "directory": "innovation",
+  "head_role": "VP Innovation",
+  "reports_to": "CEO",
+  "mission_ar": "قيادة مبادرات الابتكار الرقمي والذكاء الاصطناعي عبر المجموعة",
+  "mission_en": "Lead digital innovation and AI initiatives across the Group",
+  "agent_ref": "AGENT-EXEC-ASSISTANT",
+  "integrations": [
+    "power-bi",
+    "sharepoint",
+    "m365"
+  ],
+  "kpis": [
+    "Innovation Pipeline Value",
+    "POC Success Rate %",
+    "Time-to-POC Days",
+    "Adoption Rate %"
+  ],
+  "supported_by_modules": [
+    "services/backend_core/department_agents/",
+    "services/backend_core/integrations/",
+    "services/backend_core/enterprise_os/",
+    "services/backend_core/governance/",
+    "services/backend_core/knowledge/"
+  ],
+  "classification": "Internal"
+}

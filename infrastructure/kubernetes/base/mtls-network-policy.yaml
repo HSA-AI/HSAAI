@@ -1,0 +1,83 @@
+# HSAAI mTLS Network Policy
+# Enforces that all inter-service traffic must use mTLS.
+# Non-mTLS traffic is denied at the network level.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: hsaai-mtls-only
+  namespace: hsaai
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: hsaai
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow only from other HSAAI services with mTLS label
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: hsaai
+      ports:
+        - port: 8443
+          protocol: TCP
+    # Allow health checks from prometheus
+    - from:
+        - podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - port: 8000
+          protocol: TCP
+    # Allow ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+  egress:
+    # Allow DNS resolution
+    - to: []
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    # Allow inter-service mTLS communication
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: hsaai
+      ports:
+        - port: 8443
+          protocol: TCP
+    # Allow external database connections (PostgreSQL)
+    - to: []
+      ports:
+        - port: 5432
+          protocol: TCP
+        - port: 6379
+          protocol: TCP  # Redis
+        - port: 6333
+          protocol: TCP  # Qdrant
+        - port: 7687
+          protocol: TCP  # Neo4j
+---
+# Deny all non-mTLS traffic between services
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: hsaai-deny-plaintext
+  namespace: hsaai
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: hsaai
+      hsaai-mtls: "true"
+  policyTypes:
+    - Ingress
+  ingress:
+    # Only allow connections on the TLS port
+    - ports:
+        - port: 8443
+          protocol: TCP

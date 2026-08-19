@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.kpis.v1",
+  "department_id": "DEPT-RND",
+  "department": "Research & Development",
+  "kpis": [
+    {
+      "id": "KPI-DEPT-RND-01",
+      "name": "New Products per Year",
+      "frequency": "monthly",
+      "source_integration": "sharepoint"
+    },
+    {
+      "id": "KPI-DEPT-RND-02",
+      "name": "R&D ROI %",
+      "frequency": "monthly",
+      "source_integration": "power-bi"
+    },
+    {
+      "id": "KPI-DEPT-RND-03",
+      "name": "Time-to-Market Days",
+      "frequency": "monthly",
+      "source_integration": "m365"
+    },
+    {
+      "id": "KPI-DEPT-RND-04",
+      "name": "Patent Applications",
+      "frequency": "monthly",
+      "source_integration": "m365"
+    }
+  ],
+  "dashboard_ref": "../../monitoring/dashboards/dept-rnd.json"
+}

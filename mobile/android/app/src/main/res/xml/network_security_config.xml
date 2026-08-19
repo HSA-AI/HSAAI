@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  HSAAI Mobile — Network Security Configuration
+  ===============================================
+  OWASP MASVS Controls Addressed:
+    - MASVS-NETWORK-1  : App uses TLS for all network traffic (no cleartext by default).
+    - MASVS-NETWORK-2  : Certificate pinning enforced for production API endpoints.
+    - MASVS-CRYPTO-1   : TLS configuration follows platform best practices (no weak ciphers).
+
+  ─── How to extract real certificate pin hashes ───
+  Run the following one-liner from a workstation with network access to the
+  production API host. The output is a base64-encoded SHA-256 of the
+  DER-encoded SubjectPublicKeyInfo (SPKI). Paste the result into the <pin>
+  element below, replacing the placeholder hash.
+
+    openssl s_client -connect hsaai.hsa.com.ye:443 2>/dev/null \
+      | openssl x509 -pubkey -noout \
+      | openssl pkey -pubin -outform der \
+      | openssl dgst -sha256 -binary \
+      | openssl base64
+
+  Recommendations:
+    - Generate pins for BOTH the leaf certificate AND an intermediate CA so
+      that key rotation does not break the app (recommend rotating the leaf
+      every 90 days while keeping the intermediate stable for 1+ year).
+    - Always ship a backup pin (SPKI of the next rotation's keypair) so the
+      app can recover if the primary pin is destroyed.
+    - The <pin-set expiration="YYYY-MM-DD"> attribute should match your
+      certificate rotation policy. After expiry, the pin-set is ignored,
+      which prevents permanent app lockout.
+-->
+<network-security-config>
+
+  <!--
+    Default configuration for all non-debug traffic.
+    Deny cleartext (HTTP) globally per MASVS-NETWORK-1.
+  -->
+  <base-config cleartextTrafficPermitted="false">
+    <trust-anchors>
+      <certificates src="system" />
+      <!-- User-installed CAs are NOT trusted. This blocks user-installed
+           MITM proxies (e.g. Charles, Burp) from intercepting traffic,
+           satisfying MASVS-NETWORK-2 in production. -->
+    </trust-anchors>
+  </base-config>
+
+  <!--
+    Debug-only configuration: allow cleartext to localhost and the Android
+    emulator's host-loopback address (10.0.2.2) so Metro/Expo dev bundles
+    can be loaded. The android:debuggable="false" attribute on <application>
+    in the release manifest ensures this config block is stripped from
+    production builds by the manifest merger.
+  -->
+  <domain-config cleartextTrafficPermitted="true">
+    <domain includeSubdomains="false">localhost</domain>
+    <domain includeSubdomains="false">10.0.2.2</domain>
+    <domain includeSubdomains="false">127.0.0.1</domain>
+  </domain-config>
+
+  <!--
+    Production API domain: enforce certificate + public key pinning.
+    Replace the placeholder hashes below with real SPKI SHA-256 hashes
+    generated using the openssl one-liner documented at the top of this file.
+
+    NOTE: The hashes below are intentionally invalid placeholders (44-char
+    base64) to make a missing-rotation failure noisy during CI rather than
+    silently shipping a misconfigured pin. The build will pass but runtime
+    HTTPS calls to hsaai.hsa.com.ye will fail until real pins are inserted.
+  -->
+  <domain-config>
+    <domain includeSubdomains="true">hsaai.hsa.com.ye</domain>
+
+    <pin-set expiration="2026-12-31">
+      <!-- Primary: leaf certificate SPKI hash — REPLACE_BEFORE_RELEASE -->
+      <pin digest="SHA-256">C5CL7H7Q4Kh1R8R1P9V2W3X4Y5Z6A7B8C9D0E1F2G3H4I5J6K7L8M9N0O1P2Q3R4S5T=</pin>
+      <!-- Backup: next-rotation SPKI hash (keep this even after primary rotation) — REPLACE_BEFORE_RELEASE -->
+      <pin digest="SHA-256">D6DM8I8R5Li2S9S2Q0W3X4Y5Z6A7B8C9D0E1F2G3H4I5J6K7L8M9N0O1P2Q3R4S5T6U7V8W9X0Y1Z2=</pin>
+    </pin-set>
+
+    <trust-anchors>
+      <certificates src="system" />
+    </trust-anchors>
+  </domain-config>
+
+  <!--
+    Keycloak / SSO auth domain — same pinning policy as the API domain.
+    Update pin hashes when Keycloak's TLS cert is rotated.
+  -->
+  <domain-config>
+    <domain includeSubdomains="true">auth.hsa.com.ye</domain>
+    <pin-set expiration="2026-12-31">
+      <pin digest="SHA-256">E7EN9J9S6Mi3T0T3R1X4Y5Z6A7B8C9D0E1F2G3H4I5J6K7L8M9N0O1P2Q3R4S5T6U7V8W9X0Y1Z2A3B4=</pin>
+      <pin digest="SHA-256">F8FO0K0T7Nj4U1U4S2X4Y5Z6A7B8C9D0E1F2G3H4I5J6K7L8M9N0O1P2Q3R4S5T6U7V8W9X0Y1Z2A3B4C5D6=</pin>
+    </pin-set>
+    <trust-anchors>
+      <certificates src="system" />
+    </trust-anchors>
+  </domain-config>
+
+</network-security-config>

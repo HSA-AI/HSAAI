@@ -1,0 +1,25 @@
+# Agent binding for Research & Development department
+apiVersion: hsaaiv2/v1
+kind: DepartmentAgentBinding
+metadata:
+  name: research-development-agent-binding
+  labels:
+    department: DEPT-RND
+    department-name: "Research & Development"
+spec:
+  departmentId: DEPT-RND
+  departmentName: Research & Development
+  agentId: AGENT-RESEARCH
+  agentRef: ../../department-agents/research/
+  autoInvoke: false
+  humanInTheLoop: true
+  auditAllCalls: true
+  allowedTools:
+    - rag_search
+    - knowledge_graph_query
+    - llm_complete
+    - mcp_tool_call
+  forbiddenActions:
+    - delete_record
+    - drop_table
+    - financial_posting_without_approval

@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.kpis.v1",
+  "department_id": "DEPT-LOG",
+  "department": "Logistics",
+  "kpis": [
+    {
+      "id": "KPI-DEPT-LOG-01",
+      "name": "On-Time Delivery %",
+      "frequency": "monthly",
+      "source_integration": "wms"
+    },
+    {
+      "id": "KPI-DEPT-LOG-02",
+      "name": "Freight Cost per Ton-KM",
+      "frequency": "monthly",
+      "source_integration": "tms"
+    },
+    {
+      "id": "KPI-DEPT-LOG-03",
+      "name": "Fleet Utilization %",
+      "frequency": "monthly",
+      "source_integration": "kafka"
+    },
+    {
+      "id": "KPI-DEPT-LOG-04",
+      "name": "Damage Rate %",
+      "frequency": "monthly",
+      "source_integration": "rabbitmq"
+    }
+  ],
+  "dashboard_ref": "../../monitoring/dashboards/dept-log.json"
+}

@@ -1,0 +1,20 @@
+# Integrations used by Risk Management department
+apiVersion: hsaaiv2/v1
+kind: DepartmentIntegrations
+metadata:
+  name: risk-management-integrations
+spec:
+  departmentId: DEPT-RISK
+  integrations:
+  - id: power-bi
+  - id: sharepoint
+  - id: kafka
+  defaultAuth:
+    type: oauth2
+    provider: keycloak
+  retryPolicy:
+    maxRetries: 3
+    backoff: exponential
+  circuitBreaker:
+    enabled: true
+    threshold: 5

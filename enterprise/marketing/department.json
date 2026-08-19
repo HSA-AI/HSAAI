@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.department.v1",
+  "id": "DEPT-MKT",
+  "name_ar": "إدارة التسويق",
+  "name_en": "Marketing",
+  "directory": "marketing",
+  "head_role": "Chief Marketing Officer",
+  "reports_to": "CEO",
+  "mission_ar": "بناء العلامة التجارية، قيادة الحملات، ودعم نمو المبيعات",
+  "mission_en": "Build brand, lead campaigns, and support sales growth",
+  "agent_ref": "AGENT-MARKETING",
+  "integrations": [
+    "crm",
+    "power-bi",
+    "sharepoint",
+    "m365"
+  ],
+  "kpis": [
+    "Brand Awareness %",
+    "Marketing ROI",
+    "Lead-to-Customer %",
+    "Campaign Reach"
+  ],
+  "supported_by_modules": [
+    "services/backend_core/department_agents/",
+    "services/backend_core/integrations/",
+    "services/backend_core/enterprise_os/",
+    "services/backend_core/governance/",
+    "services/backend_core/knowledge/"
+  ],
+  "classification": "Internal"
+}

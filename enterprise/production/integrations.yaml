@@ -1,0 +1,20 @@
+# Integrations used by Production department
+apiVersion: hsaaiv2/v1
+kind: DepartmentIntegrations
+metadata:
+  name: production-integrations
+spec:
+  departmentId: DEPT-PROD
+  integrations:
+  - id: mes
+  - id: sap
+  - id: kafka
+  defaultAuth:
+    type: oauth2
+    provider: keycloak
+  retryPolicy:
+    maxRetries: 3
+    backoff: exponential
+  circuitBreaker:
+    enabled: true
+    threshold: 5

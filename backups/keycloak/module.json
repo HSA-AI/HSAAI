@@ -1,0 +1,11 @@
+{
+  "schema": "hsaai.backup.module.v1",
+  "name": "keycloak",
+  "name_full": "Keycloak Backups",
+  "description": "Nightly full DB backup + realm export.",
+  "implementation_ref": "scripts/",
+  "rpo_minutes": 15,
+  "rto_hours": 4,
+  "status": "production",
+  "backward_compatible": true
+}

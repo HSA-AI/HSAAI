@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.department.v1",
+  "id": "DEPT-DIST",
+  "name_ar": "إدارة التوزيع",
+  "name_en": "Distribution",
+  "directory": "distribution",
+  "head_role": "VP Distribution",
+  "reports_to": "SCM",
+  "mission_ar": "إدارة قنوات التوزيع وضمان وصول المنتجات لجميع الأسواق",
+  "mission_en": "Manage distribution channels and ensure product availability across all markets",
+  "agent_ref": "AGENT-SUPPLY-CHAIN",
+  "integrations": [
+    "wms",
+    "crm",
+    "sap",
+    "kafka"
+  ],
+  "kpis": [
+    "Distribution Coverage %",
+    "Order Fulfillment Cycle Time",
+    "Channel Margin %",
+    "Stock-Out Rate %"
+  ],
+  "supported_by_modules": [
+    "services/backend_core/department_agents/",
+    "services/backend_core/integrations/",
+    "services/backend_core/enterprise_os/",
+    "services/backend_core/governance/",
+    "services/backend_core/knowledge/"
+  ],
+  "classification": "Internal"
+}

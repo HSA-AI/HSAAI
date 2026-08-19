@@ -1,0 +1,78 @@
+{
+  "schema": "hsaai.ea.tech-stack.v1",
+  "stack": {
+    "languages": [
+      "Python 3.12",
+      "TypeScript 5.x",
+      "SQL",
+      "YAML",
+      "Bash"
+    ],
+    "frontend": [
+      "Next.js 15",
+      "React 19",
+      "Tailwind CSS",
+      "shadcn/ui"
+    ],
+    "backend": [
+      "FastAPI",
+      "Pydantic v2",
+      "Uvicorn",
+      "Starlette"
+    ],
+    "ai_ml": [
+      "vLLM",
+      "Ollama",
+      "Hugging Face Transformers",
+      "sentence-transformers",
+      "Qdrant",
+      "Neo4j",
+      "Whisper",
+      "Piper",
+      "MLflow",
+      "LoRA/QLoRA"
+    ],
+    "data": [
+      "PostgreSQL 16",
+      "Redis 7",
+      "Kafka 7.7",
+      "MinIO",
+      "Patroni HA"
+    ],
+    "observability": [
+      "Prometheus",
+      "Grafana",
+      "Loki",
+      "Tempo",
+      "Thanos",
+      "OpenTelemetry"
+    ],
+    "security": [
+      "Keycloak",
+      "HashiCorp Vault",
+      "Open Policy Agent",
+      "mTLS",
+      "Presidio"
+    ],
+    "orchestration": [
+      "Docker",
+      "Kubernetes",
+      "Helm",
+      "ArgoCD",
+      "Istio"
+    ],
+    "ci_cd": [
+      "GitHub Actions",
+      "pre-commit",
+      "pytest",
+      "Playwright"
+    ],
+    "standards": [
+      "OpenAPI 3.1",
+      "GraphQL",
+      "JSON-RPC 2.0",
+      "AsyncAPI",
+      "OTLP"
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.integration.v1",
+  "integration_id": "INT-REDIS",
+  "name": "Redis",
+  "directory": "redis",
+  "category": "database",
+  "category_name": "Databases",
+  "vendor": "Redis",
+  "protocol": "RESP",
+  "authentication": "ACL + TLS",
+  "status": "production",
+  "connector_ref": "packages/common/connectors/redis/",
+  "departments": [
+    "DEPT-IT",
+    "DEPT-DATA"
+  ],
+  "security": {
+    "encryption_in_transit": "TLS 1.3",
+    "encryption_at_rest": "AES-256",
+    "audit": "HMAC-signed",
+    "rate_limiting": true,
+    "circuit_breaker": true,
+    "pii_detection": "Microsoft Presidio"
+  },
+  "observability": {
+    "metrics": "Prometheus",
+    "logs": "Loki",
+    "traces": "Tempo (OpenTelemetry)",
+    "dashboards": "Grafana"
+  },
+  "backward_compatible": true
+}

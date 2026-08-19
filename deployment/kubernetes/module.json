@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.deployment.module.v1",
+  "name": "kubernetes",
+  "name_full": "Kubernetes Deployment",
+  "description": "Production Kubernetes deployment with Helm charts.",
+  "implementation_ref": "infrastructure/kubernetes/, infrastructure/helm/",
+  "status": "production",
+  "backward_compatible": true
+}

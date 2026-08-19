@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.department.v1",
+  "id": "DEPT-CEO",
+  "name_ar": "مكتب الرئيس التنفيذي",
+  "name_en": "CEO Office",
+  "directory": "ceo-office",
+  "head_role": "Group CEO",
+  "reports_to": "BOARD",
+  "mission_ar": "دعم الرئيس التنفيذي في إدارة العمليات اليومية وأولويات المجموعة",
+  "mission_en": "Support the Group CEO in day-to-day operations and priorities",
+  "agent_ref": "AGENT-EXEC-ASSISTANT",
+  "integrations": [
+    "power-bi",
+    "m365",
+    "exchange",
+    "sharepoint",
+    "teams"
+  ],
+  "kpis": [
+    "CEO Initiative Completion %",
+    "Cross-BU Issue Resolution Time",
+    "Executive Briefing On-Time %"
+  ],
+  "supported_by_modules": [
+    "services/backend_core/department_agents/",
+    "services/backend_core/integrations/",
+    "services/backend_core/enterprise_os/",
+    "services/backend_core/governance/",
+    "services/backend_core/knowledge/"
+  ],
+  "classification": "Internal"
+}

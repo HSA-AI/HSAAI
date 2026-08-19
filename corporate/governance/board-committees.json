@@ -1,0 +1,90 @@
+{
+  "schema": "hsaai.corporate.governance.v1",
+  "board": {
+    "chairman": "Office of the Chairman",
+    "vice_chairman": "Office of the Vice Chairman",
+    "executive_directors": [
+      "Group CEO",
+      "Group COO",
+      "Group CFO"
+    ],
+    "non_executive_directors": 5,
+    "secretary": "Board Secretary"
+  },
+  "committees": [
+    {
+      "id": "C-AUDIT",
+      "name": "Audit Committee",
+      "chair": "Non-Executive Director",
+      "meets_quarterly": true
+    },
+    {
+      "id": "C-RISK",
+      "name": "Risk Committee",
+      "chair": "Non-Executive Director",
+      "meets_quarterly": true
+    },
+    {
+      "id": "C-NRC",
+      "name": "Nomination & Remuneration Committee",
+      "chair": "Non-Executive Director",
+      "meets_quarterly": true
+    },
+    {
+      "id": "C-GOV",
+      "name": "Governance & Compliance Committee",
+      "chair": "Vice Chairman",
+      "meets_quarterly": true
+    },
+    {
+      "id": "C-AIDIG",
+      "name": "AI & Digital Transformation Committee",
+      "chair": "Group CEO",
+      "meets_monthly": true
+    },
+    {
+      "id": "C-ESG",
+      "name": "Sustainability & ESG Committee",
+      "chair": "Non-Executive Director",
+      "meets_quarterly": true
+    },
+    {
+      "id": "C-INV",
+      "name": "Investment Committee",
+      "chair": "Chairman",
+      "meets_monthly": true
+    }
+  ],
+  "delegation_of_authority": [
+    {
+      "level": "L1",
+      "holder": "Board",
+      "scope": "Strategy, M&A > $50M, Annual Budget"
+    },
+    {
+      "level": "L2",
+      "holder": "Group CEO",
+      "scope": "Operations, Capex < $50M, Executive Hiring"
+    },
+    {
+      "level": "L3",
+      "holder": "Group COO",
+      "scope": "Production, Supply Chain, Capex < $10M"
+    },
+    {
+      "level": "L4",
+      "holder": "Group CFO",
+      "scope": "Finance, Treasury, Capex < $5M"
+    },
+    {
+      "level": "L5",
+      "holder": "BU Heads",
+      "scope": "BU operations, Capex < $1M"
+    },
+    {
+      "level": "L6",
+      "holder": "Department Heads",
+      "scope": "Department operations, Capex < $250K"
+    }
+  ]
+}

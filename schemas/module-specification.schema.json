@@ -1,0 +1,219 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hsaai.group/schemas/module-specification.v1.json",
+  "title": "HSAAI Enterprise Module Specification",
+  "description": "Production-Ready Enterprise Module Metadata Schema for HSAAI AI Platform",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "module_id",
+    "name",
+    "version",
+    "description",
+    "category",
+    "status",
+    "ownership",
+    "components",
+    "capabilities",
+    "kpi_framework",
+    "security_model",
+    "data_architecture",
+    "runtime",
+    "dependencies",
+    "observability",
+    "compatibility"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "description": "Schema version for this specification",
+      "enum": ["1.0.0"]
+    },
+    "module_id": {
+      "type": "string",
+      "description": "Unique module identifier (kebab-case)",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "name": {"type": "string"},
+    "name_en": {"type": "string"},
+    "name_ar": {"type": "string"},
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9.]+)?$"
+    },
+    "description": {"type": "string"},
+    "category": {
+      "type": "string",
+      "enum": ["ai-platform", "data-layer", "security", "integration", "infrastructure", "application", "governance", "observability"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["production", "staging", "development", "deprecated", "planned"]
+    },
+    "ownership": {
+      "type": "object",
+      "required": ["owner_team", "business_domain", "technical_owner"],
+      "properties": {
+        "owner_team": {"type": "string"},
+        "business_domain": {"type": "string"},
+        "technical_owner": {"type": "string"},
+        "responsible_department": {"type": "string"}
+      }
+    },
+    "components": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "description", "responsibilities"],
+        "properties": {
+          "id": {"type": "string"},
+          "name": {"type": "string"},
+          "description": {"type": "string"},
+          "responsibilities": {"type": "array", "items": {"type": "string"}},
+          "apis": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "endpoint": {"type": "string"},
+                "method": {"type": "string"},
+                "description": {"type": "string"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "properties": {
+        "core": {"type": "array", "items": {"type": "string"}},
+        "ai": {"type": "array", "items": {"type": "string"}},
+        "business": {"type": "array", "items": {"type": "string"}},
+        "automation": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "kpi_framework": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "target", "measurement_method", "data_source"],
+        "properties": {
+          "name": {"type": "string"},
+          "target": {"type": "string"},
+          "measurement_method": {"type": "string"},
+          "data_source": {"type": "string"},
+          "alert_threshold": {"type": "string"}
+        }
+      }
+    },
+    "security_model": {
+      "type": "object",
+      "required": ["authentication", "authorization"],
+      "properties": {
+        "authentication": {
+          "type": "object",
+          "properties": {
+            "type": {"type": "string"},
+            "keycloak_compatible": {"type": "boolean"}
+          }
+        },
+        "authorization": {
+          "type": "object",
+          "properties": {
+            "rbac": {"type": "boolean"},
+            "abac": {"type": "boolean"},
+            "permissions": {"type": "array", "items": {"type": "string"}}
+          }
+        },
+        "security_controls": {
+          "type": "object",
+          "properties": {
+            "audit_logging": {"type": "boolean"},
+            "encryption_at_rest": {"type": "boolean"},
+            "encryption_in_transit": {"type": "boolean"},
+            "tenant_isolation": {"type": "boolean"},
+            "data_classification": {"type": "boolean"}
+          }
+        }
+      }
+    },
+    "data_architecture": {
+      "type": "object",
+      "properties": {
+        "data_sources": {"type": "array", "items": {"type": "string"}},
+        "events_consumed": {"type": "array", "items": {"type": "string"}},
+        "events_produced": {"type": "array", "items": {"type": "string"}},
+        "storage_requirements": {"type": "string"},
+        "data_retention_policy": {"type": "string"}
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "required": ["service_entrypoint", "health_checks"],
+      "properties": {
+        "service_entrypoint": {"type": "string"},
+        "api_endpoints": {"type": "array", "items": {"type": "string"}},
+        "health_checks": {
+          "type": "object",
+          "properties": {
+            "liveness": {"type": "string"},
+            "readiness": {"type": "string"}
+          }
+        },
+        "async_support": {"type": "boolean"},
+        "deployment_requirements": {
+          "type": "object",
+          "properties": {
+            "cpu": {"type": "string"},
+            "memory": {"type": "string"},
+            "replicas": {"type": "integer"},
+            "gpu_required": {"type": "boolean"}
+          }
+        }
+      }
+    },
+    "dependencies": {
+      "type": "object",
+      "properties": {
+        "internal_services": {"type": "array", "items": {"type": "string"}},
+        "external_services": {"type": "array", "items": {"type": "string"}},
+        "databases": {"type": "array", "items": {"type": "string"}},
+        "message_brokers": {"type": "array", "items": {"type": "string"}},
+        "ai_infrastructure": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "observability": {
+      "type": "object",
+      "properties": {
+        "metrics": {"type": "array", "items": {"type": "string"}},
+        "logs": {"type": "array", "items": {"type": "string"}},
+        "distributed_tracing": {"type": "boolean"},
+        "opentelemetry_support": {"type": "boolean"},
+        "monitoring_dashboards": {"type": "array", "items": {"type": "string"}},
+        "alert_rules": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "ai_governance": {
+      "type": "object",
+      "properties": {
+        "model_tracking": {"type": "boolean"},
+        "prompt_governance": {"type": "boolean"},
+        "ai_quality_metrics": {"type": "array", "items": {"type": "string"}},
+        "cost_tracking": {"type": "boolean"},
+        "safety_controls": {"type": "array", "items": {"type": "string"}},
+        "evaluation_metrics": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "compatibility": {
+      "type": "object",
+      "required": ["backward_compatible", "api_version"],
+      "properties": {
+        "backward_compatible": {"type": "boolean"},
+        "api_version": {"type": "string"},
+        "migration_required": {"type": "boolean"},
+        "deprecated_features": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "schema": "hsaai.enterprise.department.v1",
+  "id": "DEPT-PROD",
+  "name_ar": "إدارة الإنتاج",
+  "name_en": "Production",
+  "directory": "production",
+  "head_role": "VP Production",
+  "reports_to": "MFG",
+  "mission_ar": "تنفيذ خطط الإنتاج اليومية في كل مصنع بكفاءة وأمان",
+  "mission_en": "Execute daily production plans at each factory with efficiency and safety",
+  "agent_ref": "AGENT-MANUFACTURING",
+  "integrations": [
+    "mes",
+    "sap",
+    "kafka"
+  ],
+  "kpis": [
+    "Production Volume vs Plan %",
+    "Downtime %",
+    "First-Pass Yield %",
+    "Safety Incidents"
+  ],
+  "supported_by_modules": [
+    "services/backend_core/department_agents/",
+    "services/backend_core/integrations/",
+    "services/backend_core/enterprise_os/",
+    "services/backend_core/governance/",
+    "services/backend_core/knowledge/"
+  ],
+  "classification": "Internal"
+}

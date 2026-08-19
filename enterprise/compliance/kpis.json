@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.kpis.v1",
+  "department_id": "DEPT-COMP",
+  "department": "Compliance",
+  "kpis": [
+    {
+      "id": "KPI-DEPT-COMP-01",
+      "name": "Compliance Breach Count",
+      "frequency": "monthly",
+      "source_integration": "sharepoint"
+    },
+    {
+      "id": "KPI-DEPT-COMP-02",
+      "name": "Regulatory Filing On-Time %",
+      "frequency": "monthly",
+      "source_integration": "m365"
+    },
+    {
+      "id": "KPI-DEPT-COMP-03",
+      "name": "Training Completion %",
+      "frequency": "monthly",
+      "source_integration": "power-bi"
+    },
+    {
+      "id": "KPI-DEPT-COMP-04",
+      "name": "Risk Mitigation %",
+      "frequency": "monthly",
+      "source_integration": "power-bi"
+    }
+  ],
+  "dashboard_ref": "../../monitoring/dashboards/dept-comp.json"
+}

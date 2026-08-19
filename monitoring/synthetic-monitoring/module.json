@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.monitoring.module.v1",
+  "name": "synthetic-monitoring",
+  "name_full": "Synthetic Monitoring",
+  "description": "Proactive probes for critical user journeys.",
+  "implementation_ref": "scripts/smoke_test.sh",
+  "status": "production",
+  "backward_compatible": true
+}

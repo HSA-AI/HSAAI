@@ -1,0 +1,78 @@
+# FIX-MEDIUM-LOW-FINAL: was auth_enabled: false — enabled tenant isolation so
+# logs are scoped per-X-Scope-OrgId header in multi-tenant deployments.
+auth_enabled: true
+
+server:
+  http_listen_port: 3100
+  grpc_listen_port: 9096
+  log_level: info
+
+common:
+  path_prefix: /loki
+  storage:
+    filesystem:
+      chunks_directory: /loki/chunks
+      rules_directory: /loki/rules
+  # FIX-MEDIUM-LOW-FINAL: was replication_factor: 1 (single-copy, no HA).
+  # Raised to 3 so the loss of a single Loki node does not lose log data.
+  replication_factor: 3
+  ring:
+    instance_addr: 0.0.0.0
+    kvstore:
+      store: inmemory
+
+schema_config:
+  configs:
+    - from: 2024-01-01
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+
+ingester:
+  chunk_idle_period: 30m
+  chunk_target_size: 1572864  # 1.5MB
+  max_chunk_age: 1h
+  max_transfer_retries: 0
+  wal:
+    enabled: true
+    dir: /loki/wal
+
+limits_config:
+  retention_period: 720h  # 30 days
+  max_query_length: 721h
+  max_query_parallelism: 16
+  cardinality_limit: 100000
+  reject_old_samples: true
+  reject_old_samples_max_age: 168h
+  ingestion_rate_mb: 16
+  ingestion_burst_size_mb: 32
+  per_stream_rate_limit: 5MB
+  per_stream_rate_limit_burst: 20MB
+
+compactor:
+  working_directory: /loki/compactor
+  shared_store: filesystem
+  compaction_interval: 10m
+  retention_enabled: true
+  retention_delete_delay: 2h
+  retention_delete_worker_count: 150
+  delete_request_store: filesystem
+
+ruler:
+  storage:
+    type: local
+    local:
+      directory: /loki/rules
+  rule_path: /loki/rules-temp
+  alertmanager_url: http://alertmanager:9093
+  ring:
+    kvstore:
+      store: inmemory
+  enable_api: true
+  enable_alertmanager_v2: true
+
+analytics:
+  reporting_enabled: false

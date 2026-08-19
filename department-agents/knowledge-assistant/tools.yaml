@@ -1,0 +1,28 @@
+# Tool registry — Knowledge Assistant
+apiVersion: hsaaiv2/v1
+kind: AgentTools
+metadata:
+  name: knowledge-assistant-tools
+spec:
+  agentId: AGENT-KNOWLEDGE
+  tools:
+    - id: rag_search
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: knowledge_graph_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: vector_search
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: create_knowledge_article
+      enabled: true
+      audit: true
+      human_approval: true
+  defaultTimeout: 30s
+  retryPolicy:
+    maxRetries: 2
+    backoff: exponential

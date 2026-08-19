@@ -1,0 +1,21 @@
+# Integrations used by Manufacturing department
+apiVersion: hsaaiv2/v1
+kind: DepartmentIntegrations
+metadata:
+  name: manufacturing-integrations
+spec:
+  departmentId: DEPT-MFG
+  integrations:
+  - id: mes
+  - id: sap
+  - id: oracle-erp
+  - id: kafka
+  defaultAuth:
+    type: oauth2
+    provider: keycloak
+  retryPolicy:
+    maxRetries: 3
+    backoff: exponential
+  circuitBreaker:
+    enabled: true
+    threshold: 5

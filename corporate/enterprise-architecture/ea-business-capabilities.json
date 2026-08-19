@@ -1,0 +1,149 @@
+{
+  "schema": "hsaai.ea.capabilities.v1",
+  "levels": [
+    "L0 Domain",
+    "L1 Capability",
+    "L2 Sub-capability"
+  ],
+  "domains": [
+    {
+      "id": "CAP-STRAT",
+      "name": "Strategy & Governance",
+      "owner": "Board",
+      "level": 0
+    },
+    {
+      "id": "CAP-FIN",
+      "name": "Financial Management",
+      "owner": "CFO",
+      "level": 0,
+      "children": [
+        "Accounting",
+        "Treasury",
+        "FP&A",
+        "Tax",
+        "Audit"
+      ]
+    },
+    {
+      "id": "CAP-SCM",
+      "name": "Supply Chain Management",
+      "owner": "COO",
+      "level": 0,
+      "children": [
+        "Procurement",
+        "Inventory",
+        "Warehousing",
+        "Logistics",
+        "Distribution"
+      ]
+    },
+    {
+      "id": "CAP-MFG",
+      "name": "Manufacturing",
+      "owner": "COO",
+      "level": 0,
+      "children": [
+        "Production Planning",
+        "Shop Floor",
+        "Quality Control",
+        "Maintenance"
+      ]
+    },
+    {
+      "id": "CAP-SALES",
+      "name": "Sales & Distribution",
+      "owner": "CCO",
+      "level": 0,
+      "children": [
+        "B2B Sales",
+        "Retail Sales",
+        "Export",
+        "Customer Service"
+      ]
+    },
+    {
+      "id": "CAP-MKT",
+      "name": "Marketing",
+      "owner": "CMO",
+      "level": 0,
+      "children": [
+        "Brand",
+        "Digital",
+        "Trade",
+        "Insights"
+      ]
+    },
+    {
+      "id": "CAP-HR",
+      "name": "People Management",
+      "owner": "CHRO",
+      "level": 0,
+      "children": [
+        "Talent Acquisition",
+        "Talent Management",
+        "C&B",
+        "L&D",
+        "HR Operations"
+      ]
+    },
+    {
+      "id": "CAP-TECH",
+      "name": "Technology & Data",
+      "owner": "CIO/CDO",
+      "level": 0,
+      "children": [
+        "IT Operations",
+        "Data Office",
+        "Innovation",
+        "R&D"
+      ]
+    },
+    {
+      "id": "CAP-SEC",
+      "name": "Security & Risk",
+      "owner": "CISO/CRO",
+      "level": 0,
+      "children": [
+        "Cybersecurity",
+        "Risk Management",
+        "Compliance",
+        "Internal Audit"
+      ]
+    },
+    {
+      "id": "CAP-LEGAL",
+      "name": "Legal & Regulatory",
+      "owner": "GC",
+      "level": 0,
+      "children": [
+        "Corporate Legal",
+        "Contracts",
+        "Regulatory"
+      ]
+    },
+    {
+      "id": "CAP-QUAL",
+      "name": "Quality & R&D",
+      "owner": "CTO",
+      "level": 0,
+      "children": [
+        "QA",
+        "R&D",
+        "Innovation"
+      ]
+    },
+    {
+      "id": "CAP-AI",
+      "name": "AI & Digital",
+      "owner": "AI Committee",
+      "level": 0,
+      "children": [
+        "AI Platform",
+        "Department Agents",
+        "Knowledge",
+        "Governance"
+      ]
+    }
+  ]
+}

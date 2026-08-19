@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.kpis.v1",
+  "department_id": "DEPT-MKT",
+  "department": "Marketing",
+  "kpis": [
+    {
+      "id": "KPI-DEPT-MKT-01",
+      "name": "Brand Awareness %",
+      "frequency": "monthly",
+      "source_integration": "crm"
+    },
+    {
+      "id": "KPI-DEPT-MKT-02",
+      "name": "Marketing ROI",
+      "frequency": "monthly",
+      "source_integration": "power-bi"
+    },
+    {
+      "id": "KPI-DEPT-MKT-03",
+      "name": "Lead-to-Customer %",
+      "frequency": "monthly",
+      "source_integration": "sharepoint"
+    },
+    {
+      "id": "KPI-DEPT-MKT-04",
+      "name": "Campaign Reach",
+      "frequency": "monthly",
+      "source_integration": "m365"
+    }
+  ],
+  "dashboard_ref": "../../monitoring/dashboards/dept-mkt.json"
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "hsaai.backup.module.v1",
+  "name": "neo4j",
+  "name_full": "Neo4j Backups",
+  "description": "Nightly full backup of Neo4j database to MinIO.",
+  "implementation_ref": "scripts/",
+  "rpo_minutes": 15,
+  "rto_hours": 4,
+  "status": "production",
+  "backward_compatible": true
+}

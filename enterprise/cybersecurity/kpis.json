@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.kpis.v1",
+  "department_id": "DEPT-SEC",
+  "department": "Cybersecurity",
+  "kpis": [
+    {
+      "id": "KPI-DEPT-SEC-01",
+      "name": "MTTD (Minutes)",
+      "frequency": "monthly",
+      "source_integration": "active-directory"
+    },
+    {
+      "id": "KPI-DEPT-SEC-02",
+      "name": "MTTR (Minutes)",
+      "frequency": "monthly",
+      "source_integration": "azure-ad"
+    },
+    {
+      "id": "KPI-DEPT-SEC-03",
+      "name": "Vulnerability Remediation SLA %",
+      "frequency": "monthly",
+      "source_integration": "siem"
+    },
+    {
+      "id": "KPI-DEPT-SEC-04",
+      "name": "Phishing Click Rate %",
+      "frequency": "monthly",
+      "source_integration": "vault"
+    }
+  ],
+  "dashboard_ref": "../../monitoring/dashboards/dept-sec.json"
+}

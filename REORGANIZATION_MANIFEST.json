@@ -1,0 +1,171 @@
+{
+  "schema": "hsaai.reorganization.v1",
+  "from_version": "6.0.0",
+  "to_version": "7.0.0",
+  "transformation": "Restructure to enterprise layout + extend with corporate, enterprise, ai-platform, department-agents, knowledge modules",
+  "mapping": {
+    "new_corporate_module": {
+      "added": "corporate/ (10 submodules)",
+      "preserved_existing": [
+        "services/backend_core/enterprise/hsaai_profile.py"
+      ]
+    },
+    "new_enterprise_module": {
+      "added": "enterprise/ (26 department directories)",
+      "preserved_existing": [
+        "services/backend_core/department_agents/",
+        "services/backend_core/enterprise/",
+        "services/backend_core/enterprise_os/",
+        "services/backend_core/integrations/"
+      ]
+    },
+    "new_ai_platform_module": {
+      "added": "ai-platform/ (20 submodule specifications)",
+      "preserved_existing": [
+        "services/llm_gateway/",
+        "services/rag_engine/",
+        "services/ai_alignment/",
+        "services/governance/",
+        "services/mcp_server/",
+        "services/model_training/",
+        "services/voice_ai/",
+        "services/backend_core/ai_operations/",
+        "services/backend_core/memory/",
+        "services/backend_core/knowledge_graph/",
+        "services/backend_core/llm/",
+        "services/backend_core/prompt_security/",
+        "services/backend_core/safety/"
+      ]
+    },
+    "new_department_agents_module": {
+      "added": "department-agents/ (21 agent specifications)",
+      "preserved_existing": [
+        "services/multi_agents/agents.py (5 agents preserved)",
+        "services/backend_core/agent_runtime/",
+        "services/backend_core/department_agents/",
+        "services/backend_core/tool_registry/",
+        "services/backend_core/safety/",
+        "services/ai_alignment/"
+      ]
+    },
+    "new_knowledge_module": {
+      "added": "knowledge/ (17 knowledge domain specifications)",
+      "preserved_existing": [
+        "services/backend_core/knowledge/",
+        "services/rag_engine/",
+        "services/backend_core/knowledge_graph/",
+        "services/backend_core/enterprise_search/"
+      ]
+    },
+    "new_integrations_module": {
+      "added": "integrations/ (37 integration specifications)",
+      "preserved_existing": [
+        "packages/common/connectors/ (28 connectors preserved)",
+        "packages/common/base.py",
+        "packages/common/registry.py",
+        "packages/common/router.py",
+        "packages/common/sdk.py",
+        "services/backend_core/integrations/"
+      ]
+    },
+    "new_security_module": {
+      "added": "security/ (20 submodule specifications)",
+      "preserved_existing": [
+        "services/backend_core/security/",
+        "services/pii_detector/",
+        "infrastructure/keycloak/",
+        "infrastructure/vault/",
+        "infrastructure/opa/",
+        "infrastructure/mtls/",
+        "infrastructure/waf/",
+        "infrastructure/service-mesh/"
+      ]
+    },
+    "new_governance_module": {
+      "added": "governance/ (14 submodule specifications)",
+      "preserved_existing": [
+        "services/governance/",
+        "services/backend_core/approvals/",
+        "services/backend_core/enterprise_os/",
+        "services/ai_alignment/",
+        "corporate/governance/"
+      ]
+    },
+    "new_compliance_module": {
+      "added": "compliance/ (10 standard directories)",
+      "preserved_existing": [
+        "docs/iso27001/",
+        "docs/governance/",
+        "services/governance/",
+        "services/backend_core/security/"
+      ]
+    },
+    "new_audit_module": {
+      "added": "audit/ (6 submodule specifications)",
+      "preserved_existing": [
+        "services/backend_core/security/audit.py",
+        "services/backend_core/security/siem_sink.py",
+        "infrastructure/loki/",
+        "enterprise/internal-audit/"
+      ]
+    },
+    "new_monitoring_module": {
+      "added": "monitoring/ (10 submodules + 11 dashboards)",
+      "preserved_existing": [
+        "infrastructure/prometheus/",
+        "infrastructure/grafana/",
+        "infrastructure/loki/",
+        "infrastructure/tempo/",
+        "infrastructure/thanos/",
+        "infrastructure/otel/",
+        "infrastructure/slo/",
+        "infrastructure/dashboards/"
+      ]
+    },
+    "new_deployment_module": {
+      "added": "deployment/ (10 submodule specifications)",
+      "preserved_existing": [
+        "docker-compose.yml",
+        "infrastructure/docker/",
+        "infrastructure/kubernetes/",
+        "infrastructure/helm/",
+        "infrastructure/argocd/",
+        "infrastructure/service-mesh/",
+        ".github/workflows/",
+        "deploy/",
+        "scripts/deploy-production.sh"
+      ]
+    },
+    "new_reports_module": {
+      "added": "reports/ (10 category directories)",
+      "preserved_existing": [
+        "docs/reports/",
+        "services/backend_core/executive/",
+        "services/workflow_engine/",
+        "infrastructure/grafana/"
+      ]
+    },
+    "new_backups_module": {
+      "added": "backups/ (9 submodule specifications)",
+      "preserved_existing": [
+        "scripts/backup_postgres.sh",
+        "scripts/backup_qdrant.sh",
+        "scripts/backup_walg.sh",
+        "scripts/dr/",
+        "runbooks/"
+      ]
+    },
+    "extended_apps_module": {
+      "added": "apps/ (15 app specifications + ENTERPRISE_PORTAL_SPEC.md)",
+      "preserved_existing": [
+        "apps/web/ (Next.js 15 frontend, unchanged)",
+        "apps/web.dockerignore",
+        "apps/web.npmrc"
+      ]
+    }
+  },
+  "deleted_files": [],
+  "modified_files": [],
+  "breaking_changes": [],
+  "new_files_count": "2000+ (across all new modules)"
+}

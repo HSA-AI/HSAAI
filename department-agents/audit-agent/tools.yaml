@@ -1,0 +1,32 @@
+# Tool registry — Audit Agent
+apiVersion: hsaaiv2/v1
+kind: AgentTools
+metadata:
+  name: audit-agent-tools
+spec:
+  agentId: AGENT-AUDIT
+  tools:
+    - id: rag_search
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: sql_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: power_bi_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: anomaly_detect
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: create_audit_finding
+      enabled: true
+      audit: true
+      human_approval: true
+  defaultTimeout: 30s
+  retryPolicy:
+    maxRetries: 2
+    backoff: exponential

@@ -1,0 +1,237 @@
+{
+  "realm": "hsaai",
+  "enabled": true,
+  "displayName": "HSAAI Internal AI Platform",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": true,
+  "rememberMe": true,
+  "sslRequired": "external",
+  "_comment_browserFlow": "FIX I-11: Realm-level browserFlow now points to 'HSAAI Browser Flow' (was unset, so Keycloak used the default 'browser' flow and the HSAAI flow was a dead shell).",
+  "browserFlow": "HSAAI Browser Flow",
+  "attributes": {
+    "acr.loa.map": "{\"0\":\"silver\",\"1\":\"gold\"}",
+    "bruteForceProtected": "true",
+    "failureFactor": "5",
+    "maxDeltaTimeSeconds": "43200",
+    "maxFailureWaitSeconds": "900",
+    "minimumQuickLoginWaitSeconds": "60",
+    "waitIncrementSeconds": "60"
+  },
+  "roles": {
+    "realm": [
+      {
+        "name": "admin",
+        "description": "HSAAI platform administrator"
+      },
+      {
+        "name": "governance_officer",
+        "description": "AI governance and policy officer"
+      },
+      {
+        "name": "department_admin",
+        "description": "Department-level administrator"
+      },
+      {
+        "name": "knowledge_manager",
+        "description": "Document and knowledge-base manager"
+      },
+      {
+        "name": "executive",
+        "description": "Executive dashboard user"
+      },
+      {
+        "name": "member",
+        "description": "Standard employee user"
+      },
+      {
+        "name": "auditor",
+        "description": "Audit read-only access"
+      },
+      {
+        "name": "hsaai_admin",
+        "description": "HSAAI enterprise administrator",
+        "composite": false
+      },
+      {
+        "name": "knowledge_admin",
+        "description": "Knowledge base administrator",
+        "composite": false
+      },
+      {
+        "name": "document_reviewer",
+        "description": "Document review authority",
+        "composite": false
+      },
+      {
+        "name": "document_uploader",
+        "description": "Document upload authority",
+        "composite": false
+      },
+      {
+        "name": "department_manager",
+        "description": "Department manager",
+        "composite": false
+      },
+      {
+        "name": "ai_user",
+        "description": "AI platform user",
+        "composite": false
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "hsaai-frontend",
+      "name": "HSAAI Frontend (OIDC + PKCE)",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "authorizationServicesEnabled": false,
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "oauth2.device.authorization.grant.enabled": "false",
+        "backchannel.logout.session.required": "true",
+        "frontchannel.logout.session.required": "true",
+        "post.logout.redirect.uris": "+"
+      },
+      "redirectUris": [
+        "http://localhost:3000/api/auth/callback",
+        "http://localhost:3000/api/auth/silent-check",
+        "http://hsaai.company.local:3000/api/auth/callback",
+        "http://hsaai.company.local:3000/api/auth/silent-check"
+      ],
+      "webOrigins": [
+        "http://localhost:3000",
+        "http://hsaai.company.local:3000"
+      ]
+    },
+    {
+      "clientId": "hsaai-api",
+      "name": "HSAAI API Gateway (Confidential)",
+      "enabled": true,
+      "publicClient": false,
+      "bearerOnly": false,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "authorizationServicesEnabled": true,
+      "attributes": {
+        "jwt.credential.kid": "",
+        "use.jwks.url": "true",
+        "jwks.url": "http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs",
+        "backchannel.logout.session.required": "true"
+      }
+    }
+  ],
+  "groups": [
+    {
+      "name": "HSA-HSAAI-Admins"
+    },
+    {
+      "name": "HSA-HSAAI-Governance"
+    },
+    {
+      "name": "HSA-HSAAI-Knowledge-Managers"
+    },
+    {
+      "name": "HSA-HSAAI-Auditors"
+    }
+  ],
+  "authenticationFlows": [
+    {
+      "alias": "HSAAI Browser Flow",
+      "description": "Browser flow with MFA for admin roles (FIX I-11)",
+      "providerId": "basic-flow",
+      "topLevel": true,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "auth-cookie",
+          "authenticatorFlow": false,
+          "requirement": "ALTERNATIVE",
+          "priority": 10,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticator": "identity-provider-redirector",
+          "authenticatorFlow": false,
+          "requirement": "ALTERNATIVE",
+          "priority": 20,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticator": "auth-username-password-form",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 30,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticatorFlow": true,
+          "flowAlias": "HSAAI Admin MFA Conditional",
+          "requirement": "CONDITIONAL",
+          "priority": 40,
+          "userSetupAllowed": false
+        }
+      ]
+    },
+    {
+      "alias": "HSAAI Admin MFA Conditional",
+      "description": "FIX I-11: Require OTP for hsaai_admin role. Conditional subflow: only fires when the authenticated user has the hsaai_admin realm role. Triggers CONFIGURE_TOTP enrollment (userSetupAllowed=true) if admin has not yet enrolled, so admins cannot skip MFA forever.",
+      "providerId": "basic-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "condition-user-role",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "userSetupAllowed": false,
+          "config": {
+            "alias": "hsaai_admin-role-condition",
+            "config": {
+              "role": "hsaai_admin",
+              "negate": "false"
+            }
+          }
+        },
+        {
+          "authenticator": "condition-user-configured-otp",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 20,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticator": "auth-otp-form",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 30,
+          "userSetupAllowed": true
+        }
+      ]
+    }
+  ],
+  "requiredActions": [
+    {
+      "alias": "CONFIGURE_TOTP",
+      "name": "Configure OTP",
+      "providerId": "CONFIGURE_TOTP",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 10
+    },
+    {
+      "alias": "TERMS_AND_CONDITIONS",
+      "name": "Terms and Conditions",
+      "providerId": "TERMS_AND_CONDITIONS",
+      "enabled": true,
+      "defaultAction": true,
+      "priority": 20
+    }
+  ]
+}

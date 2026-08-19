@@ -1,0 +1,92 @@
+{
+  "schema": "hsaai.corporate.geo.v1",
+  "regions": [
+    {
+      "region": "MENA-Yemen",
+      "countries": [
+        "Yemen"
+      ],
+      "cities": [
+        "Aden",
+        "Hodeidah",
+        "Mukalla",
+        "Sana'a",
+        "Taiz"
+      ]
+    },
+    {
+      "region": "MENA-GCC",
+      "countries": [
+        "Saudi Arabia",
+        "UAE",
+        "Oman",
+        "Qatar",
+        "Kuwait",
+        "Bahrain"
+      ],
+      "cities": [
+        "Jeddah",
+        "Riyadh",
+        "Dubai",
+        "Muscat",
+        "Doha",
+        "Kuwait City",
+        "Manama"
+      ]
+    },
+    {
+      "region": "MENA-Levant",
+      "countries": [
+        "Jordan",
+        "Lebanon",
+        "Syria"
+      ],
+      "cities": [
+        "Amman",
+        "Beirut",
+        "Damascus"
+      ]
+    },
+    {
+      "region": "Africa-East",
+      "countries": [
+        "Djibouti",
+        "Ethiopia",
+        "Kenya",
+        "Somalia",
+        "Sudan"
+      ],
+      "cities": [
+        "Djibouti City",
+        "Addis Ababa",
+        "Nairobi",
+        "Mogadishu",
+        "Khartoum"
+      ]
+    },
+    {
+      "region": "Asia-South",
+      "countries": [
+        "India",
+        "Pakistan",
+        "Bangladesh"
+      ],
+      "cities": [
+        "Mumbai",
+        "Karachi",
+        "Dhaka"
+      ]
+    },
+    {
+      "region": "Europe",
+      "countries": [
+        "Netherlands",
+        "Turkey"
+      ],
+      "cities": [
+        "Rotterdam",
+        "Istanbul"
+      ]
+    }
+  ]
+}

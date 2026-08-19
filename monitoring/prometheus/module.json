@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.monitoring.module.v1",
+  "name": "prometheus",
+  "name_full": "Prometheus Metrics",
+  "description": "Per-service metrics scraped every 15s. 7-day hot retention + 12-month Thanos.",
+  "implementation_ref": "infrastructure/prometheus/, infrastructure/thanos/",
+  "status": "production",
+  "backward_compatible": true
+}

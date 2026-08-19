@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.integration.v1",
+  "integration_id": "INT-SFTP",
+  "name": "SFTP",
+  "directory": "sftp",
+  "category": "file",
+  "category_name": "File Transfer",
+  "vendor": "Generic",
+  "protocol": "SFTP",
+  "authentication": "Public Key",
+  "status": "production",
+  "connector_ref": "packages/common/connectors/sftp/",
+  "departments": [
+    "DEPT-IT",
+    "DEPT-LOG"
+  ],
+  "security": {
+    "encryption_in_transit": "TLS 1.3",
+    "encryption_at_rest": "AES-256",
+    "audit": "HMAC-signed",
+    "rate_limiting": true,
+    "circuit_breaker": true,
+    "pii_detection": "Microsoft Presidio"
+  },
+  "observability": {
+    "metrics": "Prometheus",
+    "logs": "Loki",
+    "traces": "Tempo (OpenTelemetry)",
+    "dashboards": "Grafana"
+  },
+  "backward_compatible": true
+}

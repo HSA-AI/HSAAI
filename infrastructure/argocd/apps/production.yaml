@@ -1,0 +1,39 @@
+# HSAAI Production Environment Application
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: hsaai-production
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: hsaai
+    environment: production
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/hsaai/hsaai
+    targetRevision: main
+    path: infrastructure/helm
+    helm:
+      valueFiles:
+        - values.yaml
+        - values-production.yaml
+      parameters:
+        - name: global.environment
+          value: production
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: hsaai
+  syncPolicy:
+    # NOTE: Production does NOT use automated sync — requires manual approval.
+    # This prevents accidental deploys from a bad Git commit.
+    # To deploy: `argocd app sync hsaai-production` or click "Sync" in UI.
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+    retry:
+      limit: 3
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 5m
+  revisionHistoryLimit: 20  # keep more history for production rollback

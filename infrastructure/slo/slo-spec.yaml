@@ -1,0 +1,148 @@
+# HSAAI SLO Definitions via Sloth (Phase 3 — Scale)
+#
+# FIX v2.3 (Phase 3): Implements formal SLO/SLI definitions using Sloth
+# (https://sloth.dev). Sloth auto-generates Prometheus alerting rules
+# with multi-window multi-burn-rate alerts (Google SRE pattern).
+#
+# SLOs defined:
+#   1. API Availability: 99.9% of requests succeed (no 5xx)
+#   2. API Latency: 99% of requests < 2s p95
+#   3. LLM Response: 99% of LLM calls complete < 30s
+#   4. RAG Search: 99% of searches complete < 500ms
+#   5. Auth Success: 99.95% of auth attempts succeed (no 401/403 errors)
+#
+# Each SLO generates 3 alert levels:
+#   - Fast burn (1h window, 14.4x burn rate) — page immediately
+#   - Medium burn (6h window, 6x burn rate) — page after 6h
+#   - Slow burn (3d window, 1x burn rate) — ticket after 3 days
+#
+# Usage:
+#   sloth generate -i infrastructure/slo/slo-spec.yaml -o infrastructure/slo/slo-alerts.yaml
+#   kubectl apply -f infrastructure/slo/slo-alerts.yaml
+
+version: "prometheus/v1"
+service: "hsaai"
+labels:
+  team: platform
+  severity: critical
+
+slos:
+  # ═══════════════════════════════════════════════════════════════
+  # SLO 1: API Availability — 99.9% success rate (no 5xx)
+  # Error budget: 0.1% = 43.2 minutes/month of 5xx allowed
+  # ═══════════════════════════════════════════════════════════════
+  - name: "api-availability"
+    objective: 99.9
+    description: "99.9% of API requests must succeed (no 5xx errors)"
+    sli:
+      events:
+        error_query: sum(rate(hsaai_backend_requests_total{status=~"5.."}[{{.window}}]))
+        total_query: sum(rate(hsaai_backend_requests_total[{{.window}}]))
+    alerting:
+      name: HSAAIAPIAvailabilitySLO
+      labels:
+        category: availability
+      annotations:
+        summary: "HSAAI API availability SLO is burning too fast"
+        description: "API error rate is exceeding the 0.1% error budget for SLO {{ $labels.sloth_slo }}"
+      page_alert:
+        labels:
+          severity: page
+          routing_key: hsaai-platform
+      ticket_alert:
+        labels:
+          severity: ticket
+          routing_key: hsaai-platform
+
+  # ═══════════════════════════════════════════════════════════════
+  # SLO 2: API Latency — 99% of requests < 2s
+  # Error budget: 1% of requests can exceed 2s
+  # ═══════════════════════════════════════════════════════════════
+  - name: "api-latency"
+    objective: 99.0
+    description: "99% of API requests must complete within 2 seconds"
+    sli:
+      events:
+        error_query: |
+          sum(rate(hsaai_backend_request_latency_seconds_bucket{le="+Inf"}[{{.window}}]))
+          - sum(rate(hsaai_backend_request_latency_seconds_bucket{le="2"}[{{.window}}]))
+        total_query: sum(rate(hsaai_backend_request_latency_seconds_count[{{.window}}]))
+    alerting:
+      name: HSAAIAPILatencySLO
+      labels:
+        category: latency
+      annotations:
+        summary: "HSAAI API latency SLO is burning too fast"
+        description: "More than 1% of requests are exceeding 2s latency"
+
+  # ═══════════════════════════════════════════════════════════════
+  # SLO 3: LLM Response — 99% of calls complete < 30s
+  # LLM calls are slow; budget allows 1% to exceed 30s
+  # ═══════════════════════════════════════════════════════════════
+  - name: "llm-response"
+    objective: 99.0
+    description: "99% of LLM generation calls must complete within 30 seconds"
+    sli:
+      events:
+        error_query: |
+          sum(rate(hsaai_llm_request_duration_seconds_bucket{le="+Inf"}[{{.window}}]))
+          - sum(rate(hsaai_llm_request_duration_seconds_bucket{le="30"}[{{.window}}]))
+        total_query: sum(rate(hsaai_llm_request_duration_seconds_count[{{.window}}]))
+    alerting:
+      name: HSAAILLMLatencySLO
+      labels:
+        category: latency
+        service: llm-gateway
+
+  # ═══════════════════════════════════════════════════════════════
+  # SLO 4: RAG Search — 99% of searches < 500ms
+  # RAG searches must be fast for responsive UX
+  # ═══════════════════════════════════════════════════════════════
+  - name: "rag-search-latency"
+    objective: 99.0
+    description: "99% of RAG searches must complete within 500ms"
+    sli:
+      events:
+        error_query: |
+          sum(rate(hsaai_rag_search_latency_seconds_bucket{le="+Inf"}[{{.window}}]))
+          - sum(rate(hsaai_rag_search_latency_seconds_bucket{le="0.5"}[{{.window}}]))
+        total_query: sum(rate(hsaai_rag_search_latency_seconds_count[{{.window}}]))
+    alerting:
+      name: HSAAIRAGLatencySLO
+      labels:
+        category: latency
+        service: rag-engine
+
+  # ═══════════════════════════════════════════════════════════════
+  # SLO 5: Auth Success — 99.95% success (very strict)
+  # Auth failures block all access; very tight budget
+  # ═══════════════════════════════════════════════════════════════
+  - name: "auth-success"
+    objective: 99.95
+    description: "99.95% of authentication attempts must succeed (no 401/403)"
+    sli:
+      events:
+        error_query: sum(rate(hsaai_auth_failures_total[{{.window}}]))
+        total_query: sum(rate(hsaai_auth_attempts_total[{{.window}}]))
+    alerting:
+      name: HSAAIAuthSLO
+      labels:
+        category: security
+        service: auth-service
+
+  # ═══════════════════════════════════════════════════════════════
+  # SLO 6: Data Durability — 99.999% (5 nines)
+  # No data loss allowed for PostgreSQL + Qdrant
+  # ═══════════════════════════════════════════════════════════════
+  - name: "data-durability"
+    objective: 99.999
+    description: "Zero data loss (99.999% durability for PostgreSQL + Qdrant)"
+    sli:
+      events:
+        error_query: sum(rate(hsaai_data_loss_events_total[{{.window}}]))
+        total_query: sum(rate(hsaai_data_operations_total[{{.window}}]))
+    alerting:
+      name: HSAAIDataDurabilitySLO
+      labels:
+        category: data
+        severity: critical

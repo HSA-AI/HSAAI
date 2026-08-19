@@ -1,0 +1,20 @@
+{
+  "assetName": "HSAAI Assistant Circle Icon",
+  "owner": "HSAAI - Hayel Saeed Anam Artificial Intelligence",
+  "purpose": "Floating assistant button for all employees inside the internal enterprise AI platform.",
+  "primaryIcon": "/brand/hsaai-assistant-circle.png",
+  "vectorIcon": "/brand/hsaai-assistant-circle.svg",
+  "webIcon": "/brand/hsaai-assistant-circle.webp",
+  "sizes": [64, 128, 256, 512, 1024],
+  "colors": {
+    "hsaYellow": "#F0CF3A",
+    "hsaBlack": "#050505",
+    "hsaGold": "#C7A833"
+  },
+  "usage": [
+    "Floating assistant button",
+    "Chat widget header",
+    "Internal AI help shortcut",
+    "Employee self-service entry point"
+  ]
+}

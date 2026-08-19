@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.monitoring.module.v1",
+  "name": "dashboards",
+  "name_full": "Dashboard Catalog",
+  "description": "Catalog of all Grafana dashboards with ownership.",
+  "implementation_ref": "infrastructure/dashboards/",
+  "status": "production",
+  "backward_compatible": true
+}

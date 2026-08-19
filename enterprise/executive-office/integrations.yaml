@@ -1,0 +1,21 @@
+# Integrations used by Executive Office department
+apiVersion: hsaaiv2/v1
+kind: DepartmentIntegrations
+metadata:
+  name: executive-office-integrations
+spec:
+  departmentId: DEPT-EXEC
+  integrations:
+  - id: power-bi
+  - id: m365
+  - id: exchange
+  - id: sharepoint
+  defaultAuth:
+    type: oauth2
+    provider: keycloak
+  retryPolicy:
+    maxRetries: 3
+    backoff: exponential
+  circuitBreaker:
+    enabled: true
+    threshold: 5

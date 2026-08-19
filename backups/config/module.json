@@ -1,0 +1,11 @@
+{
+  "schema": "hsaai.backup.module.v1",
+  "name": "config",
+  "name_full": "Configuration Backups",
+  "description": "Git-based config backups + Helm values versioning.",
+  "implementation_ref": ".github/, infrastructure/helm/",
+  "rpo_minutes": 15,
+  "rto_hours": 4,
+  "status": "production",
+  "backward_compatible": true
+}

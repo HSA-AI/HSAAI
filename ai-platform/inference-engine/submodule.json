@@ -1,0 +1,27 @@
+{
+  "schema": "hsaai.ai-platform.submodule.v1",
+  "name": "inference-engine",
+  "name_en": "Inference Engine",
+  "name_ar": "محرك الاستدلال",
+  "description": "Serving layer with vLLM (GPU) and Ollama (CPU) for local model inference.",
+  "components": [
+    "vLLM Server",
+    "Ollama Server",
+    "Load Balancer",
+    "Cache Layer"
+  ],
+  "capabilities": [
+    "vLLM GPU serving",
+    "Ollama CPU serving",
+    "Request batching",
+    "KV cache",
+    "Streaming"
+  ],
+  "kpis": [
+    "GPU utilization > 70%",
+    "Inference latency P95 < 1s",
+    "Throughput > 1000 tok/s"
+  ],
+  "runtime_ref": "services/llm_gateway/",
+  "backward_compatible": true
+}

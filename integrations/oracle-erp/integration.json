@@ -1,0 +1,33 @@
+{
+  "schema": "hsaai.integration.v1",
+  "integration_id": "INT-ORACLE-ERP",
+  "name": "Oracle ERP Cloud",
+  "directory": "oracle-erp",
+  "category": "erp",
+  "category_name": "ERP Systems",
+  "vendor": "Oracle",
+  "protocol": "REST + SOAP",
+  "authentication": "OAuth2",
+  "status": "production",
+  "connector_ref": "packages/common/connectors/oracle_erp/",
+  "departments": [
+    "DEPT-FIN",
+    "DEPT-ACC",
+    "DEPT-PROC"
+  ],
+  "security": {
+    "encryption_in_transit": "TLS 1.3",
+    "encryption_at_rest": "AES-256",
+    "audit": "HMAC-signed",
+    "rate_limiting": true,
+    "circuit_breaker": true,
+    "pii_detection": "Microsoft Presidio"
+  },
+  "observability": {
+    "metrics": "Prometheus",
+    "logs": "Loki",
+    "traces": "Tempo (OpenTelemetry)",
+    "dashboards": "Grafana"
+  },
+  "backward_compatible": true
+}

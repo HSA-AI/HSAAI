@@ -1,0 +1,24 @@
+{
+  "schema": "hsaai.ai-platform.submodule.v1",
+  "name": "ai-benchmark",
+  "name_en": "AI Benchmark",
+  "name_ar": "مقياس الذكاء الاصطناعي",
+  "description": "Standardized benchmarks (MMLU-Arabic, HSA-specific tasks) for model comparison.",
+  "components": [
+    "Benchmark Suite",
+    "Leaderboard",
+    "Regression Detector"
+  ],
+  "capabilities": [
+    "MMLU-Arabic",
+    "HSA-Task benchmark",
+    "Leaderboard",
+    "Regression detection"
+  ],
+  "kpis": [
+    "Benchmark runs > 12/year",
+    "Regression detection = 100%"
+  ],
+  "runtime_ref": "benchmarks/",
+  "backward_compatible": true
+}

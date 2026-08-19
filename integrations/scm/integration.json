@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.integration.v1",
+  "integration_id": "INT-SCM",
+  "name": "Supply Chain Management (SCM)",
+  "directory": "scm",
+  "category": "manufacturing",
+  "category_name": "Manufacturing & Operations",
+  "vendor": "Multiple",
+  "protocol": "REST + EDI",
+  "authentication": "OAuth2",
+  "status": "production",
+  "connector_ref": "packages/common/connectors/scm/",
+  "departments": [
+    "DEPT-SCM",
+    "DEPT-PROC"
+  ],
+  "security": {
+    "encryption_in_transit": "TLS 1.3",
+    "encryption_at_rest": "AES-256",
+    "audit": "HMAC-signed",
+    "rate_limiting": true,
+    "circuit_breaker": true,
+    "pii_detection": "Microsoft Presidio"
+  },
+  "observability": {
+    "metrics": "Prometheus",
+    "logs": "Loki",
+    "traces": "Tempo (OpenTelemetry)",
+    "dashboards": "Grafana"
+  },
+  "backward_compatible": true
+}

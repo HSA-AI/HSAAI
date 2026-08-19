@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.kpis.v1",
+  "department_id": "DEPT-SCM",
+  "department": "Supply Chain",
+  "kpis": [
+    {
+      "id": "KPI-DEPT-SCM-01",
+      "name": "Forecast Accuracy %",
+      "frequency": "monthly",
+      "source_integration": "sap"
+    },
+    {
+      "id": "KPI-DEPT-SCM-02",
+      "name": "Inventory Turns",
+      "frequency": "monthly",
+      "source_integration": "oracle-erp"
+    },
+    {
+      "id": "KPI-DEPT-SCM-03",
+      "name": "OTIF %",
+      "frequency": "monthly",
+      "source_integration": "wms"
+    },
+    {
+      "id": "KPI-DEPT-SCM-04",
+      "name": "Supply Chain Cost as % of Sales",
+      "frequency": "monthly",
+      "source_integration": "mes"
+    }
+  ],
+  "dashboard_ref": "../../monitoring/dashboards/dept-scm.json"
+}

@@ -1,0 +1,27 @@
+{
+  "schema": "hsaai.ai-platform.submodule.v1",
+  "name": "model-router",
+  "name_en": "Model Router",
+  "name_ar": "موجه النماذج",
+  "description": "Routes each request to the optimal model based on task, latency, cost, and language.",
+  "components": [
+    "Task Classifier",
+    "Latency Estimator",
+    "Cost Estimator",
+    "Language Detector",
+    "Router"
+  ],
+  "capabilities": [
+    "Task-based routing",
+    "Latency-aware routing",
+    "Cost-aware routing",
+    "Language-aware routing"
+  ],
+  "kpis": [
+    "Routing accuracy > 90%",
+    "Cost reduction > 30%",
+    "Latency improvement > 20%"
+  ],
+  "runtime_ref": "services/backend_core/llm/router.py",
+  "backward_compatible": true
+}

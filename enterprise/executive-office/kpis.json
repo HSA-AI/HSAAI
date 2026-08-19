@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.kpis.v1",
+  "department_id": "DEPT-EXEC",
+  "department": "Executive Office",
+  "kpis": [
+    {
+      "id": "KPI-DEPT-EXEC-01",
+      "name": "Strategic Plan Achievement %",
+      "frequency": "monthly",
+      "source_integration": "power-bi"
+    },
+    {
+      "id": "KPI-DEPT-EXEC-02",
+      "name": "Board Resolution Execution Time",
+      "frequency": "monthly",
+      "source_integration": "m365"
+    },
+    {
+      "id": "KPI-DEPT-EXEC-03",
+      "name": "Group Revenue Growth %",
+      "frequency": "monthly",
+      "source_integration": "exchange"
+    },
+    {
+      "id": "KPI-DEPT-EXEC-04",
+      "name": "ROIC",
+      "frequency": "monthly",
+      "source_integration": "sharepoint"
+    }
+  ],
+  "dashboard_ref": "../../monitoring/dashboards/dept-exec.json"
+}

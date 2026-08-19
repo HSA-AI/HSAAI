@@ -1,0 +1,27 @@
+{
+  "schema": "hsaai.ai-platform.submodule.v1",
+  "name": "model-registry",
+  "name_en": "Model Registry",
+  "name_ar": "سجل النماذج",
+  "description": "Versioned model catalog with lineage, metrics, and approval workflows.",
+  "components": [
+    "Model Catalog",
+    "Version Manager",
+    "Lineage Tracker",
+    "Approval Workflow"
+  ],
+  "capabilities": [
+    "Model versioning",
+    "Lineage tracking",
+    "Approval workflow",
+    "Rollback",
+    "A/B testing"
+  ],
+  "kpis": [
+    "Models registered > 50",
+    "Rollback time < 5min",
+    "Lineage complete = 100%"
+  ],
+  "runtime_ref": "services/model_training/registry.py",
+  "backward_compatible": true
+}

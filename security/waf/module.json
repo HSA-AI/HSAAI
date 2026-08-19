@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.security.module.v1",
+  "name": "waf",
+  "name_full": "Web Application Firewall",
+  "description": "WAF with 8 protection rules. OWASP Top 10 coverage.",
+  "implementation_ref": "infrastructure/waf/",
+  "status": "production",
+  "backward_compatible": true
+}

@@ -1,0 +1,28 @@
+# Tool registry — Marketing Agent
+apiVersion: hsaaiv2/v1
+kind: AgentTools
+metadata:
+  name: marketing-agent-tools
+spec:
+  agentId: AGENT-MARKETING
+  tools:
+    - id: rag_search
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: crm_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: power_bi_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: generate_content
+      enabled: true
+      audit: true
+      human_approval: false
+  defaultTimeout: 30s
+  retryPolicy:
+    maxRetries: 2
+    backoff: exponential

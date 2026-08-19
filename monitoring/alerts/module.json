@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.monitoring.module.v1",
+  "name": "alerts",
+  "name_full": "Alertmanager Alerts",
+  "description": "Alert routing, escalation, and on-call rotation.",
+  "implementation_ref": "infrastructure/",
+  "status": "production",
+  "backward_compatible": true
+}

@@ -1,0 +1,111 @@
+# HSAAI Chaos Engineering Experiments
+# Uses Litmus Chaos for Kubernetes
+# Install: kubectl apply -f https://litmuschaos.github.io/litmus/litmus-operator.yaml
+---
+# Experiment 1: Pod Kill — Verify service recovery
+apiVersion: litmuschaos.io/v1alpha1
+kind: ChaosEngine
+metadata:
+  name: hsaai-backend-pod-kill
+  namespace: hsaai
+spec:
+  appinfo:
+    appns: hsaai
+    applabel: "app=backend-core"
+  chaosServiceAccount: litmus-admin
+  experiments:
+    - name: pod-delete
+      spec:
+        components:
+          env:
+            - name: TOTAL_CHAOS_DURATION
+              value: "30"
+            - name: CHAOS_INTERVAL
+              value: "10"
+            - name: FORCE
+              value: "false"
+        probe:
+          - name: check-backend-health
+            type: httpProbe
+            httpProbe/inputs:
+              url: "http://backend-core:8000/health"
+              method:
+                get:
+                  criteria: "=="
+                  responseCode: "200"
+            mode: Continuous
+            runProperties:
+              probeTimeout: 5
+              interval: 5
+---
+# Experiment 2: Network Latency — Verify timeout handling
+apiVersion: litmuschaos.io/v1alpha1
+kind: ChaosEngine
+metadata:
+  name: hsaai-llm-network-latency
+  namespace: hsaai
+spec:
+  appinfo:
+    appns: hsaai
+    applabel: "app=llm-gateway"
+  chaosServiceAccount: litmus-admin
+  experiments:
+    - name: pod-network-latency
+      spec:
+        components:
+          env:
+            - name: NETWORK_LATENCY
+              value: "2000"   # Add 2s latency
+            - name: TOTAL_CHAOS_DURATION
+              value: "60"
+            - name: DESTINATION_IPS
+              value: "172.28.0.0/16"
+        probe:
+          - name: verify-circuit-breaker
+            type: httpProbe
+            httpProbe/inputs:
+              url: "http://backend-core:8000/security/internal-only/status"
+              method:
+                get:
+                  criteria: "=="
+                  responseCode: "200"
+            mode: Continuous
+            runProperties:
+              probeTimeout: 10
+              interval: 5
+---
+# Experiment 3: Resource Pressure — Verify auto-scaling
+apiVersion: litmuschaos.io/v1alpha1
+kind: ChaosEngine
+metadata:
+  name: hsaai-backend-cpu-stress
+  namespace: hsaai
+spec:
+  appinfo:
+    appns: hsaai
+    applabel: "app=backend-core"
+  chaosServiceAccount: litmus-admin
+  experiments:
+    - name: pod-cpu-hog
+      spec:
+        components:
+          env:
+            - name: TOTAL_CHAOS_DURATION
+              value: "120"
+            - name: CPU_CORES
+              value: "2"
+            - name: CPU_PERCENTAGE
+              value: "80"
+        probe:
+          - name: verify-hpa-scales
+            type: cmdProbe
+            cmdProbe/inputs:
+              command: "kubectl get hpa backend-hpa -n hsaai -o jsonpath='{.status.currentReplicas}'"
+              comparator:
+                type: int
+                criteria: ">="
+                value: "3"
+            mode: Continuous
+            runProperties:
+              probeTimeout: 30
+              interval: 15

@@ -1,0 +1,146 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    platform: hsaai
+    environment: production
+
+rule_files:
+  - /etc/prometheus/rules/*.yml
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+scrape_configs:
+  # ── HSAAI Application Services ─────────────────────
+  - job_name: hsaai-backend
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["backend_core:8000"]
+        labels:
+          service: backend_core
+          team: platform
+
+  - job_name: hsaai-api-gateway
+    metrics_path: /metrics
+    static_configs:
+      # FIX I-15: was 8080 — api_gateway listens on 8060
+      - targets: ["api_gateway:8060"]
+        labels:
+          service: api_gateway
+          team: platform
+
+  - job_name: hsaai-auth-service
+    metrics_path: /metrics
+    static_configs:
+      # FIX I-15: was 8001 — auth_service listens on 8010
+      - targets: ["auth_service:8010"]
+        labels:
+          service: auth_service
+          team: security
+
+  - job_name: hsaai-rag-engine
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["rag_engine:8030"]
+        labels:
+          service: rag_engine
+          team: ai
+
+  - job_name: hsaai-llm-gateway
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["llm_gateway:8090"]
+        labels:
+          service: llm_gateway
+          team: ai
+
+  # FIX I-15: removed hsaai-ai-orchestrator job — service does not exist (per I-01)
+
+  - job_name: hsaai-multi-agents
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["multi_agents:8040"]
+        labels:
+          service: multi_agents
+          team: ai
+
+  - job_name: hsaai-workflow-engine
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["workflow_engine:8050"]
+        labels:
+          service: workflow_engine
+          team: platform
+
+  # FIX I-15: removed hsaai-analytics job — service does not exist (per I-01)
+
+  # FIX I-15: Added missing scrape jobs for existing services
+  - job_name: hsaai-governance
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["governance:8011"]
+        labels:
+          service: governance
+          team: governance
+
+  - job_name: hsaai-pii-detector
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["pii_detector:8092"]
+        labels:
+          service: pii_detector
+          team: ai
+
+  - job_name: hsaai-mcp-server
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["mcp_server:8094"]
+        labels:
+          service: mcp_server
+          team: platform
+
+  - job_name: hsaai-model-training
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["model_training:8091"]
+        labels:
+          service: model_training
+          team: ai
+
+  - job_name: hsaai-ai-alignment
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["ai_alignment:8093"]
+        labels:
+          service: ai_alignment
+          team: ai
+
+  # ── OTel Collector Metrics ─────────────────────────
+  - job_name: otel-collector
+    static_configs:
+      - targets: ["otel-collector:8889"]
+        labels:
+          service: otel_collector
+
+  # ── Infrastructure ─────────────────────────────────
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: node-exporter
+    static_configs:
+      - targets: ["node-exporter:9100"]
+        labels:
+          job: node
+
+  - job_name: redis
+    static_configs:
+      - targets: ["redis-exporter:9121"]
+
+  - job_name: postgres
+    static_configs:
+      - targets: ["postgres-exporter:9187"]

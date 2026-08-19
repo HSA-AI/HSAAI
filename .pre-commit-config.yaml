@@ -1,0 +1,75 @@
+# Pre-commit hooks for HSAAI (Phase 13)
+# Install: pip install pre-commit && pre-commit install
+# Runs automatically on every commit. Fails commit if checks fail.
+
+repos:
+  # ─── Python: ruff (lint + format) ──────────────────────────
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.5.0
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+
+  # ─── Python: mypy (type checking) ──────────────────────────
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.10.0
+    hooks:
+      - id: mypy
+        additional_dependencies: [types-redis, types-requests]
+        args: [--ignore-missing-imports]
+        exclude: ^tests/
+
+  # ─── Python: bandit (SAST) ─────────────────────────────────
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.9
+    hooks:
+      - id: bandit
+        args: [-lll, -q]  # only high-severity
+        exclude: ^tests/
+
+  # ─── General: secrets detection ────────────────────────────
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+
+  # ─── General: TruffleHog (deep secrets scan) ───────────────
+  - repo: https://github.com/trufflesecurity/trufflehog
+    rev: v3.78.2
+    hooks:
+      - id: trufflehog
+
+  # ─── YAML formatting ───────────────────────────────────────
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-yaml
+      - id: check-json
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ['--maxkb=500']
+      - id: detect-private-key
+
+  # ─── Dockerfile linting ────────────────────────────────────
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.12.0
+    hooks:
+      - id: hadolint-docker
+        args: [--failure-threshold, warning]
+
+  # ─── Shell script linting ──────────────────────────────────
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.10.0
+    hooks:
+      - id: shellcheck
+
+  # ─── Markdown linting ──────────────────────────────────────
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.41.0
+    hooks:
+      - id: markdownlint
+        args: [--disable, MD013, MD024, MD041]

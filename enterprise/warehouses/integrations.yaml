@@ -1,0 +1,21 @@
+# Integrations used by Warehouses department
+apiVersion: hsaaiv2/v1
+kind: DepartmentIntegrations
+metadata:
+  name: warehouses-integrations
+spec:
+  departmentId: DEPT-WRH
+  integrations:
+  - id: wms
+  - id: sap
+  - id: oracle-erp
+  - id: redis
+  defaultAuth:
+    type: oauth2
+    provider: keycloak
+  retryPolicy:
+    maxRetries: 3
+    backoff: exponential
+  circuitBreaker:
+    enabled: true
+    threshold: 5

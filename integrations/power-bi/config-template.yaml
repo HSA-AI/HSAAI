@@ -1,0 +1,44 @@
+# Configuration template for Microsoft Power BI
+apiVersion: hsaaiv2/v1
+kind: IntegrationConfig
+metadata:
+  name: power-bi-config
+  labels:
+    integration: INT-POWER-BI
+    category: bi
+    vendor: Microsoft
+spec:
+  enabled: true
+  endpoint: "${INT-POWER-BI_ENDPOINT}"
+  credentials:
+    source: vault
+    path: "secret/hsaai/integrations/power-bi"
+  auth:
+    type: oauth2
+    clientId: "${INT-POWER-BI_CLIENT_ID}"
+    clientSecret: "vault:power-bi/client-secret"
+    tenant: "${INT-POWER-BI_TENANT}"
+  pool:
+    maxConnections: 20
+    idleTimeout: 300s
+  retry:
+    maxRetries: 3
+    backoff: exponential
+    initialDelay: 1s
+    maxDelay: 30s
+  circuitBreaker:
+    enabled: true
+    failureThreshold: 5
+    recoveryTime: 60s
+  rateLimit:
+    requestsPerSecond: 50
+    burst: 100
+  observability:
+    metricsEnabled: true
+    logsEnabled: true
+    tracesEnabled: true
+    logLevel: info
+  security:
+    piiDetection: true
+    auditAll: true
+    tlsMinVersion: "1.3"

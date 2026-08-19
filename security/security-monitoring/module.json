@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.security.module.v1",
+  "name": "security-monitoring",
+  "name_full": "Security Monitoring",
+  "description": "24/7 security monitoring via Prometheus + Loki + SIEM correlation.",
+  "implementation_ref": "infrastructure/prometheus/, infrastructure/loki/",
+  "status": "production",
+  "backward_compatible": true
+}

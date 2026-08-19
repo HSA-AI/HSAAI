@@ -1,0 +1,33 @@
+{
+  "schema": "hsaai.integration.v1",
+  "integration_id": "INT-CRM",
+  "name": "Customer Relationship Management (CRM)",
+  "directory": "crm",
+  "category": "crm",
+  "category_name": "Customer Relationship",
+  "vendor": "Multiple",
+  "protocol": "REST",
+  "authentication": "OAuth2",
+  "status": "production",
+  "connector_ref": "packages/common/connectors/crm/",
+  "departments": [
+    "DEPT-SALES",
+    "DEPT-MKT",
+    "DEPT-CSVC"
+  ],
+  "security": {
+    "encryption_in_transit": "TLS 1.3",
+    "encryption_at_rest": "AES-256",
+    "audit": "HMAC-signed",
+    "rate_limiting": true,
+    "circuit_breaker": true,
+    "pii_detection": "Microsoft Presidio"
+  },
+  "observability": {
+    "metrics": "Prometheus",
+    "logs": "Loki",
+    "traces": "Tempo (OpenTelemetry)",
+    "dashboards": "Grafana"
+  },
+  "backward_compatible": true
+}

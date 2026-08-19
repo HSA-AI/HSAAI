@@ -1,0 +1,11 @@
+{
+  "schema": "hsaai.compliance.standard.v1",
+  "standard": "hsa-policies",
+  "name": "HSA Group Corporate Policies",
+  "description": "Internal corporate policies binding on all employees and systems.",
+  "owner": "CCO",
+  "status": "Mandatory",
+  "mapping": "Policy crosswalk",
+  "last_assessment": "2026-06-01",
+  "next_assessment": "2026-12-01"
+}

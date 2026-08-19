@@ -1,0 +1,41 @@
+{
+  "schema": "hsaai.department-agent.v1",
+  "agent_id": "AGENT-LEGAL",
+  "name_ar": "الوكيل القانوني",
+  "name_en": "Legal Agent",
+  "directory": "legal-agent",
+  "department_ref": "DEPT-LEG",
+  "role_ar": "مراجعة العقود، توفير الاستشارة القانونية، وإدارة النزاعات",
+  "role_en": "Review contracts, provide legal counsel, manage disputes",
+  "model_tier": "premium",
+  "languages": [
+    "ar",
+    "en"
+  ],
+  "tools": [
+    "rag_search",
+    "knowledge_graph_query",
+    "sharepoint_query",
+    "approve_contract"
+  ],
+  "safety": {
+    "human_in_the_loop": true,
+    "audit_all_calls": true,
+    "pii_detection": true,
+    "prompt_firewall": true,
+    "constitutional_ai": true,
+    "kill_switch": true
+  },
+  "runtime": {
+    "service": "services/multi_agents/",
+    "registration": "AgentRegistry",
+    "config_source": "agent.json + prompt-system.md"
+  },
+  "evaluation_targets": {
+    "task_success_rate": 0.9,
+    "hallucination_rate_max": 0.05,
+    "csat_min": 4.5,
+    "latency_p95_seconds": 3,
+    "cost_per_query_max_usd": 0.05
+  }
+}

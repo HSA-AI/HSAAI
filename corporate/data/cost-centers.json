@@ -1,0 +1,181 @@
+{
+  "schema": "hsaai.corporate.cost-centers.v1",
+  "count": 25,
+  "cost_centers": [
+    {
+      "id": "CC-EXEC-001",
+      "department": "EXEC",
+      "name": "EXEC Department Cost Center",
+      "bu_ref": null,
+      "approver_role": "Department Head"
+    },
+    {
+      "id": "CC-FIN-002",
+      "department": "FIN",
+      "name": "FIN Department Cost Center",
+      "bu_ref": null,
+      "approver_role": "Department Head"
+    },
+    {
+      "id": "CC-ACC-003",
+      "department": "ACC",
+      "name": "ACC Department Cost Center",
+      "bu_ref": null,
+      "approver_role": "Department Head"
+    },
+    {
+      "id": "CC-TRE-004",
+      "department": "TRE",
+      "name": "TRE Department Cost Center",
+      "bu_ref": null,
+      "approver_role": "Department Head"
+    },
+    {
+      "id": "CC-PROC-005",
+      "department": "PROC",
+      "name": "PROC Department Cost Center",
+      "bu_ref": null,
+      "approver_role": "Department Head"
+    },
+    {
+      "id": "CC-SCM-006",
+      "department": "SCM",
+      "name": "SCM Department Cost Center",
+      "bu_ref": null,
+      "approver_role": "Department Head"
+    },
+    {
+      "id": "CC-MFG-007",
+      "department": "MFG",
+      "name": "MFG Department Cost Center",
+      "bu_ref": null,
+      "approver_role": "Department Head"
+    },
+    {
+      "id": "CC-PROD-008",
+      "department": "PROD",
+      "name": "PROD Department Cost Center",
+      "bu_ref": null,
+      "approver_role": "Department Head"
+    },
+    {
+      "id": "CC-WRH-009",
+      "department": "WRH",
+      "name": "WRH Department Cost Center",
+      "bu_ref": null,
+      "approver_role": "Department Head"
+    },
+    {
+      "id": "CC-LOG-010",
+      "department": "LOG",
+      "name": "LOG Department Cost Center",
+      "bu_ref": null,
+      "approver_role": "Department Head"
+    },
+    {
+      "id": "CC-DIST-011",
+      "department": "DIST",
+      "name": "DIST Department Cost Center",
+      "bu_ref": null,
+      "approver_role": "Department Head"
+    },
+    {
+      "id": "CC-SALES-012",
+      "department": "SALES",
+      "name": "SALES Department Cost Center",
+      "bu_ref": null,
+      "approver_role": "Department Head"
+    },
+    {
+      "id": "CC-MKT-013",
+      "department": "MKT",
+      "name": "MKT Department Cost Center",
+      "bu_ref": null,
+      "approver_role": "Department Head"
+    },
+    {
+      "id": "CC-HR-014",
+      "department": "HR",
+      "name": "HR Department Cost Center",
+      "bu_ref": null,
+      "approver_role": "Department Head"
+    },
+    {
+      "id": "CC-LEG-015",
+      "department": "LEG",
+      "name": "LEG Department Cost Center",
+      "bu_ref": null,
+      "approver_role": "Department Head"
+    },
+    {
+      "id": "CC-AUD-016",
+      "department": "AUD",
+      "name": "AUD Department Cost Center",
+      "bu_ref": null,
+      "approver_role": "Department Head"
+    },
+    {
+      "id": "CC-COMP-017",
+      "department": "COMP",
+      "name": "COMP Department Cost Center",
+      "bu_ref": null,
+      "approver_role": "Department Head"
+    },
+    {
+      "id": "CC-RISK-018",
+      "department": "RISK",
+      "name": "RISK Department Cost Center",
+      "bu_ref": null,
+      "approver_role": "Department Head"
+    },
+    {
+      "id": "CC-IT-019",
+      "department": "IT",
+      "name": "IT Department Cost Center",
+      "bu_ref": null,
+      "approver_role": "Department Head"
+    },
+    {
+      "id": "CC-SEC-020",
+      "department": "SEC",
+      "name": "SEC Department Cost Center",
+      "bu_ref": null,
+      "approver_role": "Department Head"
+    },
+    {
+      "id": "CC-DATA-021",
+      "department": "DATA",
+      "name": "DATA Department Cost Center",
+      "bu_ref": null,
+      "approver_role": "Department Head"
+    },
+    {
+      "id": "CC-INN-022",
+      "department": "INN",
+      "name": "INN Department Cost Center",
+      "bu_ref": null,
+      "approver_role": "Department Head"
+    },
+    {
+      "id": "CC-CSVC-023",
+      "department": "CSVC",
+      "name": "CSVC Department Cost Center",
+      "bu_ref": null,
+      "approver_role": "Department Head"
+    },
+    {
+      "id": "CC-QA-024",
+      "department": "QA",
+      "name": "QA Department Cost Center",
+      "bu_ref": null,
+      "approver_role": "Department Head"
+    },
+    {
+      "id": "CC-RND-025",
+      "department": "RND",
+      "name": "RND Department Cost Center",
+      "bu_ref": null,
+      "approver_role": "Department Head"
+    }
+  ]
+}

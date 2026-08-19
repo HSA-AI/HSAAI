@@ -1,0 +1,28 @@
+# Tool registry — Sales Agent
+apiVersion: hsaaiv2/v1
+kind: AgentTools
+metadata:
+  name: sales-agent-tools
+spec:
+  agentId: AGENT-SALES
+  tools:
+    - id: rag_search
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: crm_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: power_bi_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: create_opportunity
+      enabled: true
+      audit: true
+      human_approval: true
+  defaultTimeout: 30s
+  retryPolicy:
+    maxRetries: 2
+    backoff: exponential

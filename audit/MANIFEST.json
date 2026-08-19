@@ -1,0 +1,13 @@
+{
+  "schema": "hsaai.audit.manifest.v1",
+  "module": "audit",
+  "version": "7.0.0",
+  "total_submodules": 6,
+  "retention_years": 7,
+  "backward_compatible_with": [
+    "services/backend_core/security/audit.py",
+    "services/backend_core/security/siem_sink.py",
+    "infrastructure/loki/",
+    "enterprise/internal-audit/"
+  ]
+}

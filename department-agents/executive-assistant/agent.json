@@ -1,0 +1,42 @@
+{
+  "schema": "hsaai.department-agent.v1",
+  "agent_id": "AGENT-EXEC-ASSISTANT",
+  "name_ar": "المساعد التنفيذي",
+  "name_en": "Executive Assistant",
+  "directory": "executive-assistant",
+  "department_ref": "DEPT-CEO",
+  "role_ar": "مساعدة القيادة في جدولة الاجتماعات، إعداد الموجزات، ومتابعة المهام",
+  "role_en": "Assist leadership with scheduling, briefings, and task follow-up",
+  "model_tier": "standard",
+  "languages": [
+    "ar",
+    "en"
+  ],
+  "tools": [
+    "rag_search",
+    "m365_calendar",
+    "m365_email",
+    "teams_notify",
+    "sharepoint_query"
+  ],
+  "safety": {
+    "human_in_the_loop": true,
+    "audit_all_calls": true,
+    "pii_detection": true,
+    "prompt_firewall": true,
+    "constitutional_ai": true,
+    "kill_switch": true
+  },
+  "runtime": {
+    "service": "services/multi_agents/",
+    "registration": "AgentRegistry",
+    "config_source": "agent.json + prompt-system.md"
+  },
+  "evaluation_targets": {
+    "task_success_rate": 0.9,
+    "hallucination_rate_max": 0.05,
+    "csat_min": 4.5,
+    "latency_p95_seconds": 3,
+    "cost_per_query_max_usd": 0.05
+  }
+}

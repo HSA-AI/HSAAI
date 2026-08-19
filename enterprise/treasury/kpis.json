@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.kpis.v1",
+  "department_id": "DEPT-TRE",
+  "department": "Treasury",
+  "kpis": [
+    {
+      "id": "KPI-DEPT-TRE-01",
+      "name": "Cash Buffer Days",
+      "frequency": "monthly",
+      "source_integration": "sap"
+    },
+    {
+      "id": "KPI-DEPT-TRE-02",
+      "name": "FX Exposure Coverage %",
+      "frequency": "monthly",
+      "source_integration": "oracle-erp"
+    },
+    {
+      "id": "KPI-DEPT-TRE-03",
+      "name": "Cost of Funds",
+      "frequency": "monthly",
+      "source_integration": "sql-server"
+    },
+    {
+      "id": "KPI-DEPT-TRE-04",
+      "name": "Days Cash on Hand",
+      "frequency": "monthly",
+      "source_integration": "sql-server"
+    }
+  ],
+  "dashboard_ref": "../../monitoring/dashboards/dept-tre.json"
+}

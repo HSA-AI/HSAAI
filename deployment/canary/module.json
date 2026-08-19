@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.deployment.module.v1",
+  "name": "canary",
+  "name_full": "Canary Deployments",
+  "description": "Canary deployment via Istio traffic shifting.",
+  "implementation_ref": "infrastructure/service-mesh/",
+  "status": "production",
+  "backward_compatible": true
+}

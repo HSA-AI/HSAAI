@@ -1,0 +1,25 @@
+# Agent binding for Quality Assurance department
+apiVersion: hsaaiv2/v1
+kind: DepartmentAgentBinding
+metadata:
+  name: quality-assurance-agent-binding
+  labels:
+    department: DEPT-QA
+    department-name: "Quality Assurance"
+spec:
+  departmentId: DEPT-QA
+  departmentName: Quality Assurance
+  agentId: AGENT-QUALITY
+  agentRef: ../../department-agents/quality/
+  autoInvoke: false
+  humanInTheLoop: true
+  auditAllCalls: true
+  allowedTools:
+    - rag_search
+    - knowledge_graph_query
+    - llm_complete
+    - mcp_tool_call
+  forbiddenActions:
+    - delete_record
+    - drop_table
+    - financial_posting_without_approval

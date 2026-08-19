@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.kpis.v1",
+  "department_id": "DEPT-QA",
+  "department": "Quality Assurance",
+  "kpis": [
+    {
+      "id": "KPI-DEPT-QA-01",
+      "name": "Defect Rate PPM",
+      "frequency": "monthly",
+      "source_integration": "mes"
+    },
+    {
+      "id": "KPI-DEPT-QA-02",
+      "name": "Customer Complaints %",
+      "frequency": "monthly",
+      "source_integration": "sap"
+    },
+    {
+      "id": "KPI-DEPT-QA-03",
+      "name": "Quality Audit Score",
+      "frequency": "monthly",
+      "source_integration": "power-bi"
+    },
+    {
+      "id": "KPI-DEPT-QA-04",
+      "name": "ISO Compliance %",
+      "frequency": "monthly",
+      "source_integration": "sharepoint"
+    }
+  ],
+  "dashboard_ref": "../../monitoring/dashboards/dept-qa.json"
+}

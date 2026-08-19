@@ -1,0 +1,11 @@
+{
+  "schema": "hsaai.compliance.standard.v1",
+  "standard": "nist-csf",
+  "name": "NIST Cybersecurity Framework",
+  "description": "Identify, Protect, Detect, Respond, Recover functions.",
+  "owner": "CISO",
+  "status": "Aligned",
+  "mapping": "CSF controls mapping",
+  "last_assessment": "2026-06-01",
+  "next_assessment": "2026-12-01"
+}

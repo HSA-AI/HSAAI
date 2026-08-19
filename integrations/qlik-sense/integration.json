@@ -1,0 +1,31 @@
+{
+  "schema": "hsaai.integration.v1",
+  "integration_id": "INT-QLIK",
+  "name": "Qlik Sense",
+  "directory": "qlik-sense",
+  "category": "bi",
+  "category_name": "Business Intelligence",
+  "vendor": "Qlik",
+  "protocol": "REST + Engine API",
+  "authentication": "JWT + Certificates",
+  "status": "production",
+  "connector_ref": "packages/common/connectors/qlik/",
+  "departments": [
+    "DEPT-FIN"
+  ],
+  "security": {
+    "encryption_in_transit": "TLS 1.3",
+    "encryption_at_rest": "AES-256",
+    "audit": "HMAC-signed",
+    "rate_limiting": true,
+    "circuit_breaker": true,
+    "pii_detection": "Microsoft Presidio"
+  },
+  "observability": {
+    "metrics": "Prometheus",
+    "logs": "Loki",
+    "traces": "Tempo (OpenTelemetry)",
+    "dashboards": "Grafana"
+  },
+  "backward_compatible": true
+}

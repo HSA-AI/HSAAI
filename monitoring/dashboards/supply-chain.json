@@ -1,0 +1,35 @@
+{
+  "schema": "hsaai.monitoring.dashboard.v1",
+  "dashboard": "supply-chain",
+  "title": "Supply-Chain Dashboard",
+  "owner": "VP Supply-Chain",
+  "refresh_interval": "30s",
+  "panels": [
+    {
+      "id": 1,
+      "title": "KPI Summary",
+      "type": "stat"
+    },
+    {
+      "id": 2,
+      "title": "Trend (30d)",
+      "type": "timeseries"
+    },
+    {
+      "id": 3,
+      "title": "Department Heatmap",
+      "type": "heatmap"
+    },
+    {
+      "id": 4,
+      "title": "Top Issues",
+      "type": "table"
+    }
+  ],
+  "data_sources": [
+    "Prometheus",
+    "Loki",
+    "PostgreSQL"
+  ],
+  "grafana_ref": "infrastructure/dashboards/supply-chain.json"
+}

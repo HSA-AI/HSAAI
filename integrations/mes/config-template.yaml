@@ -1,0 +1,44 @@
+# Configuration template for Manufacturing Execution System (MES)
+apiVersion: hsaaiv2/v1
+kind: IntegrationConfig
+metadata:
+  name: mes-config
+  labels:
+    integration: INT-MES
+    category: manufacturing
+    vendor: Multiple
+spec:
+  enabled: true
+  endpoint: "${INT-MES_ENDPOINT}"
+  credentials:
+    source: vault
+    path: "secret/hsaai/integrations/mes"
+  auth:
+    type: oauth2
+    clientId: "${INT-MES_CLIENT_ID}"
+    clientSecret: "vault:mes/client-secret"
+    tenant: "${INT-MES_TENANT}"
+  pool:
+    maxConnections: 20
+    idleTimeout: 300s
+  retry:
+    maxRetries: 3
+    backoff: exponential
+    initialDelay: 1s
+    maxDelay: 30s
+  circuitBreaker:
+    enabled: true
+    failureThreshold: 5
+    recoveryTime: 60s
+  rateLimit:
+    requestsPerSecond: 50
+    burst: 100
+  observability:
+    metricsEnabled: true
+    logsEnabled: true
+    tracesEnabled: true
+    logLevel: info
+  security:
+    piiDetection: true
+    auditAll: true
+    tlsMinVersion: "1.3"

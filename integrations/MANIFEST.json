@@ -1,0 +1,330 @@
+{
+  "schema": "hsaai.integrations.manifest.v1",
+  "module": "integrations",
+  "version": "7.0.0",
+  "generated_at": "2026-07-13",
+  "total_integrations": 37,
+  "by_category": {
+    "erp": 4,
+    "hcm": 3,
+    "identity": 2,
+    "productivity": 8,
+    "bi": 3,
+    "database": 5,
+    "messaging": 2,
+    "api": 2,
+    "file": 2,
+    "server": 2,
+    "manufacturing": 3,
+    "crm": 1
+  },
+  "integrations": [
+    {
+      "id": "INT-SAP",
+      "directory": "sap",
+      "name": "SAP S/4HANA",
+      "category": "erp",
+      "vendor": "SAP",
+      "status": "production"
+    },
+    {
+      "id": "INT-SAP-ECC",
+      "directory": "sap-ecc",
+      "name": "SAP ECC",
+      "category": "erp",
+      "vendor": "SAP",
+      "status": "production"
+    },
+    {
+      "id": "INT-ORACLE-ERP",
+      "directory": "oracle-erp",
+      "name": "Oracle ERP Cloud",
+      "category": "erp",
+      "vendor": "Oracle",
+      "status": "production"
+    },
+    {
+      "id": "INT-D365",
+      "directory": "dynamics-365",
+      "name": "Microsoft Dynamics 365",
+      "category": "erp",
+      "vendor": "Microsoft",
+      "status": "production"
+    },
+    {
+      "id": "INT-SAP-SF",
+      "directory": "successfactors",
+      "name": "SAP SuccessFactors",
+      "category": "hcm",
+      "vendor": "SAP",
+      "status": "production"
+    },
+    {
+      "id": "INT-ORACLE-HCM",
+      "directory": "oracle-hcm",
+      "name": "Oracle HCM Cloud",
+      "category": "hcm",
+      "vendor": "Oracle",
+      "status": "production"
+    },
+    {
+      "id": "INT-MS-HR",
+      "directory": "dynamics-hr",
+      "name": "Microsoft Dynamics HR",
+      "category": "hcm",
+      "vendor": "Microsoft",
+      "status": "production"
+    },
+    {
+      "id": "INT-AD",
+      "directory": "active-directory",
+      "name": "Active Directory",
+      "category": "identity",
+      "vendor": "Microsoft",
+      "status": "production"
+    },
+    {
+      "id": "INT-AZURE-AD",
+      "directory": "azure-ad",
+      "name": "Azure Active Directory (Entra ID)",
+      "category": "identity",
+      "vendor": "Microsoft",
+      "status": "production"
+    },
+    {
+      "id": "INT-M365",
+      "directory": "m365",
+      "name": "Microsoft 365",
+      "category": "productivity",
+      "vendor": "Microsoft",
+      "status": "production"
+    },
+    {
+      "id": "INT-EXCHANGE",
+      "directory": "exchange",
+      "name": "Microsoft Exchange",
+      "category": "productivity",
+      "vendor": "Microsoft",
+      "status": "production"
+    },
+    {
+      "id": "INT-SHAREPOINT",
+      "directory": "sharepoint",
+      "name": "Microsoft SharePoint",
+      "category": "productivity",
+      "vendor": "Microsoft",
+      "status": "production"
+    },
+    {
+      "id": "INT-TEAMS",
+      "directory": "teams",
+      "name": "Microsoft Teams",
+      "category": "productivity",
+      "vendor": "Microsoft",
+      "status": "production"
+    },
+    {
+      "id": "INT-POWER-BI",
+      "directory": "power-bi",
+      "name": "Microsoft Power BI",
+      "category": "bi",
+      "vendor": "Microsoft",
+      "status": "production"
+    },
+    {
+      "id": "INT-TABLEAU",
+      "directory": "tableau",
+      "name": "Tableau",
+      "category": "bi",
+      "vendor": "Salesforce",
+      "status": "production"
+    },
+    {
+      "id": "INT-QLIK",
+      "directory": "qlik-sense",
+      "name": "Qlik Sense",
+      "category": "bi",
+      "vendor": "Qlik",
+      "status": "production"
+    },
+    {
+      "id": "INT-SQL-SERVER",
+      "directory": "sql-server",
+      "name": "Microsoft SQL Server",
+      "category": "database",
+      "vendor": "Microsoft",
+      "status": "production"
+    },
+    {
+      "id": "INT-ORACLE-DB",
+      "directory": "oracle-db",
+      "name": "Oracle Database",
+      "category": "database",
+      "vendor": "Oracle",
+      "status": "production"
+    },
+    {
+      "id": "INT-POSTGRES",
+      "directory": "postgresql",
+      "name": "PostgreSQL",
+      "category": "database",
+      "vendor": "PGDG",
+      "status": "production"
+    },
+    {
+      "id": "INT-MONGODB",
+      "directory": "mongodb",
+      "name": "MongoDB",
+      "category": "database",
+      "vendor": "MongoDB",
+      "status": "production"
+    },
+    {
+      "id": "INT-REDIS",
+      "directory": "redis",
+      "name": "Redis",
+      "category": "database",
+      "vendor": "Redis",
+      "status": "production"
+    },
+    {
+      "id": "INT-KAFKA",
+      "directory": "kafka",
+      "name": "Apache Kafka",
+      "category": "messaging",
+      "vendor": "Confluent",
+      "status": "production"
+    },
+    {
+      "id": "INT-RABBITMQ",
+      "directory": "rabbitmq",
+      "name": "RabbitMQ",
+      "category": "messaging",
+      "vendor": "VMware",
+      "status": "production"
+    },
+    {
+      "id": "INT-REST",
+      "directory": "rest-apis",
+      "name": "REST APIs",
+      "category": "api",
+      "vendor": "Generic",
+      "status": "production"
+    },
+    {
+      "id": "INT-GRAPHQL",
+      "directory": "graphql",
+      "name": "GraphQL",
+      "category": "api",
+      "vendor": "Generic",
+      "status": "production"
+    },
+    {
+      "id": "INT-SFTP",
+      "directory": "sftp",
+      "name": "SFTP",
+      "category": "file",
+      "vendor": "Generic",
+      "status": "production"
+    },
+    {
+      "id": "INT-FILE-SERVER",
+      "directory": "file-servers",
+      "name": "File Servers (SMB/NFS)",
+      "category": "file",
+      "vendor": "Generic",
+      "status": "production"
+    },
+    {
+      "id": "INT-WIN-SERVER",
+      "directory": "windows-servers",
+      "name": "Windows Server",
+      "category": "server",
+      "vendor": "Microsoft",
+      "status": "production"
+    },
+    {
+      "id": "INT-LINUX-SERVER",
+      "directory": "linux-servers",
+      "name": "Linux Server",
+      "category": "server",
+      "vendor": "Generic",
+      "status": "production"
+    },
+    {
+      "id": "INT-MES",
+      "directory": "mes",
+      "name": "Manufacturing Execution System (MES)",
+      "category": "manufacturing",
+      "vendor": "Multiple",
+      "status": "production"
+    },
+    {
+      "id": "INT-SCM",
+      "directory": "scm",
+      "name": "Supply Chain Management (SCM)",
+      "category": "manufacturing",
+      "vendor": "Multiple",
+      "status": "production"
+    },
+    {
+      "id": "INT-WMS",
+      "directory": "wms",
+      "name": "Warehouse Management System (WMS)",
+      "category": "manufacturing",
+      "vendor": "Multiple",
+      "status": "production"
+    },
+    {
+      "id": "INT-CRM",
+      "directory": "crm",
+      "name": "Customer Relationship Management (CRM)",
+      "category": "crm",
+      "vendor": "Multiple",
+      "status": "production"
+    },
+    {
+      "id": "INT-GWORKSPACE",
+      "directory": "google-workspace",
+      "name": "Google Workspace",
+      "category": "productivity",
+      "vendor": "Google",
+      "status": "production"
+    },
+    {
+      "id": "INT-SERVICENOW",
+      "directory": "servicenow",
+      "name": "ServiceNow (ITSM)",
+      "category": "productivity",
+      "vendor": "ServiceNow",
+      "status": "production"
+    },
+    {
+      "id": "INT-JIRA",
+      "directory": "jira-service-mgmt",
+      "name": "Jira Service Management",
+      "category": "productivity",
+      "vendor": "Atlassian",
+      "status": "production"
+    },
+    {
+      "id": "INT-OPENTEXT",
+      "directory": "opentext",
+      "name": "OpenText DMS",
+      "category": "productivity",
+      "vendor": "OpenText",
+      "status": "production"
+    }
+  ],
+  "connector_framework": "packages/common/connectors/",
+  "backward_compatible_with": [
+    "packages/common/connectors/",
+    "packages/common/base.py",
+    "packages/common/registry.py",
+    "packages/common/router.py",
+    "packages/common/sdk.py",
+    "services/backend_core/integrations/"
+  ],
+  "owner": "Group CIO",
+  "classification": "Internal"
+}

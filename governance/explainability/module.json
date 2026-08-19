@@ -1,0 +1,14 @@
+{
+  "schema": "hsaai.governance.module.v1",
+  "name": "explainability",
+  "name_full": "Explainability",
+  "description": "AI decision explainability via SHAP, LIME, and chain-of-thought.",
+  "implementation_ref": "ai-platform/ai-governance/, services/governance/",
+  "frameworks": [
+    "ISO 27001",
+    "ISO 42001",
+    "NIST AI RMF"
+  ],
+  "status": "production",
+  "backward_compatible": true
+}

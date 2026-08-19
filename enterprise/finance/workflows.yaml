@@ -1,0 +1,35 @@
+# Top-level workflows for Finance department
+apiVersion: hsaaiv2/v1
+kind: DepartmentWorkflows
+metadata:
+  name: finance-workflows
+spec:
+  departmentId: DEPT-FIN
+  workflowEngine: services/workflow_engine/
+  workflows:
+    - id: WF-DEPT-FIN-001
+      name: "Daily Briefing"
+      trigger: cron
+      schedule: "0 7 * * *"
+      steps:
+        - fetch_kpis
+        - generate_briefing
+        - notify_department_head
+    - id: WF-DEPT-FIN-002
+      name: "Issue Escalation"
+      trigger: event
+      event: issue_detected
+      steps:
+        - classify_issue
+        - route_to_agent
+        - notify_approvers
+        - track_resolution
+    - id: WF-DEPT-FIN-003
+      name: "Monthly Report"
+      trigger: cron
+      schedule: "0 6 1 * *"
+      steps:
+        - aggregate_monthly_data
+        - generate_report
+        - submit_for_review
+        - distribute

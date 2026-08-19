@@ -1,0 +1,14 @@
+{
+  "schema": "hsaai.governance.module.v1",
+  "name": "decision-logs",
+  "name_full": "Decision Logs",
+  "description": "Immutable decision logs with HMAC signatures.",
+  "implementation_ref": "services/backend_core/security/audit.py, services/governance/",
+  "frameworks": [
+    "ISO 27001",
+    "ISO 42001",
+    "NIST AI RMF"
+  ],
+  "status": "production",
+  "backward_compatible": true
+}

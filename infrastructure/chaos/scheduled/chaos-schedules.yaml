@@ -1,0 +1,195 @@
+# HSAAI Scheduled Chaos Engineering (Phase 3 — Scale)
+#
+# FIX v2.3 (Phase 3): Schedules chaos experiments to run automatically on a
+# regular cadence (daily + weekly) to continuously verify the platform's
+# resilience. Experiments are non-destructive during business hours and
+# more aggressive during maintenance windows.
+#
+# Prerequisites:
+#   1. Install Litmus Chaos:
+#      kubectl apply -f https://litmuschaos.github.io/litmus/litmus-operator.yaml
+#   2. Create the chaos service account:
+#      kubectl apply -f infrastructure/chaos/rbac.yaml
+#   3. Apply these schedules:
+#      kubectl apply -f infrastructure/chaos/scheduled/
+
+# ═══════════════════════════════════════════════════════════════
+# ChaosSchedule 1: Daily backend pod kill (02:00 UTC — low traffic)
+# Verifies that backend pods auto-recover and traffic routes correctly.
+# ═══════════════════════════════════════════════════════════════
+apiVersion: litmuschaos.io/v1alpha1
+kind: ChaosSchedule
+metadata:
+  name: daily-backend-pod-kill
+  namespace: hsaai
+  labels:
+    app.kubernetes.io/part-of: hsaai
+    chaos-type: pod-kill
+spec:
+  schedule:
+    repeat:
+      timeRange:
+        startTime: "2026-01-01T02:00:00Z"
+        endTime: "2026-12-31T02:30:00Z"
+      every: "1d"
+  engineTemplate:
+    metadata:
+      name: daily-backend-pod-kill-engine
+    spec:
+      appinfo:
+        appns: hsaai
+        applabel: "app=backend"
+      chaosServiceAccount: litmus-admin
+      experiments:
+        - name: pod-delete
+          spec:
+            components:
+              env:
+                - name: TOTAL_CHAOS_DURATION
+                  value: "30"
+                - name: CHAOS_INTERVAL
+                  value: "10"
+                - name: FORCE
+                  value: "false"
+                - name: PODS_AFFECTED_PERC
+                  value: "25"  # kill 25% of backend pods (1 of 4)
+              configMaps:
+                - name: health-check
+                  data:
+                    health_check_url: "http://api-gateway:8080/health"
+                    expected_status: "200"
+            probe:
+              - name: health-check-probe
+                type: httpProbe
+                httpProbe/inputs:
+                  url: "http://api-gateway:8080/health"
+                  method:
+                    get:
+                      criteria: "=="
+                      responseCode: "200"
+                mode: Continuous
+                runProperties:
+                  probeTimeout: 5
+                  interval: 5
+                  probePollingInterval: 5
+---
+# ═══════════════════════════════════════════════════════════════
+# ChaosSchedule 2: Weekly network latency injection (Sunday 03:00 UTC)
+# Injects 500ms latency between backend and database to verify
+# circuit breakers + timeouts work correctly.
+# ═══════════════════════════════════════════════════════════════
+apiVersion: litmuschaos.io/v1alpha1
+kind: ChaosSchedule
+metadata:
+  name: weekly-network-latency
+  namespace: hsaai
+  labels:
+    app.kubernetes.io/part-of: hsaai
+    chaos-type: network-latency
+spec:
+  schedule:
+    repeat:
+      timeRange:
+        startTime: "2026-01-01T03:00:00Z"
+        endTime: "2026-12-31T03:30:00Z"
+      every: "7d"  # weekly
+  engineTemplate:
+    metadata:
+      name: weekly-network-latency-engine
+    spec:
+      appinfo:
+        appns: hsaai
+        applabel: "app=backend"
+      chaosServiceAccount: litmus-admin
+      experiments:
+        - name: pod-network-latency
+          spec:
+            components:
+              env:
+                - name: TOTAL_CHAOS_DURATION
+                  value: "120"  # 2 minutes
+                - name: NETWORK_LATENCY
+                  value: "500"  # 500ms latency
+                - name: NETWORK_INTERFACE
+                  value: "eth0"
+                - name: TARGET_CONTAINER
+                  value: "postgres"
+---
+# ═══════════════════════════════════════════════════════════════
+# ChaosSchedule 3: Daily Redis failover (03:00 UTC)
+# Kills the Redis master to verify Sentinel failover works.
+# ═══════════════════════════════════════════════════════════════
+apiVersion: litmuschaos.io/v1alpha1
+kind: ChaosSchedule
+metadata:
+  name: daily-redis-failover
+  namespace: hsaai
+  labels:
+    app.kubernetes.io/part-of: hsaai
+    chaos-type: redis-failover
+spec:
+  schedule:
+    repeat:
+      timeRange:
+        startTime: "2026-01-01T03:00:00Z"
+        endTime: "2026-12-31T03:15:00Z"
+      every: "1d"
+  engineTemplate:
+    metadata:
+      name: daily-redis-failover-engine
+    spec:
+      appinfo:
+        appns: hsaai
+        applabel: "app=redis"
+      chaosServiceAccount: litmus-admin
+      experiments:
+        - name: pod-delete
+          spec:
+            components:
+              env:
+                - name: TOTAL_CHAOS_DURATION
+                  value: "60"
+                - name: CHAOS_INTERVAL
+                  value: "30"
+                - name: FORCE
+                  value: "true"  # force kill to test failover
+                - name: PODS_AFFECTED_PERC
+                  value: "33"  # kill 1 of 3 Redis nodes
+---
+# ═══════════════════════════════════════════════════════════════
+# ChaosSchedule 4: Weekly disk pressure (Saturday 23:00 UTC)
+# Fills disk to 90% on a Qdrant node to verify disk alerts fire
+# and the cluster handles storage pressure gracefully.
+# ═══════════════════════════════════════════════════════════════
+apiVersion: litmuschaos.io/v1alpha1
+kind: ChaosSchedule
+metadata:
+  name: weekly-disk-pressure
+  namespace: hsaai
+  labels:
+    app.kubernetes.io/part-of: hsaai
+    chaos-type: disk-pressure
+spec:
+  schedule:
+    repeat:
+      timeRange:
+        startTime: "2026-01-01T23:00:00Z"
+        endTime: "2026-12-31T23:30:00Z"
+      every: "7d"
+  engineTemplate:
+    metadata:
+      name: weekly-disk-pressure-engine
+    spec:
+      appinfo:
+        appns: hsaai
+        applabel: "app=qdrant"
+      chaosServiceAccount: litmus-admin
+      experiments:
+        - name: disk-fill
+          spec:
+            components:
+              env:
+                - name: TOTAL_CHAOS_DURATION
+                  value: "300"  # 5 minutes
+                - name: FILL_PERCENTAGE
+                  value: "90"  # fill to 90%

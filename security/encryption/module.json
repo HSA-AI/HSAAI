@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.security.module.v1",
+  "name": "encryption",
+  "name_full": "Encryption (at-rest + in-transit)",
+  "description": "AES-256 at rest (PostgreSQL, MinIO, Redis). TLS 1.3 in transit.",
+  "implementation_ref": "services/backend_core/security/encryption.py",
+  "status": "production",
+  "backward_compatible": true
+}

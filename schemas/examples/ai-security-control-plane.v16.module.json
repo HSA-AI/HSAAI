@@ -1,0 +1,274 @@
+{
+  "schema": "hsaai.security.module.specification.v1.0",
+  "module_id": "ai-security-control-plane",
+  "name": "AI Security Control Plane",
+  "name_en": "AI Security Control Plane",
+  "name_ar": "مستوى التحكم بأمن الذكاء الاصطناعي",
+  "version": "16.0.0",
+  "description": "Enterprise AI Security Control Plane providing adversarial input detection, DLP scanning, model signing, tamper verification, and runtime security for all AI operations — serves as the central defense layer protecting AI assets from input, output, and model threats across the HSAAI platform",
+  "category": "security",
+  "criticality": "critical",
+  "security_level": "restricted",
+  "status": "production",
+  "security_analysis": {
+    "role": "Security Control Plane — protects all AI services, models, data, and operations from security threats",
+    "assets_protected": [
+      "AI models (LLM, embedding, reranker)",
+      "Training datasets",
+      "Vector database (Qdrant)",
+      "Knowledge base documents",
+      "AI agent configurations",
+      "Prompt templates",
+      "User PII and sensitive data",
+      "API endpoints"
+    ],
+    "threats_faced": {
+      "input_threats": ["prompt_injection", "jailbreak_attempts", "malicious_inputs", "data_poisoning"],
+      "output_threats": ["sensitive_data_leakage", "unsafe_responses", "policy_violations"],
+      "model_threats": ["model_tampering", "unauthorized_replacement", "model_extraction"]
+    },
+    "integration_points": [
+      "ai-core (request interception)",
+      "llm-gateway (input/output filtering)",
+      "rag-engine (retrieval security)",
+      "agent-system (agent behavior monitoring)",
+      "model-registry (model signing)",
+      "governance-control-plane (policy enforcement)",
+      "audit-service (security event logging)"
+    ],
+    "module_type": "Security Control Plane / AI Protection Service"
+  },
+  "security_components": [
+    {
+      "id": "adversarial-detector",
+      "name": "Adversarial Input Detector",
+      "description": "Detects adversarial inputs, prompt injection, and jailbreak attempts",
+      "responsibility": [
+        "Detect prompt injection patterns",
+        "Identify jailbreak attempts",
+        "Analyze malicious input patterns",
+        "Block adversarial requests"
+      ],
+      "detection_method": "Pattern matching + ML-based classification + heuristic rules",
+      "response_action": "block_request + log_security_event + notify_security_team",
+      "dependencies": ["prompt-firewall", "ml-models"],
+      "failure_behavior": "fail-safe — block request if detector unavailable"
+    },
+    {
+      "id": "dlp-scanner",
+      "name": "Data Loss Prevention Scanner",
+      "description": "Detects and prevents sensitive data leakage in AI inputs and outputs",
+      "responsibility": [
+        "Detect PII in inputs and outputs",
+        "Classify data sensitivity",
+        "Filter sensitive information",
+        "Redact PII before processing"
+      ],
+      "detection_method": "Microsoft Presidio + custom regex patterns + ML classifiers",
+      "response_action": "redact_pii + log_event + block_if_restricted",
+      "dependencies": ["pii-detector", "presidio"],
+      "failure_behavior": "block — if DLP unavailable, block sensitive operations"
+    },
+    {
+      "id": "model-signer",
+      "name": "Model Signer",
+      "description": "Cryptographic model signing for integrity verification",
+      "responsibility": [
+        "Sign models with Vault-managed keys",
+        "Verify model signatures at load time",
+        "Track model versions",
+        "Protect supply chain"
+      ],
+      "detection_method": "RSA-4096 digital signatures + SHA-256 hashing",
+      "response_action": "reject_unsigned_model + log_security_event",
+      "dependencies": ["vault", "model-registry"],
+      "failure_behavior": "block — unsigned models cannot be loaded"
+    },
+    {
+      "id": "tamper-check",
+      "name": "Runtime Tamper Detector",
+      "description": "Runtime integrity verification and file integrity monitoring",
+      "responsibility": [
+        "Verify runtime integrity",
+        "Monitor file changes",
+        "Detect unauthorized modifications",
+        "Alert on tampering"
+      ],
+      "detection_method": "File hash comparison + kernel-level monitoring + behavior analysis",
+      "response_action": "quarantine + alert_security + trigger_incident",
+      "dependencies": ["falco", "suricata"],
+      "failure_behavior": "alert — log alert but continue operation"
+    }
+  ],
+  "ai_threat_protection": {
+    "input_threats": {
+      "prompt_injection": {
+        "detection": "regex patterns + ML classification + instruction marker detection",
+        "prevention": "sanitize_input + block_detected_injections",
+        "severity": "high"
+      },
+      "jailbreak_attempts": {
+        "detection": "known jailbreak template matching + behavioral analysis",
+        "prevention": "block_request + log_security_event",
+        "severity": "critical"
+      },
+      "malicious_inputs": {
+        "detection": "input validation + schema enforcement + content filtering",
+        "prevention": "reject_input + log_event",
+        "severity": "medium"
+      },
+      "data_poisoning": {
+        "detection": "statistical anomaly detection in training data",
+        "prevention": "quarantine_suspicious_data + alert_data_team",
+        "severity": "high"
+      }
+    },
+    "output_threats": {
+      "sensitive_data_leakage": {
+        "detection": "DLP scanning on all AI outputs",
+        "prevention": "redact_pii + block_restricted_output",
+        "severity": "critical"
+      },
+      "unsafe_responses": {
+        "detection": "content moderation + safety layer checks",
+        "prevention": "filter_response + log_safety_violation",
+        "severity": "high"
+      },
+      "policy_violations": {
+        "detection": "OPA policy evaluation on outputs",
+        "prevention": "block_violation + log_governance_event",
+        "severity": "medium"
+      }
+    },
+    "model_threats": {
+      "model_tampering": {
+        "detection": "signature verification at load + runtime integrity checks",
+        "prevention": "reject_tampered_model + quarantine + alert",
+        "severity": "critical"
+      },
+      "unauthorized_replacement": {
+        "detection": "model registry validation + deployment approval required",
+        "prevention": "block_unauthorized_deployment",
+        "severity": "critical"
+      },
+      "model_extraction": {
+        "detection": "rate limiting + query pattern analysis + API access monitoring",
+        "prevention": "throttle_requests + block_suspicious_patterns",
+        "severity": "high"
+      }
+    }
+  },
+  "ai_security_lifecycle": {
+    "model_security": {
+      "registration": "All models registered in Model Registry with metadata",
+      "validation": "Automated security scan before approval",
+      "signing": "RSA-4096 signature with Vault-managed keys",
+      "deployment_approval": "Multi-level approval (dev → staging → production)",
+      "runtime_verification": "Signature checked at every model load"
+    },
+    "data_security": {
+      "classification": "Automatic classification (public, internal, confidential, restricted)",
+      "encryption": "AES-256 at rest, TLS 1.3 in transit",
+      "access_control": "RBAC + ABAC + OPA policy enforcement",
+      "leakage_prevention": "DLP scanning + PII redaction + output filtering"
+    },
+    "runtime_security": {
+      "monitoring": "Real-time monitoring of all AI operations",
+      "detection": "Anomaly detection + behavioral analysis + pattern matching",
+      "blocking": "Automatic blocking of malicious requests",
+      "response": "Alert generation + incident trigger + audit logging"
+    }
+  },
+  "security_metrics_kpis": [
+    {"metric_name": "Attack Detection Rate", "target": "> 99%", "measurement_method": "Detected attacks / total attacks", "data_source": "adversarial_detector", "alert_threshold": "< 95%"},
+    {"metric_name": "False Positive Rate", "target": "< 1%", "measurement_method": "False positives / total blocked", "data_source": "security_events", "alert_threshold": "> 5%"},
+    {"metric_name": "DLP Coverage", "target": "100%", "measurement_method": "Scanned operations / total operations", "data_source": "dlp_scanner", "alert_threshold": "< 100%"},
+    {"metric_name": "Security Events", "target": "< 10/day", "measurement_method": "Count of security events per day", "data_source": "security_telemetry", "alert_threshold": "> 50/day"},
+    {"metric_name": "Model Integrity Status", "target": "100% verified", "measurement_method": "Signed models / total models", "data_source": "model_signer", "alert_threshold": "< 100%"}
+  ],
+  "zero_trust_model": {
+    "authentication": {
+      "type": "OAuth2/OIDC",
+      "keycloak_compatible": true,
+      "mfa_required": true,
+      "token_validation": "RS256 + JWKS"
+    },
+    "authorization": {
+      "rbac": true,
+      "abac": true,
+      "permissions": [
+        "security:view",
+        "security:scan",
+        "security:admin",
+        "model:verify",
+        "dlp:configure",
+        "audit:security"
+      ],
+      "default_deny": true
+    },
+    "security_controls": {
+      "least_privilege": true,
+      "tenant_isolation": true,
+      "encryption_at_rest": "AES-256",
+      "encryption_in_transit": "TLS 1.3",
+      "audit_logging": "HMAC-signed, 7-year retention",
+      "secret_management": "HashiCorp Vault"
+    }
+  },
+  "ai_security_governance": {
+    "risk_classification": {
+      "high_risk_ai": "Models affecting hiring, credit, legal — require extra approval",
+      "medium_risk_ai": "Models affecting business operations — standard approval",
+      "low_risk_ai": "Models for internal tools — simplified approval"
+    },
+    "security_policies": [
+      "All AI inputs scanned for adversarial content",
+      "All AI outputs scanned for PII leakage",
+      "All models signed before deployment",
+      "All security events logged and audited",
+      "All model changes require approval"
+    ],
+    "approval_workflow": "Security review → Governance approval → Deployment",
+    "compliance_evidence": "Automated evidence collection for ISO 27001, SOC 2, NIST AI RMF",
+    "security_reports": "Daily security summary, weekly threat report, monthly compliance report"
+  },
+  "runtime_architecture": {
+    "runtime_ref": "services/security/main.py",
+    "api_endpoints": [
+      {"endpoint": "/v1/security/scan", "method": "POST", "description": "Scan input for threats"},
+      {"endpoint": "/v1/security/verify-model", "method": "POST", "description": "Verify model signature"},
+      {"endpoint": "/v1/security/events", "method": "GET", "description": "Query security events"},
+      {"endpoint": "/v1/security/dlp", "method": "POST", "description": "DLP scan"}
+    ],
+    "security_middleware": "Request interceptor on all AI API calls",
+    "event_processing": "Real-time security event stream via Kafka",
+    "health_checks": {"liveness": "/health/live", "readiness": "/health/ready"},
+    "deployment_requirements": {"cpu": "1000m", "memory": "2Gi", "replicas": 3}
+  },
+  "integrations": {
+    "internal": [
+      "ai-governance", "ai-monitoring", "ai-observability",
+      "ai-core", "model-registry", "llm-gateway", "rag-engine", "agent-system"
+    ],
+    "external": ["siem", "vault", "vulnerability-scanner", "opa"]
+  },
+  "incident_response": {
+    "threat_detection": "Real-time detection via adversarial detector + anomaly detector",
+    "alert_generation": "Automatic alert to security team via PagerDuty + Slack",
+    "blocking_actions": ["block_request", "disable_agent", "quarantine_model", "revoke_token"],
+    "investigation_logs": "Full audit trail with trace correlation for RCA",
+    "recovery_process": "Identify → Contain → Eradicate → Recover → Postmortem"
+  },
+  "supply_chain_security": {
+    "dependency_scanning": "Snyk + Trivy on every build",
+    "container_security": "Trivy container scan + signed images",
+    "model_artifact_verification": "SHA-256 hash + RSA-4096 signature verification",
+    "signature_validation": "All artifacts signed with Vault-managed keys"
+  },
+  "compatibility": {
+    "backward_compatible": true,
+    "api_version": "v1",
+    "migration_required": false,
+    "deprecated_features": []
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "schema": "hsaai.governance.module.v1",
+  "name": "risk-management",
+  "name_full": "Risk Management",
+  "description": "Enterprise Risk Management framework and risk register.",
+  "implementation_ref": "services/backend_core/enterprise_os/, enterprise/risk-management/, corporate/governance/",
+  "frameworks": [
+    "ISO 27001",
+    "ISO 42001",
+    "NIST AI RMF"
+  ],
+  "status": "production",
+  "backward_compatible": true
+}

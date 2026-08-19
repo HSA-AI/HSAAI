@@ -1,0 +1,33 @@
+{
+  "schema": "hsaai.integration.v1",
+  "integration_id": "INT-WMS",
+  "name": "Warehouse Management System (WMS)",
+  "directory": "wms",
+  "category": "manufacturing",
+  "category_name": "Manufacturing & Operations",
+  "vendor": "Multiple",
+  "protocol": "REST + ASN",
+  "authentication": "OAuth2",
+  "status": "production",
+  "connector_ref": "packages/common/connectors/wms/",
+  "departments": [
+    "DEPT-WRH",
+    "DEPT-LOG",
+    "DEPT-DIST"
+  ],
+  "security": {
+    "encryption_in_transit": "TLS 1.3",
+    "encryption_at_rest": "AES-256",
+    "audit": "HMAC-signed",
+    "rate_limiting": true,
+    "circuit_breaker": true,
+    "pii_detection": "Microsoft Presidio"
+  },
+  "observability": {
+    "metrics": "Prometheus",
+    "logs": "Loki",
+    "traces": "Tempo (OpenTelemetry)",
+    "dashboards": "Grafana"
+  },
+  "backward_compatible": true
+}

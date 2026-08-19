@@ -1,0 +1,329 @@
+{
+  "schema": "hsaai.module.specification.v2.0",
+  "module_id": "rag-engine",
+  "name": "RAG Engine",
+  "name_en": "RAG Engine",
+  "name_ar": "محرك RAG",
+  "version": "11.0.0",
+  "description": "Enterprise Retrieval-Augmented Generation engine with hybrid semantic+keyword+graph search, cross-encoder reranking, citation generation, and Zero Trust tenant isolation for production AI workloads",
+  "category": "ai-platform",
+  "status": "production",
+  "ownership": {
+    "owner_team": "AI Platform Team",
+    "technical_domain": "Knowledge Retrieval & RAG",
+    "business_domain": "Knowledge Management",
+    "responsible_engineering_team": "ai-platform-engineering@hsaai.group"
+  },
+  "components": [
+    {
+      "id": "rag-search-engine",
+      "name": "RAG Search Engine",
+      "description": "Hybrid search combining semantic (Qdrant), keyword (PostgreSQL FTS), and graph (Neo4j) retrieval with reciprocal rank fusion",
+      "responsibility": [
+        "Execute hybrid search queries with tenant-scoped filters",
+        "Fuse semantic, keyword, and graph results via RRF",
+        "Apply tenant_id + workspace_id isolation from JWT claims"
+      ],
+      "interfaces": [
+        {"endpoint": "/v1/search", "method": "POST", "type": "hybrid"},
+        {"endpoint": "/v1/search/semantic", "method": "POST", "type": "semantic"},
+        {"endpoint": "/v1/search/keyword", "method": "POST", "type": "keyword"},
+        {"endpoint": "/v1/search/graph", "method": "POST", "type": "graph"}
+      ]
+    },
+    {
+      "id": "cross-encoder-reranker",
+      "name": "Cross-Encoder Reranker",
+      "description": "BGE-reranker-large cross-encoder for precision improvement on top-K results",
+      "responsibility": [
+        "Rerank top-K search results using cross-encoder model",
+        "Apply BGE-reranker-large for Arabic+English support",
+        "Return reranked results with updated relevance scores"
+      ],
+      "interfaces": [
+        {"endpoint": "/v1/rerank", "method": "POST", "type": "rerank"}
+      ]
+    },
+    {
+      "id": "citation-generator",
+      "name": "Citation Generator",
+      "description": "Generates traceable citations linking AI responses to source documents",
+      "responsibility": [
+        "Map response chunks to source document IDs",
+        "Generate citation metadata (document_id, page, section)",
+        "Ensure full traceability for compliance"
+      ]
+    },
+    {
+      "id": "chunking-pipeline",
+      "name": "Chunking Pipeline",
+      "description": "Semantic document chunking for ingestion with offset preservation",
+      "responsibility": [
+        "Split documents into semantic chunks (512 tokens, 64 overlap)",
+        "Preserve chunk offsets for citation accuracy",
+        "Generate chunk metadata (position, tokens, hash)"
+      ]
+    },
+    {
+      "id": "embedding-service",
+      "name": "Embedding Service",
+      "description": "Multi-language embedding generation using sentence-transformers",
+      "responsibility": [
+        "Generate embeddings using paraphrase-multilingual-mpnet-base-v2",
+        "Support Arabic + English text",
+        "Batch processing for efficiency"
+      ]
+    }
+  ],
+  "capabilities": {
+    "core": [
+      "hybrid-search",
+      "semantic-search",
+      "keyword-search",
+      "graph-search",
+      "reranking",
+      "citation-generation",
+      "chunking",
+      "embedding-generation"
+    ],
+    "ai": [
+      "rag",
+      "embedding-generation",
+      "relevance-scoring",
+      "context-augmentation"
+    ],
+    "automation": [
+      "auto-indexing",
+      "auto-reranking",
+      "auto-citation"
+    ],
+    "enterprise": [
+      "multi-tenant-isolation",
+      "audit-logging",
+      "compliance-ready",
+      "kubernetes-native",
+      "ci-cd-ready"
+    ]
+  },
+  "kpi_framework": [
+    {
+      "name": "Search Latency P95",
+      "target": "< 500ms",
+      "measurement": "Prometheus histogram percentile",
+      "data_source": "rag_search_latency_seconds",
+      "alert_threshold": "> 1000ms for 5 minutes"
+    },
+    {
+      "name": "Recall@5",
+      "target": "> 90%",
+      "measurement": "Eval suite on 200 test queries",
+      "data_source": "rag_eval_results",
+      "alert_threshold": "< 85%"
+    },
+    {
+      "name": "Precision@5",
+      "target": "> 85%",
+      "measurement": "Eval suite on 200 test queries",
+      "data_source": "rag_eval_results",
+      "alert_threshold": "< 80%"
+    },
+    {
+      "name": "Citation Accuracy",
+      "target": "> 99%",
+      "measurement": "Sampled human review",
+      "data_source": "audit_logs",
+      "alert_threshold": "< 95%"
+    },
+    {
+      "name": "Availability SLO",
+      "target": "99.9%",
+      "measurement": "Uptime monitoring",
+      "data_source": "Prometheus",
+      "alert_threshold": "< 99.5%"
+    },
+    {
+      "name": "Hallucination Rate",
+      "target": "< 5%",
+      "measurement": "Sampled human review",
+      "data_source": "ai_quality_metrics",
+      "alert_threshold": "> 10%"
+    }
+  ],
+  "ai_governance": {
+    "model_evaluation": {
+      "eval_suite": "rag_eval_v1",
+      "frequency": "monthly",
+      "test_queries": 200,
+      "metrics": ["recall@5", "precision@5", "mrr", "ndcg", "hit_rate"]
+    },
+    "model_version_tracking": {
+      "embedding_model": "sentence-transformers/paraphrase-multilingual-mpnet-base-v2",
+      "reranker_model": "BAAI/bge-reranker-large",
+      "tracking_enabled": true,
+      "registry": "mlflow"
+    },
+    "quality_metrics": [
+      "recall@5",
+      "precision@5",
+      "mrr",
+      "ndcg",
+      "hit_rate",
+      "faithfulness",
+      "hallucination_rate",
+      "citation_accuracy"
+    ],
+    "regression_detection": {
+      "enabled": true,
+      "threshold": "10% degradation from baseline",
+      "action": "auto-rollback to previous model version"
+    },
+    "approval_workflow": {
+      "model_deployment_requires_approval": true,
+      "approver": "Data Governance Council",
+      "stages": ["dev", "staging", "production"]
+    },
+    "deployment_gates": {
+      "quality_gate": "recall@5 > 90%",
+      "performance_gate": "P95 < 500ms",
+      "safety_gate": "hallucination_rate < 5%",
+      "compliance_gate": "audit_logging_enabled"
+    },
+    "responsible_ai_controls": [
+      "citation-required",
+      "pii-detection",
+      "prompt-firewall",
+      "tenant-isolation",
+      "bias-detection",
+      "human-review-for-sensitive"
+    ]
+  },
+  "security_model": {
+    "authentication": {
+      "type": "OAuth2/OIDC",
+      "keycloak_compatible": true,
+      "token_validation": "RS256 + JWKS",
+      "mfa_required": true
+    },
+    "authorization": {
+      "rbac": true,
+      "abac": true,
+      "permissions": [
+        "knowledge:read",
+        "knowledge:write",
+        "knowledge:delete",
+        "knowledge:admin",
+        "knowledge:review",
+        "knowledge:upload"
+      ],
+      "policy_engine": "OPA"
+    },
+    "security_controls": {
+      "audit_logging": true,
+      "encryption_at_rest": "AES-256",
+      "encryption_in_transit": "TLS 1.3",
+      "tenant_isolation": true,
+      "data_classification": true,
+      "pii_detection": "Microsoft Presidio",
+      "prompt_firewall": true
+    }
+  },
+  "runtime": {
+    "runtime_ref": "services/rag_engine/main.py",
+    "service_entrypoint": "python -m rag_engine.main",
+    "execution_mode": "async",
+    "api_dependencies": ["FastAPI", "Uvicorn", "httpx"],
+    "health_check": {
+      "liveness": "/health/live",
+      "readiness": "/health/ready"
+    },
+    "async_support": true,
+    "deployment_requirements": {
+      "cpu": "1000m",
+      "memory": "2Gi",
+      "replicas": 3,
+      "gpu_required": false
+    }
+  },
+  "data_architecture": {
+    "input_sources": [
+      "Qdrant (vector embeddings)",
+      "PostgreSQL (document metadata, FTS index)",
+      "Neo4j (knowledge graph)",
+      "MinIO (source documents)"
+    ],
+    "output_data": [
+      "search results with citations",
+      "reranked results",
+      "embeddings for ingestion"
+    ],
+    "storage_requirements": "10M+ vectors in Qdrant, 1M+ documents in PostgreSQL",
+    "data_retention_policy": "Vectors retained while document active; deleted on archive/delete",
+    "event_consumers": [
+      "document.registered",
+      "document.approved",
+      "document.archived",
+      "document.deleted"
+    ],
+    "event_publishers": [
+      "rag.search.executed",
+      "rag.index.updated",
+      "rag.citation.generated"
+    ]
+  },
+  "observability": {
+    "metrics": [
+      "rag_search_total",
+      "rag_search_latency_seconds",
+      "rag_search_errors_total",
+      "rag_results_count",
+      "rag_rerank_latency_seconds"
+    ],
+    "logs": [
+      "search queries",
+      "errors",
+      "audit events",
+      "performance metrics"
+    ],
+    "distributed_tracing": true,
+    "opentelemetry_support": true,
+    "monitoring_dashboards": [
+      "RAG Performance",
+      "RAG Errors",
+      "RAG Usage",
+      "RAG Quality Metrics"
+    ],
+    "alerting": [
+      "HighErrorRate",
+      "HighLatency",
+      "ServiceDown",
+      "QualityDegradation"
+    ]
+  },
+  "dependencies": {
+    "internal_services": [
+      "ai-core",
+      "authentication-service",
+      "authorization-service",
+      "audit-service",
+      "governance-service"
+    ],
+    "external_services": [],
+    "databases": [
+      "Qdrant",
+      "PostgreSQL",
+      "Neo4j",
+      "Redis"
+    ],
+    "message_brokers": ["Kafka"],
+    "ai_infrastructure": [
+      "sentence-transformers/paraphrase-multilingual-mpnet-base-v2",
+      "BAAI/bge-reranker-large"
+    ]
+  },
+  "compatibility": {
+    "backward_compatible": true,
+    "api_version": "v1",
+    "migration_required": false,
+    "deprecated_features": []
+  }
+}

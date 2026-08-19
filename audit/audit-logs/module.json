@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.audit.module.v1",
+  "name": "audit-logs",
+  "name_full": "Audit Logs Archive",
+  "description": "Long-term audit log archive (7-year retention) on MinIO.",
+  "implementation_ref": "infrastructure/ + storage/",
+  "status": "production",
+  "backward_compatible": true
+}

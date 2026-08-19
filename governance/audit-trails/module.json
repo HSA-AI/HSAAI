@@ -1,0 +1,14 @@
+{
+  "schema": "hsaai.governance.module.v1",
+  "name": "audit-trails",
+  "name_full": "Audit Trails",
+  "description": "End-to-end audit trails for all platform actions.",
+  "implementation_ref": "audit/, services/backend_core/security/audit.py",
+  "frameworks": [
+    "ISO 27001",
+    "ISO 42001",
+    "NIST AI RMF"
+  ],
+  "status": "production",
+  "backward_compatible": true
+}

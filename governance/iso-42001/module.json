@@ -1,0 +1,14 @@
+{
+  "schema": "hsaai.governance.module.v1",
+  "name": "iso-42001",
+  "name_full": "ISO 42001 Compliance",
+  "description": "AI Management System (AIMS) controls.",
+  "implementation_ref": "compliance/iso42001/",
+  "frameworks": [
+    "ISO 27001",
+    "ISO 42001",
+    "NIST AI RMF"
+  ],
+  "status": "production",
+  "backward_compatible": true
+}

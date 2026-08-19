@@ -1,0 +1,26 @@
+{
+  "schema": "hsaai.ai-platform.submodule.v1",
+  "name": "ai-observability",
+  "name_en": "AI Observability",
+  "name_ar": "قابلية ملاحظة الذكاء الاصطناعي",
+  "description": "Traces, metrics, and logs for all AI operations.",
+  "components": [
+    "OTLP Tracer",
+    "Metrics Collector",
+    "Log Aggregator",
+    "Trace Correlator"
+  ],
+  "capabilities": [
+    "Distributed tracing",
+    "Metrics collection",
+    "Log aggregation",
+    "Trace correlation"
+  ],
+  "kpis": [
+    "Trace coverage = 100%",
+    "Metric granularity < 1s",
+    "Log retention > 90 days"
+  ],
+  "runtime_ref": "infrastructure/otel/",
+  "backward_compatible": true
+}

@@ -1,0 +1,168 @@
+{
+  "schema": "hsaai.department-agents.manifest.v1",
+  "module": "department-agents",
+  "version": "7.0.0",
+  "generated_at": "2026-07-13",
+  "total_agents": 21,
+  "premium_agents": 8,
+  "standard_agents": 13,
+  "agents": [
+    {
+      "id": "AGENT-EXEC",
+      "directory": "executive-agent",
+      "name_en": "Executive Agent",
+      "department_ref": "DEPT-EXEC",
+      "model_tier": "premium"
+    },
+    {
+      "id": "AGENT-FINANCE",
+      "directory": "finance-agent",
+      "name_en": "Finance Agent",
+      "department_ref": "DEPT-FIN",
+      "model_tier": "premium"
+    },
+    {
+      "id": "AGENT-ACCOUNTING",
+      "directory": "accounting-agent",
+      "name_en": "Accounting Agent",
+      "department_ref": "DEPT-ACC",
+      "model_tier": "standard"
+    },
+    {
+      "id": "AGENT-TREASURY",
+      "directory": "treasury-agent",
+      "name_en": "Treasury Agent",
+      "department_ref": "DEPT-TRE",
+      "model_tier": "standard"
+    },
+    {
+      "id": "AGENT-HR",
+      "directory": "hr-agent",
+      "name_en": "HR Agent",
+      "department_ref": "DEPT-HR",
+      "model_tier": "standard"
+    },
+    {
+      "id": "AGENT-LEGAL",
+      "directory": "legal-agent",
+      "name_en": "Legal Agent",
+      "department_ref": "DEPT-LEG",
+      "model_tier": "premium"
+    },
+    {
+      "id": "AGENT-AUDIT",
+      "directory": "audit-agent",
+      "name_en": "Audit Agent",
+      "department_ref": "DEPT-AUD",
+      "model_tier": "premium"
+    },
+    {
+      "id": "AGENT-COMPLIANCE",
+      "directory": "compliance-agent",
+      "name_en": "Compliance Agent",
+      "department_ref": "DEPT-COMP",
+      "model_tier": "standard"
+    },
+    {
+      "id": "AGENT-MANUFACTURING",
+      "directory": "manufacturing-agent",
+      "name_en": "Manufacturing Agent",
+      "department_ref": "DEPT-MFG",
+      "model_tier": "standard"
+    },
+    {
+      "id": "AGENT-SUPPLY-CHAIN",
+      "directory": "supply-chain-agent",
+      "name_en": "Supply Chain Agent",
+      "department_ref": "DEPT-SCM",
+      "model_tier": "premium"
+    },
+    {
+      "id": "AGENT-WAREHOUSE",
+      "directory": "warehouse-agent",
+      "name_en": "Warehouse Agent",
+      "department_ref": "DEPT-WRH",
+      "model_tier": "standard"
+    },
+    {
+      "id": "AGENT-LOGISTICS",
+      "directory": "logistics-agent",
+      "name_en": "Logistics Agent",
+      "department_ref": "DEPT-LOG",
+      "model_tier": "standard"
+    },
+    {
+      "id": "AGENT-SALES",
+      "directory": "sales-agent",
+      "name_en": "Sales Agent",
+      "department_ref": "DEPT-SALES",
+      "model_tier": "standard"
+    },
+    {
+      "id": "AGENT-MARKETING",
+      "directory": "marketing-agent",
+      "name_en": "Marketing Agent",
+      "department_ref": "DEPT-MKT",
+      "model_tier": "standard"
+    },
+    {
+      "id": "AGENT-PROCUREMENT",
+      "directory": "procurement-agent",
+      "name_en": "Procurement Agent",
+      "department_ref": "DEPT-PROC",
+      "model_tier": "standard"
+    },
+    {
+      "id": "AGENT-QUALITY",
+      "directory": "quality-agent",
+      "name_en": "Quality Agent",
+      "department_ref": "DEPT-QA",
+      "model_tier": "standard"
+    },
+    {
+      "id": "AGENT-CYBERSECURITY",
+      "directory": "cybersecurity-agent",
+      "name_en": "Cybersecurity Agent",
+      "department_ref": "DEPT-SEC",
+      "model_tier": "premium"
+    },
+    {
+      "id": "AGENT-RESEARCH",
+      "directory": "research-agent",
+      "name_en": "Research Agent",
+      "department_ref": "DEPT-RND",
+      "model_tier": "premium"
+    },
+    {
+      "id": "AGENT-CUSTOMER-SERVICE",
+      "directory": "customer-service-agent",
+      "name_en": "Customer Service Agent",
+      "department_ref": "DEPT-CSVC",
+      "model_tier": "standard"
+    },
+    {
+      "id": "AGENT-EXEC-ASSISTANT",
+      "directory": "executive-assistant",
+      "name_en": "Executive Assistant",
+      "department_ref": "DEPT-CEO",
+      "model_tier": "standard"
+    },
+    {
+      "id": "AGENT-KNOWLEDGE",
+      "directory": "knowledge-assistant",
+      "name_en": "Knowledge Assistant",
+      "department_ref": "DEPT-DATA",
+      "model_tier": "premium"
+    }
+  ],
+  "backward_compatible_with": [
+    "services/multi_agents/agents.py",
+    "services/backend_core/agent_runtime/",
+    "services/backend_core/department_agents/",
+    "services/backend_core/tool_registry/",
+    "services/backend_core/safety/",
+    "services/ai_alignment/"
+  ],
+  "owner": "AI & Digital Transformation Committee",
+  "classification": "Internal"
+}

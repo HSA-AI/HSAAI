@@ -1,0 +1,13 @@
+{
+  "schema": "hsaai.app.v1",
+  "app_id": "APP-WORKFLOW",
+  "name_en": "Workflow Studio",
+  "name_ar": "استوديو سير العمل",
+  "directory": "workflow-studio",
+  "description": "Visual workflow designer for building and managing department workflows.",
+  "type": "web",
+  "status": "production",
+  "implementation_ref": "apps/web/ (workflow module), services/workflow_engine/",
+  "hosted_in": "apps/web/ (Enterprise Portal, Next.js 15)",
+  "backward_compatible": true
+}

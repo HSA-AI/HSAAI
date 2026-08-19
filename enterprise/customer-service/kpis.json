@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.kpis.v1",
+  "department_id": "DEPT-CSVC",
+  "department": "Customer Service",
+  "kpis": [
+    {
+      "id": "KPI-DEPT-CSVC-01",
+      "name": "CSAT %",
+      "frequency": "monthly",
+      "source_integration": "crm"
+    },
+    {
+      "id": "KPI-DEPT-CSVC-02",
+      "name": "First Contact Resolution %",
+      "frequency": "monthly",
+      "source_integration": "teams"
+    },
+    {
+      "id": "KPI-DEPT-CSVC-03",
+      "name": "Average Response Time",
+      "frequency": "monthly",
+      "source_integration": "exchange"
+    },
+    {
+      "id": "KPI-DEPT-CSVC-04",
+      "name": "NPS",
+      "frequency": "monthly",
+      "source_integration": "power-bi"
+    }
+  ],
+  "dashboard_ref": "../../monitoring/dashboards/dept-csvc.json"
+}

@@ -1,0 +1,383 @@
+{
+  "schema": "hsaai.governance.module.specification.v1.0",
+  "module_id": "ai-governance-control-plane",
+  "name": "AI Governance Control Plane",
+  "name_en": "AI Governance Control Plane",
+  "name_ar": "مستوى التحكم بحوكمة الذكاء الاصطناعي",
+  "version": "13.0.0",
+  "description": "Enterprise AI Governance Control Plane providing policy management, audit trail, compliance framework, and AI lifecycle governance for the HSAAI platform — acts as the central authority for all AI-related decisions, approvals, and risk management",
+  "category": "governance",
+  "criticality": "critical",
+  "status": "production",
+  "lifecycle_stage": "production",
+  "module_analysis": {
+    "function": "Central governance authority for AI policies, approvals, audit, and compliance",
+    "position_in_platform": "Control Plane — governs all AI services, agents, and data flows",
+    "systems_controlled": [
+      "ai-core",
+      "rag-engine",
+      "llm-gateway",
+      "agent-system",
+      "model-registry",
+      "ai-evaluation-service"
+    ],
+    "criticality_level": "critical — failure blocks all AI deployments and approvals",
+    "data_managed": "policies, decisions, audit logs, compliance evidence, risk registers",
+    "blast_radius_if_down": "critical — no AI deployments possible, no audit trail, no compliance enforcement"
+  },
+  "governance_components": [
+    {
+      "id": "policy-decision-point",
+      "name": "Policy Decision Point (PDP)",
+      "description": "Evaluates policies and returns allow/deny decisions for AI operations",
+      "responsibility": [
+        "Evaluate policy rules",
+        "Return authorization decisions",
+        "Log decision rationale"
+      ],
+      "inputs": ["operation", "actor_context", "resource_context"],
+      "outputs": ["decision", "obligations", "rationale"],
+      "dependencies": ["opa", "policy-store"],
+      "failure_behavior": "deny-by-default — if PDP unavailable, all requests denied"
+    },
+    {
+      "id": "policy-enforcement-point",
+      "name": "Policy Enforcement Point (PEP)",
+      "description": "Enforces PDP decisions at API boundaries",
+      "responsibility": [
+        "Intercept requests",
+        "Call PDP for decisions",
+        "Enforce allow/deny",
+        "Apply obligations"
+      ],
+      "inputs": ["http_request", "jwt_claims"],
+      "outputs": ["allowed_request", "denied_response"],
+      "dependencies": ["policy-decision-point"],
+      "failure_behavior": "deny — requests blocked if PEP cannot reach PDP"
+    },
+    {
+      "id": "approval-workflow-engine",
+      "name": "Approval Workflow Engine",
+      "description": "Manages multi-level approval workflows for AI deployments and sensitive operations",
+      "responsibility": [
+        "Route approval requests",
+        "Track approval status",
+        "Escalate on timeout",
+        "Record decisions"
+      ],
+      "inputs": ["approval_request", "approver_context"],
+      "outputs": ["approval_decision", "audit_record"],
+      "dependencies": ["workflow-engine", "audit-service"],
+      "failure_behavior": "block — operations requiring approval cannot proceed"
+    },
+    {
+      "id": "audit-trail-manager",
+      "name": "Audit Trail Manager",
+      "description": "Maintains immutable, tamper-evident audit trail for all governance events",
+      "responsibility": [
+        "Record governance events",
+        "HMAC-sign audit entries",
+        "Verify integrity",
+        "Detect tampering"
+      ],
+      "inputs": ["governance_events"],
+      "outputs": ["signed_audit_entries", "integrity_reports"],
+      "dependencies": ["audit-service"],
+      "failure_behavior": "queue — events buffered if audit service unavailable"
+    },
+    {
+      "id": "compliance-validator",
+      "name": "Compliance Validator",
+      "description": "Validates AI operations against compliance frameworks (ISO 27001, NIST AI RMF, SOC 2)",
+      "responsibility": [
+        "Check compliance rules",
+        "Generate compliance evidence",
+        "Flag violations"
+      ],
+      "inputs": ["operation_context", "compliance_rules"],
+      "outputs": ["compliance_status", "evidence_records"],
+      "dependencies": ["policy-decision-point"],
+      "failure_behavior": "warn — log warning but allow operation"
+    }
+  ],
+  "policy_management": {
+    "policy_engine": {
+      "type": "OPA (Open Policy Agent)",
+      "policy_language": "Rego",
+      "decision_api": "/v1/policies/evaluate"
+    },
+    "policy_lifecycle": {
+      "stages": ["create", "review", "approve", "deploy", "monitor", "retire"],
+      "versioning": true,
+      "testing": true,
+      "rollback": true
+    },
+    "policy_versioning": {
+      "enabled": true,
+      "max_versions": 50,
+      "auto_archive": true
+    },
+    "policy_testing": {
+      "enabled": true,
+      "test_suites": ["unit", "integration", "regression"],
+      "pre_deploy_validation": true
+    },
+    "policy_rollback": {
+      "enabled": true,
+      "instant_rollback": true,
+      "audit_logged": true
+    }
+  },
+  "security_architecture": {
+    "authentication": {
+      "type": "OAuth2/OIDC",
+      "keycloak_support": true,
+      "token_validation": "RS256 + JWKS",
+      "mfa_required": true
+    },
+    "authorization": {
+      "rbac": true,
+      "abac": true,
+      "permissions": [
+        "governance:view",
+        "governance:admin",
+        "policy:create",
+        "policy:approve",
+        "policy:deploy",
+        "audit:view",
+        "audit:export",
+        "compliance:validate"
+      ],
+      "policy_engine": "OPA",
+      "default_deny": true
+    },
+    "security_controls": {
+      "zero_trust": true,
+      "least_privilege": true,
+      "tenant_isolation": true,
+      "encryption_at_rest": "AES-256",
+      "encryption_in_transit": "TLS 1.3",
+      "secret_management": "HashiCorp Vault",
+      "access_reviews": "quarterly"
+    }
+  },
+  "audit_compliance_design": {
+    "audit_framework": {
+      "event_logging": true,
+      "decision_logging": true,
+      "immutable_records": true,
+      "timestamping": "UTC ISO 8601",
+      "actor_tracking": true,
+      "resource_tracking": true,
+      "action_tracking": true
+    },
+    "integrity_protection": {
+      "hmac_signing": true,
+      "hash_algorithm": "SHA-256",
+      "signature_rotation": "quarterly",
+      "integrity_verification": true,
+      "tamper_detection": true
+    },
+    "audit_events": [
+      "policy.created",
+      "policy.approved",
+      "policy.deployed",
+      "policy.retired",
+      "approval.requested",
+      "approval.granted",
+      "approval.denied",
+      "gate.decision",
+      "compliance.checked",
+      "compliance.violation"
+    ]
+  },
+  "ai_governance_layer": {
+    "responsible_ai": {
+      "explainability": true,
+      "transparency": true,
+      "fairness_monitoring": true,
+      "safety_controls": true
+    },
+    "ai_risk_management": {
+      "risk_classification": true,
+      "high_risk_ai_approval": true,
+      "model_usage_policies": true,
+      "data_access_policies": true
+    },
+    "ai_lifecycle_governance": {
+      "model_registration": true,
+      "evaluation_approval": true,
+      "deployment_approval": true,
+      "continuous_monitoring": true
+    }
+  },
+  "compliance_framework": {
+    "iso_27001": {
+      "enabled": true,
+      "controls_mapped": 114,
+      "last_audit": "2026-06-15"
+    },
+    "nist_ai_rmf": {
+      "enabled": true,
+      "functions": ["GOVERN", "MAP", "MEASURE", "MANAGE"],
+      "alignment": "100%"
+    },
+    "soc_2": {
+      "enabled": true,
+      "trust_services": ["security", "availability", "confidentiality"],
+      "last_audit": "2026-06-15"
+    },
+    "responsible_ai_principles": {
+      "fairness": true,
+      "transparency": true,
+      "accountability": true,
+      "privacy": true,
+      "safety": true
+    },
+    "compliance_metrics": {
+      "compliance_score": "target > 95%",
+      "policy_violation_rate": "target < 1%",
+      "audit_completeness": "target 100%"
+    }
+  },
+  "kpi_framework": [
+    {
+      "metric_name": "Compliance Score",
+      "target": "> 95%",
+      "measurement_method": "Automated compliance check across all controls",
+      "data_source": "compliance_validator",
+      "alert_threshold": "< 90%"
+    },
+    {
+      "metric_name": "Policy Violation Rate",
+      "target": "< 1%",
+      "measurement_method": "Count of violations / total operations",
+      "data_source": "policy_enforcement_point",
+      "alert_threshold": "> 5%"
+    },
+    {
+      "metric_name": "Approval SLA",
+      "target": "< 24 hours",
+      "measurement_method": "Time from approval request to decision",
+      "data_source": "approval_workflow_engine",
+      "alert_threshold": "> 48 hours"
+    },
+    {
+      "metric_name": "Audit Completeness",
+      "target": "100%",
+      "measurement_method": "Audited operations / total operations",
+      "data_source": "audit_trail_manager",
+      "alert_threshold": "< 99%"
+    },
+    {
+      "metric_name": "Policy Decision Latency",
+      "target": "< 50ms P95",
+      "measurement_method": "PDP response time",
+      "data_source": "policy_decision_point",
+      "alert_threshold": "> 200ms"
+    }
+  ],
+  "runtime_architecture": {
+    "runtime_ref": "services/governance/main.py",
+    "service_entrypoint": "python -m governance.main",
+    "api_interfaces": [
+      {"endpoint": "/v1/policies", "method": "GET", "description": "List policies"},
+      {"endpoint": "/v1/policies", "method": "POST", "description": "Create policy"},
+      {"endpoint": "/v1/policies/evaluate", "method": "POST", "description": "Evaluate policy"},
+      {"endpoint": "/v1/approvals", "method": "POST", "description": "Request approval"},
+      {"endpoint": "/v1/audit", "method": "GET", "description": "Query audit trail"},
+      {"endpoint": "/v1/compliance/check", "method": "POST", "description": "Check compliance"}
+    ],
+    "health_endpoint": "/health/live",
+    "readiness_endpoint": "/health/ready",
+    "event_processing": true,
+    "async_support": true,
+    "scheduling_support": true
+  },
+  "observability": {
+    "metrics": [
+      "policy_evaluations_total",
+      "policy_denials_total",
+      "approval_duration_seconds",
+      "audit_events_total",
+      "compliance_score",
+      "gate_decisions_total"
+    ],
+    "logs": [
+      "security_events",
+      "governance_events",
+      "administrative_actions",
+      "policy_decisions"
+    ],
+    "tracing": {
+      "opentelemetry": true,
+      "distributed_tracing": true
+    },
+    "dashboards": [
+      "Governance Overview",
+      "Policy Decisions",
+      "Audit Trail",
+      "Compliance Score"
+    ],
+    "alerting": [
+      "HighPolicyDenialRate",
+      "ComplianceScoreDrop",
+      "ApprovalSLABreach",
+      "AuditIntegrityFailure"
+    ]
+  },
+  "dependencies": {
+    "internal": [
+      "identity-service",
+      "keycloak",
+      "ai-core",
+      "audit-service",
+      "event-bus",
+      "workflow-engine"
+    ],
+    "external": [
+      "opa",
+      "siem",
+      "monitoring-platform"
+    ],
+    "databases": ["PostgreSQL"],
+    "message_brokers": ["Kafka"]
+  },
+  "reliability_resilience": {
+    "failure_handling": {
+      "pdp_failure": "deny-by-default",
+      "audit_failure": "queue events",
+      "approval_timeout": "escalate to manager"
+    },
+    "retry_strategy": {
+      "max_retries": 3,
+      "backoff": "exponential"
+    },
+    "timeout_policy": {
+      "policy_evaluation": "5 seconds",
+      "approval_workflow": "24 hours",
+      "audit_write": "5 seconds"
+    },
+    "disaster_recovery": {
+      "rpo": "15 minutes",
+      "rto": "4 hours",
+      "multi_region": true
+    },
+    "backup_strategy": {
+      "audit_logs": "7 years retention",
+      "policies": "versioned + replicated",
+      "frequency": "daily + continuous WAL"
+    },
+    "high_availability": {
+      "replicas": 3,
+      "auto_failover": true,
+      "health_checks": "continuous"
+    }
+  },
+  "compatibility": {
+    "backward_compatible": true,
+    "api_version": "v1",
+    "migration_required": false,
+    "deprecated_features": []
+  }
+}

@@ -1,0 +1,317 @@
+# HSAAI Istio Service Mesh Configuration (Phase 3 — Scale)
+#
+# FIX v2.3 (Phase 3): Implements Istio service mesh for:
+#   - Automatic mTLS between all services (no per-service cert management)
+#   - Traffic management (canary rollouts, A/B testing, circuit breaking)
+#   - Observability (distributed tracing, service-level metrics)
+#   - Security (authorization policies, rate limiting at mesh level)
+#
+# Prerequisites:
+#   1. Install Istio with the production profile:
+#      istioctl install --set profile=production \
+#        --set meshConfig.accessLogFile=/dev/stdout \
+#        --set values.global.proxy.resources.requests.cpu=100m \
+#        --set values.global.proxy.resources.requests.memory=128Mi
+#
+#   2. Label the namespace for mesh injection:
+#      kubectl label namespace hsaai istio-injection=enabled
+#
+#   3. Apply these manifests:
+#      kubectl apply -f infrastructure/service-mesh/
+
+# ═══════════════════════════════════════════════════════════════
+# PeerAuthentication: enforce STRICT mTLS for all service-to-service
+# communication in the hsaai namespace.
+# ═══════════════════════════════════════════════════════════════
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: hsaai
+  labels:
+    app.kubernetes.io/part-of: hsaai
+spec:
+  mtls:
+    mode: STRICT  # All service-to-service traffic MUST use mTLS (no plaintext)
+---
+# ═══════════════════════════════════════════════════════════════
+# AuthorizationPolicy: default deny-all, then explicit allow rules
+# ═══════════════════════════════════════════════════════════════
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: default-deny-all
+  namespace: hsaai
+  labels:
+    app.kubernetes.io/part-of: hsaai
+spec:
+  {}  # Empty spec = deny all traffic by default. Specific allow rules follow.
+---
+# Allow frontend → api-gateway (HTTP on port 8080)
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-frontend-to-api-gateway
+  namespace: hsaai
+spec:
+  targetSelectors:
+    - matchLabels:
+        app: api-gateway
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: ["cluster.local/ns/hsaai/sa/frontend"]
+      to:
+        - operation:
+            methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+            ports: ["8080"]
+---
+# Allow api-gateway → auth-service (token verification)
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-api-gateway-to-auth
+  namespace: hsaai
+spec:
+  targetSelectors:
+    - matchLabels:
+        app: auth-service
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: ["cluster.local/ns/hsaai/sa/api-gateway"]
+      to:
+        - operation:
+            methods: ["GET", "POST"]
+            ports: ["8010"]
+---
+# Allow api-gateway → backend (chat + metrics)
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-api-gateway-to-backend
+  namespace: hsaai
+spec:
+  targetSelectors:
+    - matchLabels:
+        app: backend
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: ["cluster.local/ns/hsaai/sa/api-gateway"]
+      to:
+        - operation:
+            methods: ["GET", "POST"]
+            ports: ["8000"]
+---
+# Allow backend → rag-engine, llm-gateway, auth-service, postgres, redis, qdrant
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-backend-to-downstream
+  namespace: hsaai
+spec:
+  targetSelectors:
+    - matchLabels:
+        app:
+          rag-engine|llm-gateway|auth-service
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: ["cluster.local/ns/hsaai/sa/backend"]
+---
+# Allow rag-engine → qdrant, pii-detector, postgres
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-rag-to-downstream
+  namespace: hsaai
+spec:
+  targetSelectors:
+    - matchLabels:
+        app: pii-detector
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: ["cluster.local/ns/hsaai/sa/rag-service"]
+---
+# ═══════════════════════════════════════════════════════════════
+# DestinationRule: load balancing + circuit breaker + outlier detection
+# ═══════════════════════════════════════════════════════════════
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: backend-circuit-breaker
+  namespace: hsaai
+spec:
+  host: backend.hsaai.svc.cluster.local
+  trafficPolicy:
+    loadBalancer:
+      simple: LEAST_REQUEST  # better than round-robin for varying request costs
+    connectionPool:
+      tcp:
+        maxConnections: 100
+      http:
+        http1MaxPendingRequests: 50
+        maxRequestsPerConnection: 10
+        maxRetries: 2
+        h2UpgradePolicy: UPGRADE  # use HTTP/2 for backend connections
+    outlierDetection:
+      consecutive5xxErrors: 5
+      interval: 30s
+      baseEjectionTime: 60s
+      maxEjectionPercent: 50  # eject up to 50% of pods if they return 5xx
+      minHealthPercent: 50    # keep at least 50% of pods serving
+    tls:
+      mode: ISTIO_MUTUAL  # automatic mTLS via Istio
+---
+# DestinationRule for LLM Gateway — stricter circuit breaker (LLM calls are expensive)
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: llm-gateway-circuit-breaker
+  namespace: hsaai
+spec:
+  host: llm-gateway.hsaai.svc.cluster.local
+  trafficPolicy:
+    loadBalancer:
+      simple: LEAST_REQUEST
+    connectionPool:
+      tcp:
+        maxConnections: 50  # fewer connections (LLM inference is slow)
+      http:
+        http1MaxPendingRequests: 20
+        maxRequestsPerConnection: 5
+        maxRetries: 1  # don't retry LLM calls (could double-charge tokens)
+        idleTimeout: 300s  # LLM calls can take up to 5 minutes
+    outlierDetection:
+      consecutive5xxErrors: 3
+      interval: 60s
+      baseEjectionTime: 120s  # eject for 2 minutes (longer for LLM)
+      maxEjectionPercent: 33  # eject at most 1/3 of pods
+---
+# DestinationRule for RAG Engine — high connection count (fast queries)
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: rag-engine-circuit-breaker
+  namespace: hsaai
+spec:
+  host: rag-service.hsaai.svc.cluster.local
+  trafficPolicy:
+    loadBalancer:
+      simple: LEAST_REQUEST
+    connectionPool:
+      tcp:
+        maxConnections: 200
+      http:
+        http1MaxPendingRequests: 100
+        maxRequestsPerConnection: 20
+        maxRetries: 3  # safe to retry (read-only)
+    outlierDetection:
+      consecutive5xxErrors: 5
+      interval: 15s
+      baseEjectionTime: 30s
+---
+# ═══════════════════════════════════════════════════════════════
+# VirtualService: canary rollout for backend (95% stable, 5% canary)
+# ═══════════════════════════════════════════════════════════════
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: backend-canary
+  namespace: hsaai
+spec:
+  hosts:
+    - backend.hsaai.svc.cluster.local
+  http:
+    - match:
+        - headers:
+            x-canary:
+              exact: "true"
+      route:
+        - destination:
+            host: backend.hsaai.svc.cluster.local
+            subset: canary
+          weight: 100
+    - route:
+        - destination:
+            host: backend.hsaai.svc.cluster.local
+            subset: stable
+          weight: 95
+        - destination:
+            host: backend.hsaai.svc.cluster.local
+            subset: canary
+          weight: 5
+---
+# Subset definitions for canary routing
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: backend-subsets
+  namespace: hsaai
+spec:
+  host: backend.hsaai.svc.cluster.local
+  subsets:
+    - name: stable
+      labels:
+        version: stable
+    - name: canary
+      labels:
+        version: canary
+---
+# ═══════════════════════════════════════════════════════════════
+# EnvoyFilter: add custom headers for tracing + audit
+# ═══════════════════════════════════════════════════════════════
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: add-tracing-headers
+  namespace: hsaai
+spec:
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: SIDECAR_INBOUND
+        listener:
+          filterChain:
+            filter:
+              name: "envoy.filters.network.http_connection_manager"
+      patch:
+        operation: INSERT_BEFORE
+        value:
+          name: envoy.filters.http.header_to_metadata
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.http.header_to_metadata.v3.Config
+            request_rules:
+              - header: x-tenant-id
+                on_present:
+                  metadata_namespace: hsaai
+                  key: tenant_id
+              - header: x-request-id
+                on_present:
+                  metadata_namespace: hsaai
+                  key: request_id
+---
+# ═══════════════════════════════════════════════════════════════
+# ServiceEntry: external services (Keycloak, Vault, Ollama) mesh integration
+# ═══════════════════════════════════════════════════════════════
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: ollama-external
+  namespace: hsaai
+spec:
+  hosts:
+    - ollama.hsaai.internal
+  ports:
+    - number: 11434
+      name: http
+      protocol: HTTP
+  resolution: DNS
+  location: MESH_EXTERNAL

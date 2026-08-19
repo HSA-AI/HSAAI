@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.deployment.module.v1",
+  "name": "release-management",
+  "name_full": "Release Management",
+  "description": "Release process, versioning, and rollback procedures.",
+  "implementation_ref": "docs/RELEASE_NOTES.md, scripts/production_release_gate.sh",
+  "status": "production",
+  "backward_compatible": true
+}

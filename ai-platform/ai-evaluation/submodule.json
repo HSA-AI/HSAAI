@@ -1,0 +1,26 @@
+{
+  "schema": "hsaai.ai-platform.submodule.v1",
+  "name": "ai-evaluation",
+  "name_en": "AI Evaluation",
+  "name_ar": "تقييم الذكاء الاصطناعي",
+  "description": "Continuous evaluation: task success, hallucination, CSAT, latency.",
+  "components": [
+    "Eval Runner",
+    "Hallucination Detector",
+    "CSAT Collector",
+    "Eval Dashboard"
+  ],
+  "capabilities": [
+    "Task success eval",
+    "Hallucination eval",
+    "CSAT collection",
+    "Eval dashboards"
+  ],
+  "kpis": [
+    "Eval coverage > 80%",
+    "Hallucination rate < 5%",
+    "CSAT > 4.5"
+  ],
+  "runtime_ref": "evals/",
+  "backward_compatible": true
+}

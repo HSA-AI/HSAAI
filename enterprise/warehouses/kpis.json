@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.kpis.v1",
+  "department_id": "DEPT-WRH",
+  "department": "Warehouses",
+  "kpis": [
+    {
+      "id": "KPI-DEPT-WRH-01",
+      "name": "Inventory Accuracy %",
+      "frequency": "monthly",
+      "source_integration": "wms"
+    },
+    {
+      "id": "KPI-DEPT-WRH-02",
+      "name": "Storage Utilization %",
+      "frequency": "monthly",
+      "source_integration": "sap"
+    },
+    {
+      "id": "KPI-DEPT-WRH-03",
+      "name": "Pick Accuracy %",
+      "frequency": "monthly",
+      "source_integration": "oracle-erp"
+    },
+    {
+      "id": "KPI-DEPT-WRH-04",
+      "name": "Stock-Out %",
+      "frequency": "monthly",
+      "source_integration": "redis"
+    }
+  ],
+  "dashboard_ref": "../../monitoring/dashboards/dept-wrh.json"
+}

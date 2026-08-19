@@ -1,0 +1,14 @@
+{
+  "schema": "hsaai.governance.module.v1",
+  "name": "ai-governance",
+  "name_full": "AI Governance",
+  "description": "Policies, approvals, and oversight for all AI usage.",
+  "implementation_ref": "services/governance/, corporate/governance/, ai-platform/ai-governance/",
+  "frameworks": [
+    "ISO 27001",
+    "ISO 42001",
+    "NIST AI RMF"
+  ],
+  "status": "production",
+  "backward_compatible": true
+}

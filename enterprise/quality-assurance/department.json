@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.department.v1",
+  "id": "DEPT-QA",
+  "name_ar": "ضمان الجودة",
+  "name_en": "Quality Assurance",
+  "directory": "quality-assurance",
+  "head_role": "VP Quality",
+  "reports_to": "COO",
+  "mission_ar": "ضمان جودة المنتجات والعمليات عبر جميع المصانع ومراكز التوزيع",
+  "mission_en": "Ensure product and process quality across all factories and DCs",
+  "agent_ref": "AGENT-QUALITY",
+  "integrations": [
+    "mes",
+    "sap",
+    "power-bi",
+    "sharepoint"
+  ],
+  "kpis": [
+    "Defect Rate PPM",
+    "Customer Complaints %",
+    "Quality Audit Score",
+    "ISO Compliance %"
+  ],
+  "supported_by_modules": [
+    "services/backend_core/department_agents/",
+    "services/backend_core/integrations/",
+    "services/backend_core/enterprise_os/",
+    "services/backend_core/governance/",
+    "services/backend_core/knowledge/"
+  ],
+  "classification": "Internal"
+}

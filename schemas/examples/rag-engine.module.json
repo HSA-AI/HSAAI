@@ -1,0 +1,161 @@
+{
+  "schema_version": "1.0.0",
+  "module_id": "rag-engine",
+  "name": "RAG Engine",
+  "name_en": "RAG Engine",
+  "name_ar": "محرك RAG",
+  "version": "9.1.0",
+  "description": "Retrieval-Augmented Generation engine with hybrid semantic + keyword search, reranking, and tenant-scoped vector operations",
+  "category": "ai-platform",
+  "status": "production",
+  "ownership": {
+    "owner_team": "AI Platform Team",
+    "business_domain": "Knowledge Management",
+    "technical_owner": "ai-platform@hsaai.group",
+    "responsible_department": "Data Office"
+  },
+  "components": [
+    {
+      "id": "rag-search",
+      "name": "RAG Search",
+      "description": "Hybrid search combining semantic (Qdrant) and keyword (PostgreSQL FTS) retrieval",
+      "responsibilities": [
+        "Execute hybrid search queries",
+        "Fuse semantic and keyword results via reciprocal rank fusion",
+        "Apply tenant-scoped filters"
+      ],
+      "apis": [
+        {"endpoint": "/v1/search", "method": "POST", "description": "Hybrid search"},
+        {"endpoint": "/v1/search/semantic", "method": "POST", "description": "Semantic-only search"},
+        {"endpoint": "/v1/search/keyword", "method": "POST", "description": "Keyword-only search"}
+      ]
+    },
+    {
+      "id": "reranker",
+      "name": "Reranker",
+      "description": "Cross-encoder reranker for improving search precision",
+      "responsibilities": [
+        "Rerank top-K search results",
+        "Apply BGE-reranker-large model",
+        "Return reranked results with scores"
+      ]
+    },
+    {
+      "id": "citation-generator",
+      "name": "Citation Generator",
+      "description": "Generates citations linking responses to source documents",
+      "responsibilities": [
+        "Map response chunks to source documents",
+        "Generate citation metadata",
+        "Ensure traceability"
+      ]
+    },
+    {
+      "id": "chunking-pipeline",
+      "name": "Chunking Pipeline",
+      "description": "Semantic document chunking for ingestion",
+      "responsibilities": [
+        "Split documents into semantic chunks",
+        "Preserve chunk offsets",
+        "Generate chunk metadata"
+      ]
+    }
+  ],
+  "capabilities": {
+    "core": ["hybrid-search", "semantic-search", "keyword-search", "reranking", "citation-generation"],
+    "ai": ["rag", "embedding-generation", "relevance-scoring"],
+    "business": ["knowledge-retrieval", "document-search", "policy-lookup"],
+    "automation": ["auto-indexing", "auto-reranking"]
+  },
+  "kpi_framework": [
+    {
+      "name": "Search Latency P95",
+      "target": "< 500ms",
+      "measurement_method": "Prometheus histogram percentile",
+      "data_source": "rag_search_latency_seconds",
+      "alert_threshold": "> 1000ms for 5 minutes"
+    },
+    {
+      "name": "Recall@5",
+      "target": "> 90%",
+      "measurement_method": "Eval suite on test queries",
+      "data_source": "rag_eval_results",
+      "alert_threshold": "< 85%"
+    },
+    {
+      "name": "Precision@5",
+      "target": "> 85%",
+      "measurement_method": "Eval suite on test queries",
+      "data_source": "rag_eval_results",
+      "alert_threshold": "< 80%"
+    },
+    {
+      "name": "Availability",
+      "target": "99.9%",
+      "measurement_method": "Uptime monitoring",
+      "data_source": "Prometheus",
+      "alert_threshold": "< 99.5%"
+    }
+  ],
+  "security_model": {
+    "authentication": {"type": "OAuth2/OIDC", "keycloak_compatible": true},
+    "authorization": {
+      "rbac": true,
+      "abac": true,
+      "permissions": ["knowledge:read", "knowledge:write", "knowledge:delete", "knowledge:admin"]
+    },
+    "security_controls": {
+      "audit_logging": true,
+      "encryption_at_rest": true,
+      "encryption_in_transit": true,
+      "tenant_isolation": true,
+      "data_classification": true
+    }
+  },
+  "data_architecture": {
+    "data_sources": ["Qdrant", "PostgreSQL", "Neo4j", "MinIO"],
+    "events_consumed": ["document.registered", "document.approved", "document.archived", "document.deleted"],
+    "events_produced": ["rag.search.executed", "rag.index.updated", "rag.citation.generated"],
+    "storage_requirements": "10M+ vectors in Qdrant, 1M+ documents in PostgreSQL",
+    "data_retention_policy": "Vectors retained while document is active; deleted on document archive/delete"
+  },
+  "runtime": {
+    "service_entrypoint": "python -m rag_engine.main",
+    "api_endpoints": [
+      "http://rag_engine:8030/v1/search",
+      "http://rag_engine:8030/health"
+    ],
+    "health_checks": {"liveness": "/health", "readiness": "/ready"},
+    "async_support": true,
+    "deployment_requirements": {"cpu": "1000m", "memory": "2Gi", "replicas": 3, "gpu_required": false}
+  },
+  "dependencies": {
+    "internal_services": ["backend-core", "auth-service", "governance-service"],
+    "external_services": [],
+    "databases": ["Qdrant", "PostgreSQL", "Neo4j", "Redis"],
+    "message_brokers": ["Kafka"],
+    "ai_infrastructure": ["sentence-transformers", "BGE-reranker-large"]
+  },
+  "observability": {
+    "metrics": ["rag_search_total", "rag_search_latency_seconds", "rag_search_errors_total", "rag_results_count"],
+    "logs": ["search queries", "errors", "audit events"],
+    "distributed_tracing": true,
+    "opentelemetry_support": true,
+    "monitoring_dashboards": ["RAG Performance", "RAG Errors", "RAG Usage"],
+    "alert_rules": ["HighErrorRate", "HighLatency", "ServiceDown"]
+  },
+  "ai_governance": {
+    "model_tracking": true,
+    "prompt_governance": true,
+    "ai_quality_metrics": ["recall@5", "precision@5", "hallucination_rate", "citation_accuracy"],
+    "cost_tracking": true,
+    "safety_controls": ["prompt-firewall", "pii-detection", "citation-required", "tenant-isolation"],
+    "evaluation_metrics": ["MRR", "NDCG", "hit_rate", "faithfulness"]
+  },
+  "compatibility": {
+    "backward_compatible": true,
+    "api_version": "v1",
+    "migration_required": false,
+    "deprecated_features": []
+  }
+}

@@ -1,0 +1,33 @@
+# HSAAI Staging Environment Application
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: hsaai-staging
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: hsaai
+    environment: staging
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/hsaai/hsaai
+    targetRevision: main
+    path: infrastructure/helm
+    helm:
+      valueFiles:
+        - values.yaml
+        # Override staging-specific values:
+        # - values-staging.yaml
+      parameters:
+        - name: global.environment
+          value: staging
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: hsaai-staging
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+  revisionHistoryLimit: 5

@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.security.module.v1",
+  "name": "audit-logs",
+  "name_full": "Audit Logs",
+  "description": "HMAC-signed audit logs. Immutable. 7-year retention.",
+  "implementation_ref": "services/backend_core/security/audit.py",
+  "status": "production",
+  "backward_compatible": true
+}

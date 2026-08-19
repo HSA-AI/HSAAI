@@ -1,0 +1,33 @@
+{
+  "schema": "hsaai.integration.v1",
+  "integration_id": "INT-SHAREPOINT",
+  "name": "Microsoft SharePoint",
+  "directory": "sharepoint",
+  "category": "productivity",
+  "category_name": "Productivity & Collaboration",
+  "vendor": "Microsoft",
+  "protocol": "Graph API + CSOM",
+  "authentication": "OAuth2",
+  "status": "production",
+  "connector_ref": "packages/common/connectors/sharepoint/",
+  "departments": [
+    "DEPT-IT",
+    "DEPT-LEG",
+    "DEPT-HR"
+  ],
+  "security": {
+    "encryption_in_transit": "TLS 1.3",
+    "encryption_at_rest": "AES-256",
+    "audit": "HMAC-signed",
+    "rate_limiting": true,
+    "circuit_breaker": true,
+    "pii_detection": "Microsoft Presidio"
+  },
+  "observability": {
+    "metrics": "Prometheus",
+    "logs": "Loki",
+    "traces": "Tempo (OpenTelemetry)",
+    "dashboards": "Grafana"
+  },
+  "backward_compatible": true
+}

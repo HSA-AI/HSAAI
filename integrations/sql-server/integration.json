@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.integration.v1",
+  "integration_id": "INT-SQL-SERVER",
+  "name": "Microsoft SQL Server",
+  "directory": "sql-server",
+  "category": "database",
+  "category_name": "Databases",
+  "vendor": "Microsoft",
+  "protocol": "TDS (T-SQL)",
+  "authentication": "SQL Auth + AD",
+  "status": "production",
+  "connector_ref": "packages/common/connectors/sql_server/",
+  "departments": [
+    "DEPT-IT",
+    "DEPT-FIN"
+  ],
+  "security": {
+    "encryption_in_transit": "TLS 1.3",
+    "encryption_at_rest": "AES-256",
+    "audit": "HMAC-signed",
+    "rate_limiting": true,
+    "circuit_breaker": true,
+    "pii_detection": "Microsoft Presidio"
+  },
+  "observability": {
+    "metrics": "Prometheus",
+    "logs": "Loki",
+    "traces": "Tempo (OpenTelemetry)",
+    "dashboards": "Grafana"
+  },
+  "backward_compatible": true
+}

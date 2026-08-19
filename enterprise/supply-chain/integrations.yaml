@@ -1,0 +1,22 @@
+# Integrations used by Supply Chain department
+apiVersion: hsaaiv2/v1
+kind: DepartmentIntegrations
+metadata:
+  name: supply-chain-integrations
+spec:
+  departmentId: DEPT-SCM
+  integrations:
+  - id: sap
+  - id: oracle-erp
+  - id: wms
+  - id: mes
+  - id: kafka
+  defaultAuth:
+    type: oauth2
+    provider: keycloak
+  retryPolicy:
+    maxRetries: 3
+    backoff: exponential
+  circuitBreaker:
+    enabled: true
+    threshold: 5

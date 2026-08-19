@@ -1,0 +1,44 @@
+# Configuration template for RabbitMQ
+apiVersion: hsaaiv2/v1
+kind: IntegrationConfig
+metadata:
+  name: rabbitmq-config
+  labels:
+    integration: INT-RABBITMQ
+    category: messaging
+    vendor: VMware
+spec:
+  enabled: true
+  endpoint: "${INT-RABBITMQ_ENDPOINT}"
+  credentials:
+    source: vault
+    path: "secret/hsaai/integrations/rabbitmq"
+  auth:
+    type: sasl
+    clientId: "${INT-RABBITMQ_CLIENT_ID}"
+    clientSecret: "vault:rabbitmq/client-secret"
+    tenant: "${INT-RABBITMQ_TENANT}"
+  pool:
+    maxConnections: 20
+    idleTimeout: 300s
+  retry:
+    maxRetries: 3
+    backoff: exponential
+    initialDelay: 1s
+    maxDelay: 30s
+  circuitBreaker:
+    enabled: true
+    failureThreshold: 5
+    recoveryTime: 60s
+  rateLimit:
+    requestsPerSecond: 50
+    burst: 100
+  observability:
+    metricsEnabled: true
+    logsEnabled: true
+    tracesEnabled: true
+    logLevel: info
+  security:
+    piiDetection: true
+    auditAll: true
+    tlsMinVersion: "1.3"

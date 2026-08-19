@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.kpis.v1",
+  "department_id": "DEPT-AUD",
+  "department": "Internal Audit",
+  "kpis": [
+    {
+      "id": "KPI-DEPT-AUD-01",
+      "name": "Audit Plan Completion %",
+      "frequency": "monthly",
+      "source_integration": "power-bi"
+    },
+    {
+      "id": "KPI-DEPT-AUD-02",
+      "name": "Findings Closure Rate %",
+      "frequency": "monthly",
+      "source_integration": "sharepoint"
+    },
+    {
+      "id": "KPI-DEPT-AUD-03",
+      "name": "Repeat Findings %",
+      "frequency": "monthly",
+      "source_integration": "m365"
+    },
+    {
+      "id": "KPI-DEPT-AUD-04",
+      "name": "Audit Cycle Time",
+      "frequency": "monthly",
+      "source_integration": "sql-server"
+    }
+  ],
+  "dashboard_ref": "../../monitoring/dashboards/dept-aud.json"
+}

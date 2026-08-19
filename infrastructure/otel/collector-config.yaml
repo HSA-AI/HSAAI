@@ -1,0 +1,81 @@
+# HSAAI OpenTelemetry Collector Configuration
+# =============================================================
+# Receives traces, metrics, and logs from all HSAAI services and
+# exports them to Tempo (traces), Prometheus (metrics), and Loki (logs).
+# This wiring follows Chapter 10 (Deployment) and Chapter 09 (Analytics)
+# of the HSAAI Executive Architecture Book.
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    timeout: 5s
+    send_batch_size: 1024
+  memory_limiter:
+    check_interval: 2s
+    limit_mib: 512
+    spike_limit_mib: 128
+  resource:
+    attributes:
+      - key: deployment.environment
+        value: ${env:DEPLOY_ENV:production}
+        action: upsert
+      - key: service.namespace
+        value: hsaai
+        action: upsert
+  attributes/remove_internal:
+    actions:
+      - key: http.request.header.authorization
+        action: delete
+      - key: db.statement
+        action: hash
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+  zpages:
+    endpoint: 0.0.0.0:55679
+
+exporters:
+  # Traces -> Tempo
+  otlp/tempo:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
+  # Metrics -> Prometheus (via remote write)
+  prometheusremotewrite:
+    endpoint: http://prometheus:9090/api/v1/write
+  # Logs -> Loki
+  loki:
+    endpoint: http://loki:3100/loki/api/v1/push
+  # Debug (disabled by default — enable for troubleshooting)
+  debug:
+    verbosity: basic
+
+service:
+  extensions: [health_check, zpages]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, resource, attributes/remove_internal, batch]
+      exporters: [otlp/tempo, debug]
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, resource, batch]
+      exporters: [prometheusremotewrite]
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, resource, batch]
+      exporters: [loki]
+
+  telemetry:
+    logs:
+      level: info
+    metrics:
+      address: 0.0.0.0:8888

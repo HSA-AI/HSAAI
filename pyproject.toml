@@ -1,0 +1,103 @@
+[project]
+name = "hsaai"
+version = "4.0.0"
+description = "HSAAI Enterprise AI Operating System — Hayel Saeed Anam Group"
+readme = "README.md"
+license = { text = "Enterprise Internal Use" }
+requires-python = ">=3.12"
+authors = [
+    { name = "HSA Group", email = "ai@hsa.com.ye" }
+]
+keywords = ["enterprise-ai", "rag", "agents", "mcp", "arabic", "on-premise", "ai-operating-system"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: Other/Proprietary License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+[project.urls]
+Homepage = "https://hsa.com.ye"
+Documentation = "https://github.com/hsa/hsaai/docs"
+Repository = "https://github.com/hsa/hsaai"
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+exclude = ["_deprecated_adapters", "node_modules", ".git", "__pycache__"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "A", "C4", "SIM"]
+ignore = ["E501"]  # Line too long (handled by formatter)
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+exclude = ["_deprecated_adapters/", "tests/"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
+addopts = [
+    "-v",
+    "--tb=short",
+    "--strict-markers",
+    "--cov=services",
+    "--cov=packages",
+    "--cov-report=term-missing",
+    "--cov-report=html:tests/coverage_html",
+    "--cov-report=xml:tests/coverage.xml",
+    "--cov-fail-under=80",
+]
+markers = [
+    "e2e: end-to-end tests (require running services)",
+    "integration: integration tests (require testcontainers)",
+    "load: load tests (run with locust, not pytest)",
+    "security: security regression tests",
+    "contract: API contract tests",
+    "slow: slow tests (>5s)",
+    "unit: unit tests (fast, isolated)",
+]
+
+[tool.coverage.run]
+# FIX B-10: Removed 5 phantom service dirs that don't exist as code:
+#   ai_orchestrator, document_ai, analytics, compliance_reports, bff
+source = [
+    "services/auth_service",
+    "services/rag_engine",
+    "services/llm_gateway",
+    "services/multi_agents",
+    "services/workflow_engine",
+    "services/pii_detector",
+    "services/mcp_server",
+    "services/model_training",
+    "services/ai_alignment",
+    "services/governance",
+    "services/api_gateway",
+    "services/backend_core",
+    "packages/common",
+]
+omit = [
+    "*/__pycache__/*",
+    "*/_deprecated_*",
+    "*/tests/*",
+    "*/migrations/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "if _AUTH_AVAILABLE:",
+]

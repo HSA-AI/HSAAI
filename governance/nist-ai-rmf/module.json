@@ -1,0 +1,14 @@
+{
+  "schema": "hsaai.governance.module.v1",
+  "name": "nist-ai-rmf",
+  "name_full": "NIST AI RMF Compliance",
+  "description": "NIST AI Risk Management Framework alignment.",
+  "implementation_ref": "compliance/nist-ai-rmf/",
+  "frameworks": [
+    "ISO 27001",
+    "ISO 42001",
+    "NIST AI RMF"
+  ],
+  "status": "production",
+  "backward_compatible": true
+}

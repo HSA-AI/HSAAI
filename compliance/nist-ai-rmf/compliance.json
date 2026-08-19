@@ -1,0 +1,11 @@
+{
+  "schema": "hsaai.compliance.standard.v1",
+  "standard": "nist-ai-rmf",
+  "name": "NIST AI RMF",
+  "description": "AI Risk Management Framework. Govern, Map, Measure, Manage functions.",
+  "owner": "CDO",
+  "status": "Aligned",
+  "mapping": "RMF controls mapping",
+  "last_assessment": "2026-06-01",
+  "next_assessment": "2026-12-01"
+}

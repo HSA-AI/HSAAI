@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.deployment.module.v1",
+  "name": "helm",
+  "name_full": "Helm Charts",
+  "description": "Helm charts for all HSAAI services.",
+  "implementation_ref": "infrastructure/helm/",
+  "status": "production",
+  "backward_compatible": true
+}

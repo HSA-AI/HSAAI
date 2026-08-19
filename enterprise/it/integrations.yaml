@@ -1,0 +1,29 @@
+# Integrations used by IT department
+apiVersion: hsaaiv2/v1
+kind: DepartmentIntegrations
+metadata:
+  name: it-integrations
+spec:
+  departmentId: DEPT-IT
+  integrations:
+  - id: active-directory
+  - id: azure-ad
+  - id: m365
+  - id: sharepoint
+  - id: teams
+  - id: exchange
+  - id: sql-server
+  - id: postgresql
+  - id: mongodb
+  - id: redis
+  - id: kafka
+  - id: rabbitmq
+  defaultAuth:
+    type: oauth2
+    provider: keycloak
+  retryPolicy:
+    maxRetries: 3
+    backoff: exponential
+  circuitBreaker:
+    enabled: true
+    threshold: 5

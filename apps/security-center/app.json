@@ -1,0 +1,13 @@
+{
+  "schema": "hsaai.app.v1",
+  "app_id": "APP-SEC",
+  "name_en": "Security Center",
+  "name_ar": "مركز الأمن",
+  "directory": "security-center",
+  "description": "Security operations center. Threats, incidents, vulnerabilities, audit logs.",
+  "type": "web",
+  "status": "production",
+  "implementation_ref": "apps/web/ (security module), security/",
+  "hosted_in": "apps/web/ (Enterprise Portal, Next.js 15)",
+  "backward_compatible": true
+}

@@ -1,0 +1,13 @@
+{
+  "schema": "hsaai.app.v1",
+  "app_id": "APP-KNOWLEDGE",
+  "name_en": "Knowledge Hub",
+  "name_ar": "مركز المعرفة",
+  "directory": "knowledge-hub",
+  "description": "Enterprise knowledge base search and browse. Hybrid semantic + keyword + graph search.",
+  "type": "web",
+  "status": "production",
+  "implementation_ref": "apps/web/ (knowledge module), services/rag_engine/",
+  "hosted_in": "apps/web/ (Enterprise Portal, Next.js 15)",
+  "backward_compatible": true
+}

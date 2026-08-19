@@ -1,0 +1,23 @@
+{
+  "schema": "hsaai.corporate.manifest.v1",
+  "module": "corporate",
+  "version": "7.0.0",
+  "generated_at": "2026-07-13",
+  "submodules": {
+    "group-profile": "Group identity, vision, leadership, business segments",
+    "subsidiaries": "Subsidiary registry (25 major)",
+    "business-units": "Business unit registry (22 BUs)",
+    "factories": "Factory registry (20 major of 40+)",
+    "distribution-network": "Distribution centers (22 DCs in 3 tiers)",
+    "governance": "Board, committees, DoA",
+    "corporate-policies": "Policy library (24 policies)",
+    "corporate-standards": "Standards library (28 standards)",
+    "enterprise-architecture": "TOGAF + C4 architecture artifacts",
+    "data": "Machine-readable reference data"
+  },
+  "backward_compatible_with": [
+    "services/backend_core/enterprise/hsaai_profile.py"
+  ],
+  "owner": "Office of the Group CEO",
+  "classification": "Internal"
+}

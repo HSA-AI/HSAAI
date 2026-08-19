@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.kpis.v1",
+  "department_id": "DEPT-INN",
+  "department": "Innovation",
+  "kpis": [
+    {
+      "id": "KPI-DEPT-INN-01",
+      "name": "Innovation Pipeline Value",
+      "frequency": "monthly",
+      "source_integration": "power-bi"
+    },
+    {
+      "id": "KPI-DEPT-INN-02",
+      "name": "POC Success Rate %",
+      "frequency": "monthly",
+      "source_integration": "sharepoint"
+    },
+    {
+      "id": "KPI-DEPT-INN-03",
+      "name": "Time-to-POC Days",
+      "frequency": "monthly",
+      "source_integration": "m365"
+    },
+    {
+      "id": "KPI-DEPT-INN-04",
+      "name": "Adoption Rate %",
+      "frequency": "monthly",
+      "source_integration": "m365"
+    }
+  ],
+  "dashboard_ref": "../../monitoring/dashboards/dept-inn.json"
+}

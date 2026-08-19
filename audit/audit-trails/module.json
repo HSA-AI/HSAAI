@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.audit.module.v1",
+  "name": "audit-trails",
+  "name_full": "Audit Trails",
+  "description": "Immutable, HMAC-signed audit trails for all platform actions.",
+  "implementation_ref": "services/backend_core/security/audit.py",
+  "status": "production",
+  "backward_compatible": true
+}

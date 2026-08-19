@@ -1,0 +1,181 @@
+{
+  "schema": "hsaai.corporate.subsidiaries.v1",
+  "count": 25,
+  "subsidiaries": [
+    {
+      "id": "sub-rabIA",
+      "name_ar": "شركة رأس الخيمة للأغذية",
+      "name_en": "Rakisa Foods",
+      "country": "Yemen",
+      "segment": "Food Industries"
+    },
+    {
+      "id": "sub-yemenCo",
+      "name_ar": "الشركة اليمنية للأغذية",
+      "name_en": "Yemen Company for Foods",
+      "country": "Yemen",
+      "segment": "Food Industries"
+    },
+    {
+      "id": "sub-edibleOils",
+      "name_ar": "شركة الزيوت الغذائية",
+      "name_en": "Edible Oils Company",
+      "country": "Yemen",
+      "segment": "Food Industries"
+    },
+    {
+      "id": "sub-sugar",
+      "name_ar": "شركة السكر",
+      "name_en": "Sugar Company",
+      "country": "Yemen",
+      "segment": "Food Industries"
+    },
+    {
+      "id": "sub-flour",
+      "name_ar": "شركة المطاحن",
+      "name_en": "Flour Mills Company",
+      "country": "Yemen",
+      "segment": "Food Industries"
+    },
+    {
+      "id": "sub-dairy",
+      "name_ar": "شركة الألبان",
+      "name_en": "Dairy Company",
+      "country": "Yemen",
+      "segment": "Beverages"
+    },
+    {
+      "id": "sub-juice",
+      "name_ar": "شركة العصائر",
+      "name_en": "Juice Company",
+      "country": "Yemen",
+      "segment": "Beverages"
+    },
+    {
+      "id": "sub-water",
+      "name_ar": "شركة المياه",
+      "name_en": "Water Company",
+      "country": "Yemen",
+      "segment": "Beverages"
+    },
+    {
+      "id": "sub-detergents",
+      "name_ar": "شركة المنظفات",
+      "name_en": "Detergents Company",
+      "country": "Yemen",
+      "segment": "Personal & Home Care"
+    },
+    {
+      "id": "sub-cosmetics",
+      "name_ar": "شركة مستحضرات التجميل",
+      "name_en": "Cosmetics Company",
+      "country": "UAE",
+      "segment": "Personal & Home Care"
+    },
+    {
+      "id": "sub-plastics",
+      "name_ar": "شركة البلاستيك",
+      "name_en": "Plastics Company",
+      "country": "Saudi Arabia",
+      "segment": "Plastics & Packaging"
+    },
+    {
+      "id": "sub-packaging",
+      "name_ar": "شركة التغليف",
+      "name_en": "Packaging Company",
+      "country": "Saudi Arabia",
+      "segment": "Plastics & Packaging"
+    },
+    {
+      "id": "sub-agribusiness",
+      "name_ar": "الشركة الزراعية",
+      "name_en": "Agribusiness Company",
+      "country": "Ethiopia",
+      "segment": "Agribusiness"
+    },
+    {
+      "id": "sub-feed",
+      "name_ar": "شركة الأعلاف",
+      "name_en": "Feed Company",
+      "country": "Yemen",
+      "segment": "Agribusiness"
+    },
+    {
+      "id": "sub-trading-ksa",
+      "name_ar": "شركة التجارة - السعودية",
+      "name_en": "HSA Trading KSA",
+      "country": "Saudi Arabia",
+      "segment": "Trading & Distribution"
+    },
+    {
+      "id": "sub-trading-uae",
+      "name_ar": "شركة التجارة - الإمارات",
+      "name_en": "HSA Trading UAE",
+      "country": "UAE",
+      "segment": "Trading & Distribution"
+    },
+    {
+      "id": "sub-trading-africa",
+      "name_ar": "شركة التجارة - شرق أفريقيا",
+      "name_en": "HSA Trading East Africa",
+      "country": "Djibouti",
+      "segment": "Trading & Distribution"
+    },
+    {
+      "id": "sub-logistics",
+      "name_ar": "شركة الخدمات اللوجستية",
+      "name_en": "Logistics Services Company",
+      "country": "Yemen",
+      "segment": "Logistics & Shipping"
+    },
+    {
+      "id": "sub-shipping",
+      "name_ar": "الشركة البحرية",
+      "name_en": "Maritime Company",
+      "country": "Yemen",
+      "segment": "Logistics & Shipping"
+    },
+    {
+      "id": "sub-real-estate",
+      "name_ar": "الشركة العقارية",
+      "name_en": "Real Estate Company",
+      "country": "Yemen",
+      "segment": "Real Estate & Hospitality"
+    },
+    {
+      "id": "sub-hotels",
+      "name_ar": "شركة الفنادق",
+      "name_en": "Hotels Company",
+      "country": "Yemen",
+      "segment": "Real Estate & Hospitality"
+    },
+    {
+      "id": "sub-energy",
+      "name_ar": "شركة الطاقة",
+      "name_en": "Energy Company",
+      "country": "Yemen",
+      "segment": "Energy & Utilities"
+    },
+    {
+      "id": "sub-water-desal",
+      "name_ar": "شركة تحلية المياه",
+      "name_en": "Water Desalination Company",
+      "country": "Yemen",
+      "segment": "Energy & Utilities"
+    },
+    {
+      "id": "sub-india",
+      "name_ar": "هيل سعيد أنعم - الهند",
+      "name_en": "HSA India",
+      "country": "India",
+      "segment": "Trading & Distribution"
+    },
+    {
+      "id": "sub-netherlands",
+      "name_ar": "هيل سعيد أنعم - هولندا",
+      "name_en": "HSA Netherlands",
+      "country": "Netherlands",
+      "segment": "Trading & Distribution"
+    }
+  ]
+}

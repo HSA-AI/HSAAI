@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.security.module.v1",
+  "name": "incident-response",
+  "name_full": "Incident Response",
+  "description": "Incident response runbook, severity matrix, escalation tree.",
+  "implementation_ref": "runbooks/, scripts/dr/",
+  "status": "production",
+  "backward_compatible": true
+}

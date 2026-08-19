@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.kpis.v1",
+  "department_id": "DEPT-ACC",
+  "department": "Accounting",
+  "kpis": [
+    {
+      "id": "KPI-DEPT-ACC-01",
+      "name": "Month-End Close Days",
+      "frequency": "monthly",
+      "source_integration": "sap"
+    },
+    {
+      "id": "KPI-DEPT-ACC-02",
+      "name": "Audit Findings Count",
+      "frequency": "monthly",
+      "source_integration": "oracle-erp"
+    },
+    {
+      "id": "KPI-DEPT-ACC-03",
+      "name": "Reconciliation Accuracy %",
+      "frequency": "monthly",
+      "source_integration": "sql-server"
+    },
+    {
+      "id": "KPI-DEPT-ACC-04",
+      "name": "IFRS Compliance %",
+      "frequency": "monthly",
+      "source_integration": "postgresql"
+    }
+  ],
+  "dashboard_ref": "../../monitoring/dashboards/dept-acc.json"
+}

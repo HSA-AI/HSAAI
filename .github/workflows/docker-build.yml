@@ -1,0 +1,12 @@
+name: HSAAI Docker Build
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate compose config
+        run: docker compose -f infrastructure/docker/docker-compose.hsa-internal.yml config

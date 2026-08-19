@@ -1,0 +1,29 @@
+{
+  "schema": "hsaai.ai-platform.submodule.v1",
+  "name": "llm-gateway",
+  "name_en": "Enterprise LLM Gateway",
+  "name_ar": "بوابة النماذج اللغوية المؤسسية",
+  "description": "Unified gateway for all LLM calls — vLLM (local GPU) primary, OpenAI/Azure OpenAI fallback.",
+  "components": [
+    "vLLM Adapter",
+    "OpenAI Adapter",
+    "Azure OpenAI Adapter",
+    "Token Counter",
+    "Rate Limiter",
+    "Cost Tracker"
+  ],
+  "capabilities": [
+    "Local model serving (vLLM)",
+    "Cloud fallback (OpenAI/Azure)",
+    "Token usage tracking",
+    "Cost allocation per dept",
+    "Rate limiting per user/role"
+  ],
+  "kpis": [
+    "Local model usage > 80%",
+    "Cloud cost < $10K/month",
+    "Gateway uptime > 99.9%"
+  ],
+  "runtime_ref": "services/llm_gateway/",
+  "backward_compatible": true
+}

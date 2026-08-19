@@ -1,0 +1,25 @@
+# Agent binding for Marketing department
+apiVersion: hsaaiv2/v1
+kind: DepartmentAgentBinding
+metadata:
+  name: marketing-agent-binding
+  labels:
+    department: DEPT-MKT
+    department-name: "Marketing"
+spec:
+  departmentId: DEPT-MKT
+  departmentName: Marketing
+  agentId: AGENT-MARKETING
+  agentRef: ../../department-agents/marketing/
+  autoInvoke: false
+  humanInTheLoop: true
+  auditAllCalls: true
+  allowedTools:
+    - rag_search
+    - knowledge_graph_query
+    - llm_complete
+    - mcp_tool_call
+  forbiddenActions:
+    - delete_record
+    - drop_table
+    - financial_posting_without_approval

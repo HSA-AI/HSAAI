@@ -1,0 +1,2 @@
+import { AppShell } from "@/components/layout/app-shell"; import { Card } from "@/components/ui/card";
+export default function SettingsPage(){ return <AppShell><h1 className="mb-6 text-3xl font-bold">الأمان والإعدادات</h1><div className="grid gap-4 md:grid-cols-2"><Card><h2 className="text-xl font-semibold">SSO / Keycloak</h2><p className="text-slate-500">جاهز للربط مع Keycloak، LDAP، MFA، وJWT.</p></Card><Card><h2 className="text-xl font-semibold">RBAC</h2><p className="text-slate-500">أدوار وصلاحيات حسب المؤسسة ومساحة العمل.</p></Card></div></AppShell> }

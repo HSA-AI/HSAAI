@@ -1,0 +1,13 @@
+{
+  "schema": "hsaai.app.v1",
+  "app_id": "APP-EXEC-DASH",
+  "name_en": "Executive Dashboard",
+  "name_ar": "لوحة القيادة التنفيذية",
+  "directory": "executive-dashboard",
+  "description": "Real-time executive dashboard with KPIs across all departments. Drill-down to department dashboards.",
+  "type": "web",
+  "status": "production",
+  "implementation_ref": "apps/web/ (dashboard module)",
+  "hosted_in": "apps/web/ (Enterprise Portal, Next.js 15)",
+  "backward_compatible": true
+}

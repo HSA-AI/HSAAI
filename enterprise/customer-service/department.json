@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.department.v1",
+  "id": "DEPT-CSVC",
+  "name_ar": "خدمة العملاء",
+  "name_en": "Customer Service",
+  "directory": "customer-service",
+  "head_role": "VP Customer Service",
+  "reports_to": "CCO",
+  "mission_ar": "تقديم خدمة عملاء استثنائية عبر جميع القنوات والأسواق",
+  "mission_en": "Deliver exceptional customer service across all channels and markets",
+  "agent_ref": "AGENT-CUSTOMER-SERVICE",
+  "integrations": [
+    "crm",
+    "teams",
+    "exchange",
+    "power-bi"
+  ],
+  "kpis": [
+    "CSAT %",
+    "First Contact Resolution %",
+    "Average Response Time",
+    "NPS"
+  ],
+  "supported_by_modules": [
+    "services/backend_core/department_agents/",
+    "services/backend_core/integrations/",
+    "services/backend_core/enterprise_os/",
+    "services/backend_core/governance/",
+    "services/backend_core/knowledge/"
+  ],
+  "classification": "Internal"
+}

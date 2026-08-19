@@ -1,0 +1,180 @@
+{
+  "schema": "hsaai.corporate.business-units.v1",
+  "count": 22,
+  "business_units": [
+    {
+      "id": "bu-food-oils",
+      "name": "Edible Oils BU",
+      "parent_segment": "Food Industries",
+      "subsidiary_refs": [
+        "sub-edibleOils"
+      ]
+    },
+    {
+      "id": "bu-sugar",
+      "name": "Sugar BU",
+      "parent_segment": "Food Industries",
+      "subsidiary_refs": [
+        "sub-sugar"
+      ]
+    },
+    {
+      "id": "bu-flour",
+      "name": "Flour & Milling BU",
+      "parent_segment": "Food Industries",
+      "subsidiary_refs": [
+        "sub-flour"
+      ]
+    },
+    {
+      "id": "bu-dairy",
+      "name": "Dairy BU",
+      "parent_segment": "Beverages",
+      "subsidiary_refs": [
+        "sub-dairy"
+      ]
+    },
+    {
+      "id": "bu-juice",
+      "name": "Juice BU",
+      "parent_segment": "Beverages",
+      "subsidiary_refs": [
+        "sub-juice"
+      ]
+    },
+    {
+      "id": "bu-water",
+      "name": "Water BU",
+      "parent_segment": "Beverages",
+      "subsidiary_refs": [
+        "sub-water"
+      ]
+    },
+    {
+      "id": "bu-home-care",
+      "name": "Home Care BU",
+      "parent_segment": "Personal & Home Care",
+      "subsidiary_refs": [
+        "sub-detergents"
+      ]
+    },
+    {
+      "id": "bu-personal-care",
+      "name": "Personal Care BU",
+      "parent_segment": "Personal & Home Care",
+      "subsidiary_refs": [
+        "sub-cosmetics"
+      ]
+    },
+    {
+      "id": "bu-flexible-packaging",
+      "name": "Flexible Packaging BU",
+      "parent_segment": "Plastics & Packaging",
+      "subsidiary_refs": [
+        "sub-packaging"
+      ]
+    },
+    {
+      "id": "bu-rigid-plastics",
+      "name": "Rigid Plastics BU",
+      "parent_segment": "Plastics & Packaging",
+      "subsidiary_refs": [
+        "sub-plastics"
+      ]
+    },
+    {
+      "id": "bu-agri",
+      "name": "Agriculture BU",
+      "parent_segment": "Agribusiness",
+      "subsidiary_refs": [
+        "sub-agribusiness"
+      ]
+    },
+    {
+      "id": "bu-feed",
+      "name": "Animal Feed BU",
+      "parent_segment": "Agribusiness",
+      "subsidiary_refs": [
+        "sub-feed"
+      ]
+    },
+    {
+      "id": "bu-wholesale",
+      "name": "Wholesale Distribution BU",
+      "parent_segment": "Trading & Distribution",
+      "subsidiary_refs": [
+        "sub-trading-ksa",
+        "sub-trading-uae"
+      ]
+    },
+    {
+      "id": "bu-retail",
+      "name": "Retail BU",
+      "parent_segment": "Trading & Distribution",
+      "subsidiary_refs": []
+    },
+    {
+      "id": "bu-export",
+      "name": "Export BU",
+      "parent_segment": "Trading & Distribution",
+      "subsidiary_refs": [
+        "sub-trading-africa",
+        "sub-netherlands"
+      ]
+    },
+    {
+      "id": "bu-freight",
+      "name": "Freight Forwarding BU",
+      "parent_segment": "Logistics & Shipping",
+      "subsidiary_refs": [
+        "sub-logistics"
+      ]
+    },
+    {
+      "id": "bu-maritime",
+      "name": "Maritime BU",
+      "parent_segment": "Logistics & Shipping",
+      "subsidiary_refs": [
+        "sub-shipping"
+      ]
+    },
+    {
+      "id": "bu-warehousing",
+      "name": "Warehousing BU",
+      "parent_segment": "Logistics & Shipping",
+      "subsidiary_refs": []
+    },
+    {
+      "id": "bu-hotels",
+      "name": "Hospitality BU",
+      "parent_segment": "Real Estate & Hospitality",
+      "subsidiary_refs": [
+        "sub-hotels"
+      ]
+    },
+    {
+      "id": "bu-commercial-re",
+      "name": "Commercial Real Estate BU",
+      "parent_segment": "Real Estate & Hospitality",
+      "subsidiary_refs": [
+        "sub-real-estate"
+      ]
+    },
+    {
+      "id": "bu-power",
+      "name": "Power Generation BU",
+      "parent_segment": "Energy & Utilities",
+      "subsidiary_refs": [
+        "sub-energy"
+      ]
+    },
+    {
+      "id": "bu-desal",
+      "name": "Water Desalination BU",
+      "parent_segment": "Energy & Utilities",
+      "subsidiary_refs": [
+        "sub-water-desal"
+      ]
+    }
+  ]
+}

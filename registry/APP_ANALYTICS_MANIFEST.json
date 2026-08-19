@@ -1,0 +1,59 @@
+{
+  "app_id": "APP-ANALYTICS",
+  "name_en": "Enterprise Analytics Center",
+  "name_ar": "مركز التحليلات المؤسسية",
+  "directory": "analytics-center",
+  "type": "web",
+  "status": "production",
+  "category": "business-intelligence",
+  "backward_compatible": true,
+  "version": "27.0.0",
+  "frontend": "apps/web/analytics-center/",
+  "backend": "services/backend_core/ai_operations/analytics_center.py",
+  "integration": "integrations/power-bi/",
+  "database_migration": "alembic/versions/0005_add_enterprise_analytics.py",
+  "tables": [
+    "analytics_metrics",
+    "ai_insights",
+    "anomaly_events",
+    "analytics_reports"
+  ],
+  "roles": [
+    "EXECUTIVE",
+    "ANALYTICS_ADMIN",
+    "DEPARTMENT_MANAGER",
+    "ANALYST",
+    "VIEWER"
+  ],
+  "apis": [
+    "/api/analytics/kpis",
+    "/api/analytics/insights",
+    "/api/analytics/trends",
+    "/api/analytics/query",
+    "/api/analytics/reports",
+    "/api/analytics/anomalies",
+    "/api/analytics/forecast",
+    "/api/analytics/powerbi/token"
+  ],
+  "security": {
+    "authentication": "Keycloak OIDC + MFA",
+    "authorization": "RBAC (5 roles)",
+    "rls": true,
+    "internal_only": true
+  },
+  "ai_capabilities": [
+    "AI Insight Generation",
+    "Trend Detection",
+    "Anomaly Detection",
+    "Predictive Analytics",
+    "Analytics AI Assistant"
+  ],
+  "power_bi": {
+    "embedded": true,
+    "secure_tokens": true,
+    "sso": true,
+    "no_public_urls": true,
+    "audit_logging": true
+  },
+  "tests": 39
+}

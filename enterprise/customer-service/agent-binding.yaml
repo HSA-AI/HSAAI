@@ -1,0 +1,25 @@
+# Agent binding for Customer Service department
+apiVersion: hsaaiv2/v1
+kind: DepartmentAgentBinding
+metadata:
+  name: customer-service-agent-binding
+  labels:
+    department: DEPT-CSVC
+    department-name: "Customer Service"
+spec:
+  departmentId: DEPT-CSVC
+  departmentName: Customer Service
+  agentId: AGENT-CUSTOMER-SERVICE
+  agentRef: ../../department-agents/customer-service/
+  autoInvoke: false
+  humanInTheLoop: true
+  auditAllCalls: true
+  allowedTools:
+    - rag_search
+    - knowledge_graph_query
+    - llm_complete
+    - mcp_tool_call
+  forbiddenActions:
+    - delete_record
+    - drop_table
+    - financial_posting_without_approval

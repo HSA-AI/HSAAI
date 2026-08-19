@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.security.module.v1",
+  "name": "model-security",
+  "name_full": "Model Security",
+  "description": "Model signing, tamper detection, adversarial input defense.",
+  "implementation_ref": "ai-platform/ai-security/",
+  "status": "production",
+  "backward_compatible": true
+}

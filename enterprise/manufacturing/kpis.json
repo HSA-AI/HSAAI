@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.kpis.v1",
+  "department_id": "DEPT-MFG",
+  "department": "Manufacturing",
+  "kpis": [
+    {
+      "id": "KPI-DEPT-MFG-01",
+      "name": "OEE %",
+      "frequency": "monthly",
+      "source_integration": "mes"
+    },
+    {
+      "id": "KPI-DEPT-MFG-02",
+      "name": "Yield %",
+      "frequency": "monthly",
+      "source_integration": "sap"
+    },
+    {
+      "id": "KPI-DEPT-MFG-03",
+      "name": "Manufacturing Cost per Unit",
+      "frequency": "monthly",
+      "source_integration": "oracle-erp"
+    },
+    {
+      "id": "KPI-DEPT-MFG-04",
+      "name": "Schedule Attainment %",
+      "frequency": "monthly",
+      "source_integration": "kafka"
+    }
+  ],
+  "dashboard_ref": "../../monitoring/dashboards/dept-mfg.json"
+}

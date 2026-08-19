@@ -1,0 +1,14 @@
+name: HSAAI Security Scan
+on:
+  push:
+  pull_request:
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Secret placeholder check
+        run: |
+          ! grep -R "sk-" -n . --exclude-dir=.git || exit 1
+      - name: Internal-only config check
+        run: grep -q "ALLOW_EXTERNAL_AI=false" .env.hsa-internal.example

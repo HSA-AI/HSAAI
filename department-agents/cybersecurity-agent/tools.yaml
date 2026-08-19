@@ -1,0 +1,32 @@
+# Tool registry — Cybersecurity Agent
+apiVersion: hsaaiv2/v1
+kind: AgentTools
+metadata:
+  name: cybersecurity-agent-tools
+spec:
+  agentId: AGENT-CYBERSECURITY
+  tools:
+    - id: rag_search
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: siem_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: vault_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: anomaly_detect
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: create_incident
+      enabled: true
+      audit: true
+      human_approval: true
+  defaultTimeout: 30s
+  retryPolicy:
+    maxRetries: 2
+    backoff: exponential

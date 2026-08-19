@@ -1,0 +1,33 @@
+{
+  "schema": "hsaai.enterprise.department.v1",
+  "id": "DEPT-SCM",
+  "name_ar": "إدارة سلسلة الإمداد",
+  "name_en": "Supply Chain",
+  "directory": "supply-chain",
+  "head_role": "Chief Supply Chain Officer",
+  "reports_to": "COO",
+  "mission_ar": "تخطيط وتحسين سلسلة الإمداد من المورد إلى العميل",
+  "mission_en": "Plan and optimize the end-to-end supply chain from supplier to customer",
+  "agent_ref": "AGENT-SUPPLY-CHAIN",
+  "integrations": [
+    "sap",
+    "oracle-erp",
+    "wms",
+    "mes",
+    "kafka"
+  ],
+  "kpis": [
+    "Forecast Accuracy %",
+    "Inventory Turns",
+    "OTIF %",
+    "Supply Chain Cost as % of Sales"
+  ],
+  "supported_by_modules": [
+    "services/backend_core/department_agents/",
+    "services/backend_core/integrations/",
+    "services/backend_core/enterprise_os/",
+    "services/backend_core/governance/",
+    "services/backend_core/knowledge/"
+  ],
+  "classification": "Internal"
+}

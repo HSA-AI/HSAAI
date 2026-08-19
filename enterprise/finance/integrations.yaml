@@ -1,0 +1,22 @@
+# Integrations used by Finance department
+apiVersion: hsaaiv2/v1
+kind: DepartmentIntegrations
+metadata:
+  name: finance-integrations
+spec:
+  departmentId: DEPT-FIN
+  integrations:
+  - id: sap
+  - id: oracle-erp
+  - id: power-bi
+  - id: sql-server
+  - id: dynamics-365
+  defaultAuth:
+    type: oauth2
+    provider: keycloak
+  retryPolicy:
+    maxRetries: 3
+    backoff: exponential
+  circuitBreaker:
+    enabled: true
+    threshold: 5

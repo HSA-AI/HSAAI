@@ -1,0 +1,13 @@
+{
+  "schema": "hsaai.app.v1",
+  "app_id": "APP-CMD-CTR",
+  "name_en": "Enterprise Command Center",
+  "name_ar": "مركز القيادة المؤسسي",
+  "directory": "enterprise-command-center",
+  "description": "Unified operations command center. Real-time monitoring of all services, integrations, and incidents.",
+  "type": "web",
+  "status": "production",
+  "implementation_ref": "apps/web/ (command center module)",
+  "hosted_in": "apps/web/ (Enterprise Portal, Next.js 15)",
+  "backward_compatible": true
+}

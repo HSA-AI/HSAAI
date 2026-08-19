@@ -1,0 +1,21 @@
+# Integrations used by Distribution department
+apiVersion: hsaaiv2/v1
+kind: DepartmentIntegrations
+metadata:
+  name: distribution-integrations
+spec:
+  departmentId: DEPT-DIST
+  integrations:
+  - id: wms
+  - id: crm
+  - id: sap
+  - id: kafka
+  defaultAuth:
+    type: oauth2
+    provider: keycloak
+  retryPolicy:
+    maxRetries: 3
+    backoff: exponential
+  circuitBreaker:
+    enabled: true
+    threshold: 5

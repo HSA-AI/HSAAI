@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.monitoring.module.v1",
+  "name": "real-user-monitoring",
+  "name_full": "Real User Monitoring",
+  "description": "Frontend RUM via OpenTelemetry Web SDK.",
+  "implementation_ref": "apps/web/",
+  "status": "production",
+  "backward_compatible": true
+}

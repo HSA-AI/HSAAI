@@ -1,0 +1,54 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">HSAAI Assistant Official Circle Icon</title>
+  <desc id="desc">Circular black and gold official assistant icon inspired by HSAAI brand identity.</desc>
+  <defs>
+    <radialGradient id="goldGlow" cx="50%" cy="45%" r="58%">
+      <stop offset="0%" stop-color="#FFF1A6" stop-opacity="0.55"/>
+      <stop offset="50%" stop-color="#F0CF3A" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#050505" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="77" y1="42" x2="421" y2="469" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF3A4"/>
+      <stop offset="0.38" stop-color="#F0CF3A"/>
+      <stop offset="1" stop-color="#B88A19"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <circle cx="256" cy="256" r="246" fill="#050505" filter="url(#shadow)"/>
+  <circle cx="256" cy="256" r="240" fill="url(#goldGlow)"/>
+  <circle cx="256" cy="256" r="242" stroke="url(#gold)" stroke-width="18"/>
+  <circle cx="256" cy="256" r="209" stroke="#F0CF3A" stroke-width="4" opacity="0.7"/>
+
+  <!-- HSA-inspired golden flows -->
+  <path d="M110 377C118 289 134 217 185 149C206 121 230 99 259 82" stroke="url(#gold)" stroke-width="45" stroke-linecap="round"/>
+  <path d="M207 408C218 329 228 261 270 188C292 149 318 116 351 91" stroke="url(#gold)" stroke-width="37" stroke-linecap="round"/>
+  <path d="M310 414C314 350 328 297 360 247C381 215 404 191 430 174" stroke="url(#gold)" stroke-width="31" stroke-linecap="round"/>
+  <path d="M75 161C139 151 204 151 266 166" stroke="url(#gold)" stroke-width="23" stroke-linecap="round"/>
+
+  <!-- AI circuit overlay -->
+  <g stroke="#F0CF3A" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M278 230H326L360 264V321"/>
+    <path d="M306 282H348L384 318V381"/>
+    <path d="M248 300H285L327 342V421"/>
+    <path d="M354 202H392"/>
+  </g>
+  <g fill="#F0CF3A">
+    <circle cx="278" cy="230" r="15"/>
+    <circle cx="360" cy="264" r="13"/>
+    <circle cx="306" cy="282" r="13"/>
+    <circle cx="384" cy="318" r="12"/>
+    <circle cx="248" cy="300" r="14"/>
+    <circle cx="327" cy="342" r="12"/>
+    <circle cx="392" cy="202" r="12"/>
+  </g>
+  <g fill="#F0CF3A" opacity="0.95">
+    <rect x="330" y="96" width="18" height="18" rx="2"/>
+    <rect x="367" y="113" width="14" height="14" rx="2"/>
+    <rect x="390" y="150" width="12" height="12" rx="2"/>
+    <rect x="350" y="152" width="16" height="16" rx="2"/>
+    <rect x="398" y="96" width="16" height="16" rx="2"/>
+  </g>
+  <path d="M405 139L416 164L441 175L416 186L405 211L394 186L369 175L394 164L405 139Z" fill="#FFF3A4" opacity="0.95"/>
+</svg>

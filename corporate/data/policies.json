@@ -1,0 +1,240 @@
+{
+  "schema": "hsaai.corporate.policies.v1",
+  "count": 24,
+  "categories": [
+    "AI",
+    "Audit",
+    "Compliance",
+    "Data",
+    "ESG",
+    "Ethics",
+    "Finance",
+    "Governance",
+    "HR",
+    "IT",
+    "Legal",
+    "Operations",
+    "Quality",
+    "Resilience",
+    "Risk",
+    "Security"
+  ],
+  "policies": [
+    {
+      "id": "POL-CG-001",
+      "title_ar": "ميثاق حوكمة المؤسسة",
+      "title_en": "Corporate Governance Charter",
+      "category": "Governance",
+      "version": "3.0",
+      "approved_by": "Board",
+      "effective_date": "2024-01-01"
+    },
+    {
+      "id": "POL-CG-002",
+      "title_ar": "سياسة الأخلاقيات والامتثال",
+      "title_en": "Code of Ethics & Compliance Policy",
+      "category": "Ethics",
+      "version": "2.5",
+      "approved_by": "Board",
+      "effective_date": "2024-03-01"
+    },
+    {
+      "id": "POL-CG-003",
+      "title_ar": "سياسة تفويض الصلاحيات",
+      "title_en": "Delegation of Authority Policy",
+      "category": "Governance",
+      "version": "4.1",
+      "approved_by": "Board",
+      "effective_date": "2025-01-01"
+    },
+    {
+      "id": "POL-FIN-001",
+      "title_ar": "السياسة المالية للمجموعة",
+      "title_en": "Group Financial Policy",
+      "category": "Finance",
+      "version": "5.0",
+      "approved_by": "Board",
+      "effective_date": "2025-01-01"
+    },
+    {
+      "id": "POL-FIN-002",
+      "title_ar": "سياسة الخزانة وإدارة السيولة",
+      "title_en": "Treasury & Liquidity Policy",
+      "category": "Finance",
+      "version": "3.2",
+      "approved_by": "CFO",
+      "effective_date": "2024-06-01"
+    },
+    {
+      "id": "POL-HR-001",
+      "title_ar": "السياسة الموحدة للموارد البشرية",
+      "title_en": "Unified HR Policy",
+      "category": "HR",
+      "version": "6.0",
+      "approved_by": "CEO",
+      "effective_date": "2025-01-01"
+    },
+    {
+      "id": "POL-HR-002",
+      "title_ar": "سياسة تقييم وتطوير الكوادر",
+      "title_en": "Talent Evaluation & Development Policy",
+      "category": "HR",
+      "version": "2.0",
+      "approved_by": "CHRO",
+      "effective_date": "2024-09-01"
+    },
+    {
+      "id": "POL-IT-001",
+      "title_ar": "سياسة تقنية المعلومات المؤسسية",
+      "title_en": "Enterprise IT Policy",
+      "category": "IT",
+      "version": "4.5",
+      "approved_by": "CIO",
+      "effective_date": "2025-01-01"
+    },
+    {
+      "id": "POL-SEC-001",
+      "title_ar": "سياسة الأمن السيبراني",
+      "title_en": "Cybersecurity Policy",
+      "category": "Security",
+      "version": "3.8",
+      "approved_by": "CISO",
+      "effective_date": "2025-01-01"
+    },
+    {
+      "id": "POL-SEC-002",
+      "title_ar": "سياسة إدارة الأسرار",
+      "title_en": "Secrets Management Policy",
+      "category": "Security",
+      "version": "2.1",
+      "approved_by": "CISO",
+      "effective_date": "2024-04-01"
+    },
+    {
+      "id": "POL-DATA-001",
+      "title_ar": "سياسة حوكمة البيانات",
+      "title_en": "Data Governance Policy",
+      "category": "Data",
+      "version": "2.0",
+      "approved_by": "CDO",
+      "effective_date": "2024-07-01"
+    },
+    {
+      "id": "POL-DATA-002",
+      "title_ar": "سياسة حماية البيانات الشخصية",
+      "title_en": "Personal Data Protection Policy",
+      "category": "Data",
+      "version": "2.3",
+      "approved_by": "CDO",
+      "effective_date": "2024-08-01"
+    },
+    {
+      "id": "POL-AI-001",
+      "title_ar": "سياسة استخدام الذكاء الاصطناعي",
+      "title_en": "AI Usage Policy",
+      "category": "AI",
+      "version": "1.5",
+      "approved_by": "AI Committee",
+      "effective_date": "2024-10-01"
+    },
+    {
+      "id": "POL-AI-002",
+      "title_ar": "سياسة حوكمة النماذج",
+      "title_en": "AI Model Governance Policy",
+      "category": "AI",
+      "version": "1.2",
+      "approved_by": "AI Committee",
+      "effective_date": "2024-11-01"
+    },
+    {
+      "id": "POL-AI-003",
+      "title_ar": "سياسة الذكاء الاصطناعي المسؤول",
+      "title_en": "Responsible AI Policy",
+      "category": "AI",
+      "version": "1.1",
+      "approved_by": "AI Committee",
+      "effective_date": "2025-01-01"
+    },
+    {
+      "id": "POL-OPS-001",
+      "title_ar": "سياسة التشغيل الموحدة",
+      "title_en": "Unified Operations Policy",
+      "category": "Operations",
+      "version": "3.0",
+      "approved_by": "COO",
+      "effective_date": "2025-01-01"
+    },
+    {
+      "id": "POL-OPS-002",
+      "title_ar": "سياسة سلسلة الإمداد",
+      "title_en": "Supply Chain Policy",
+      "category": "Operations",
+      "version": "2.4",
+      "approved_by": "COO",
+      "effective_date": "2024-05-01"
+    },
+    {
+      "id": "POL-QA-001",
+      "title_ar": "سياسة الجودة الموحدة",
+      "title_en": "Unified Quality Policy",
+      "category": "Quality",
+      "version": "4.0",
+      "approved_by": "COO",
+      "effective_date": "2025-01-01"
+    },
+    {
+      "id": "POL-RISK-001",
+      "title_ar": "سياسة إدارة المخاطر المؤسسية",
+      "title_en": "Enterprise Risk Management Policy",
+      "category": "Risk",
+      "version": "3.1",
+      "approved_by": "CRO",
+      "effective_date": "2024-06-01"
+    },
+    {
+      "id": "POL-LEG-001",
+      "title_ar": "السياسة القانونية الموحدة",
+      "title_en": "Unified Legal Policy",
+      "category": "Legal",
+      "version": "2.5",
+      "approved_by": "GC",
+      "effective_date": "2024-04-01"
+    },
+    {
+      "id": "POL-COMP-001",
+      "title_ar": "سياسة الامتثال التنظيمي",
+      "title_en": "Regulatory Compliance Policy",
+      "category": "Compliance",
+      "version": "2.8",
+      "approved_by": "CCO",
+      "effective_date": "2025-01-01"
+    },
+    {
+      "id": "POL-AUD-001",
+      "title_ar": "ميثاق التدقيق الداخلي",
+      "title_en": "Internal Audit Charter",
+      "category": "Audit",
+      "version": "2.0",
+      "approved_by": "Audit Committee",
+      "effective_date": "2024-02-01"
+    },
+    {
+      "id": "POL-ESG-001",
+      "title_ar": "سياسة الاستدامة وESG",
+      "title_en": "Sustainability & ESG Policy",
+      "category": "ESG",
+      "version": "1.5",
+      "approved_by": "ESG Committee",
+      "effective_date": "2024-09-01"
+    },
+    {
+      "id": "POL-BC-001",
+      "title_ar": "سياسة استمرارية الأعمال والتعافي من الكوارث",
+      "title_en": "Business Continuity & DR Policy",
+      "category": "Resilience",
+      "version": "2.3",
+      "approved_by": "CIO",
+      "effective_date": "2024-07-01"
+    }
+  ]
+}

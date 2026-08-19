@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.security.module.v1",
+  "name": "zero-trust",
+  "name_full": "Zero Trust Architecture",
+  "description": "Never trust, always verify. mTLS + identity-aware proxy + microsegmentation.",
+  "implementation_ref": "infrastructure/mtls/, services/backend_core/security/",
+  "status": "production",
+  "backward_compatible": true
+}

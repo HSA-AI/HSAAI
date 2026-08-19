@@ -1,0 +1,44 @@
+# Configuration template for Microsoft Dynamics 365
+apiVersion: hsaaiv2/v1
+kind: IntegrationConfig
+metadata:
+  name: dynamics-365-config
+  labels:
+    integration: INT-D365
+    category: erp
+    vendor: Microsoft
+spec:
+  enabled: true
+  endpoint: "${INT-D365_ENDPOINT}"
+  credentials:
+    source: vault
+    path: "secret/hsaai/integrations/dynamics-365"
+  auth:
+    type: oauth2 azure ad
+    clientId: "${INT-D365_CLIENT_ID}"
+    clientSecret: "vault:dynamics-365/client-secret"
+    tenant: "${INT-D365_TENANT}"
+  pool:
+    maxConnections: 20
+    idleTimeout: 300s
+  retry:
+    maxRetries: 3
+    backoff: exponential
+    initialDelay: 1s
+    maxDelay: 30s
+  circuitBreaker:
+    enabled: true
+    failureThreshold: 5
+    recoveryTime: 60s
+  rateLimit:
+    requestsPerSecond: 50
+    burst: 100
+  observability:
+    metricsEnabled: true
+    logsEnabled: true
+    tracesEnabled: true
+    logLevel: info
+  security:
+    piiDetection: true
+    auditAll: true
+    tlsMinVersion: "1.3"

@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.department.v1",
+  "id": "DEPT-ACC",
+  "name_ar": "إدارة المحاسبة",
+  "name_en": "Accounting",
+  "directory": "accounting",
+  "head_role": "Chief Accountant",
+  "reports_to": "CFO",
+  "mission_ar": "إ registers and financial statements",
+  "mission_en": "Maintain accounting records and prepare financial statements per IFRS",
+  "agent_ref": "AGENT-ACCOUNTING",
+  "integrations": [
+    "sap",
+    "oracle-erp",
+    "sql-server",
+    "postgresql"
+  ],
+  "kpis": [
+    "Month-End Close Days",
+    "Audit Findings Count",
+    "Reconciliation Accuracy %",
+    "IFRS Compliance %"
+  ],
+  "supported_by_modules": [
+    "services/backend_core/department_agents/",
+    "services/backend_core/integrations/",
+    "services/backend_core/enterprise_os/",
+    "services/backend_core/governance/",
+    "services/backend_core/knowledge/"
+  ],
+  "classification": "Internal"
+}

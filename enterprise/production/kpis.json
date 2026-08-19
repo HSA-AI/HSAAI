@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.kpis.v1",
+  "department_id": "DEPT-PROD",
+  "department": "Production",
+  "kpis": [
+    {
+      "id": "KPI-DEPT-PROD-01",
+      "name": "Production Volume vs Plan %",
+      "frequency": "monthly",
+      "source_integration": "mes"
+    },
+    {
+      "id": "KPI-DEPT-PROD-02",
+      "name": "Downtime %",
+      "frequency": "monthly",
+      "source_integration": "sap"
+    },
+    {
+      "id": "KPI-DEPT-PROD-03",
+      "name": "First-Pass Yield %",
+      "frequency": "monthly",
+      "source_integration": "kafka"
+    },
+    {
+      "id": "KPI-DEPT-PROD-04",
+      "name": "Safety Incidents",
+      "frequency": "monthly",
+      "source_integration": "kafka"
+    }
+  ],
+  "dashboard_ref": "../../monitoring/dashboards/dept-prod.json"
+}

@@ -1,0 +1,716 @@
+{
+  "registry_version": "1.0.0",
+  "generated_at": "2026-07-15T16:45:54.657178+00:00",
+  "total_modules": 20,
+  "modules": [
+    {
+      "name": "ai-core",
+      "name_en": "AI Core",
+      "name_ar": "النواة الذكية",
+      "description": "Central AI orchestrator routing requests across agents, RAG, and LLM gateway",
+      "version": "10.1.0",
+      "type": "core",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "dependencies": [
+        "rag-engine",
+        "llm-gateway",
+        "agent-system"
+      ],
+      "interfaces": [
+        "/v1/ai/orchestrate",
+        "/v1/ai/status"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "orchestration",
+          "routing",
+          "context-management"
+        ],
+        "ai": [
+          "multi-agent-coordination"
+        ],
+        "business": [
+          "enterprise-ai-operations"
+        ],
+        "automation": [
+          "auto-routing"
+        ]
+      },
+      "module_id": "mod_9115214c4b6a"
+    },
+    {
+      "name": "ai-orchestrator",
+      "name_en": "AI Orchestrator",
+      "name_ar": "منسق الذكاء الاصطناعي",
+      "description": "Multi-agent orchestration engine with workflow coordination",
+      "version": "10.1.0",
+      "type": "core",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "dependencies": [
+        "ai-core",
+        "agent-system"
+      ],
+      "interfaces": [
+        "/v1/orchestrate"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "multi-agent-orchestration",
+          "workflow-coordination"
+        ],
+        "ai": [
+          "agent-mesh"
+        ],
+        "business": [
+          "process-automation"
+        ],
+        "automation": [
+          "auto-scaling"
+        ]
+      },
+      "module_id": "mod_80f11a173b0d"
+    },
+    {
+      "name": "context-manager",
+      "name_en": "Context Manager",
+      "name_ar": "مدير السياق",
+      "description": "Manages conversation context and memory across sessions",
+      "version": "10.1.0",
+      "type": "core",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "dependencies": [
+        "redis-service",
+        "postgresql-service"
+      ],
+      "interfaces": [
+        "/v1/context"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "context-management",
+          "session-management"
+        ],
+        "ai": [
+          "memory-tiers"
+        ],
+        "business": [
+          "conversation-continuity"
+        ],
+        "automation": [
+          "auto-cleanup"
+        ]
+      },
+      "module_id": "mod_e190fa78d6be"
+    },
+    {
+      "name": "prompt-engine",
+      "name_en": "Prompt Engine",
+      "name_ar": "محرك الأوامر",
+      "description": "Prompt template management with versioning and safety checks",
+      "version": "10.1.0",
+      "type": "core",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "dependencies": [
+        "prompt-firewall",
+        "llm-gateway"
+      ],
+      "interfaces": [
+        "/v1/prompts"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "prompt-management",
+          "template-versioning"
+        ],
+        "ai": [
+          "prompt-optimization"
+        ],
+        "business": [
+          "prompt-governance"
+        ],
+        "automation": [
+          "auto-testing"
+        ]
+      },
+      "module_id": "mod_19015cd11854"
+    },
+    {
+      "name": "model-router",
+      "name_en": "Model Router",
+      "name_ar": "موجه النماذج",
+      "description": "Routes requests to optimal LLM based on task, latency, cost, language",
+      "version": "10.1.0",
+      "type": "core",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "dependencies": [
+        "llm-gateway"
+      ],
+      "interfaces": [
+        "/v1/route"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "model-routing",
+          "load-balancing"
+        ],
+        "ai": [
+          "cost-optimization"
+        ],
+        "business": [
+          "latency-optimization"
+        ],
+        "automation": [
+          "auto-failover"
+        ]
+      },
+      "module_id": "mod_cd5fa2c00cb4"
+    },
+    {
+      "name": "rag-engine",
+      "name_en": "RAG Engine",
+      "name_ar": "محرك RAG",
+      "description": "Retrieval-Augmented Generation with hybrid semantic+keyword search and reranking",
+      "version": "10.1.0",
+      "type": "ai-platform",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "dependencies": [
+        "qdrant-service",
+        "postgresql-service"
+      ],
+      "interfaces": [
+        "/v1/search",
+        "/v1/ingest"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "hybrid-search",
+          "reranking",
+          "citation-generation"
+        ],
+        "ai": [
+          "rag",
+          "embedding-generation"
+        ],
+        "business": [
+          "knowledge-retrieval"
+        ],
+        "automation": [
+          "auto-indexing"
+        ]
+      },
+      "module_id": "mod_433e7d5c1743"
+    },
+    {
+      "name": "document-intelligence",
+      "name_en": "Document Intelligence",
+      "name_ar": "ذكاء المستندات",
+      "description": "Document processing pipeline with OCR, chunking, and entity extraction",
+      "version": "10.1.0",
+      "type": "ai-platform",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "dependencies": [
+        "rag-engine",
+        "minio-service"
+      ],
+      "interfaces": [
+        "/v1/documents/process"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "ocr",
+          "chunking",
+          "entity-extraction"
+        ],
+        "ai": [
+          "document-understanding"
+        ],
+        "business": [
+          "document-lifecycle"
+        ],
+        "automation": [
+          "auto-classification"
+        ]
+      },
+      "module_id": "mod_c111019e34e3"
+    },
+    {
+      "name": "agent-system",
+      "name_en": "AI Agents",
+      "name_ar": "وكلاء الذكاء الاصطناعي",
+      "description": "Multi-agent runtime with 21 department-specific AI agents",
+      "version": "10.1.0",
+      "type": "ai-platform",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "dependencies": [
+        "ai-core",
+        "llm-gateway",
+        "rag-engine"
+      ],
+      "interfaces": [
+        "/v1/agents",
+        "/v1/agents/{id}/invoke"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "agent-runtime",
+          "tool-calling"
+        ],
+        "ai": [
+          "multi-agent-mesh",
+          "mcp-protocol"
+        ],
+        "business": [
+          "department-automation"
+        ],
+        "automation": [
+          "auto-escalation"
+        ]
+      },
+      "module_id": "mod_bb726b138934"
+    },
+    {
+      "name": "llm-gateway",
+      "name_en": "LLM Gateway",
+      "name_ar": "بوابة النماذج اللغوية",
+      "description": "Unified LLM gateway with vLLM primary and OpenAI fallback",
+      "version": "10.1.0",
+      "type": "ai-platform",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "dependencies": [
+        "model-router"
+      ],
+      "interfaces": [
+        "/v1/complete",
+        "/v1/chat",
+        "/v1/embed"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "llm-serving",
+          "token-tracking"
+        ],
+        "ai": [
+          "local-models",
+          "cloud-fallback"
+        ],
+        "business": [
+          "cost-tracking"
+        ],
+        "automation": [
+          "auto-scaling"
+        ]
+      },
+      "module_id": "mod_6125bbdd43ce"
+    },
+    {
+      "name": "authentication-service",
+      "name_en": "Authentication Service",
+      "name_ar": "خدمة المصادقة",
+      "description": "Keycloak OIDC integration with JWT verification and MFA",
+      "version": "10.1.0",
+      "type": "security",
+      "status": "production",
+      "owner": "Security Team",
+      "dependencies": [
+        "keycloak",
+        "redis-service"
+      ],
+      "interfaces": [
+        "/v1/auth/login",
+        "/v1/auth/verify",
+        "/v1/auth/refresh"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "restricted",
+      "capabilities": {
+        "core": [
+          "authentication",
+          "jwt-verification"
+        ],
+        "ai": [],
+        "business": [
+          "sso",
+          "mfa"
+        ],
+        "automation": [
+          "token-refresh"
+        ]
+      },
+      "module_id": "mod_822cc65f2e17"
+    },
+    {
+      "name": "authorization-service",
+      "name_en": "Authorization Service",
+      "name_ar": "خدمة الصلاحيات",
+      "description": "RBAC + ABAC authorization with OPA policy engine",
+      "version": "10.1.0",
+      "type": "security",
+      "status": "production",
+      "owner": "Security Team",
+      "dependencies": [
+        "opa",
+        "authentication-service"
+      ],
+      "interfaces": [
+        "/v1/authz/check"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "restricted",
+      "capabilities": {
+        "core": [
+          "rbac",
+          "abac",
+          "policy-enforcement"
+        ],
+        "ai": [],
+        "business": [
+          "access-control"
+        ],
+        "automation": [
+          "policy-sync"
+        ]
+      },
+      "module_id": "mod_be3ea9a72ebb"
+    },
+    {
+      "name": "audit-service",
+      "name_en": "Audit Service",
+      "name_ar": "خدمة التدقيق",
+      "description": "Immutable HMAC-signed audit logging with 7-year retention",
+      "version": "10.1.0",
+      "type": "security",
+      "status": "production",
+      "owner": "Security Team",
+      "dependencies": [
+        "postgresql-service",
+        "minio-service"
+      ],
+      "interfaces": [
+        "/v1/audit",
+        "/v1/audit/search"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "restricted",
+      "capabilities": {
+        "core": [
+          "audit-logging",
+          "tamper-detection"
+        ],
+        "ai": [],
+        "business": [
+          "compliance",
+          "forensics"
+        ],
+        "automation": [
+          "auto-archival"
+        ]
+      },
+      "module_id": "mod_e52d2f2f2bf5"
+    },
+    {
+      "name": "policy-engine",
+      "name_en": "Policy Engine",
+      "name_ar": "محرك السياسات",
+      "description": "OPA-based policy engine for ABAC and compliance rules",
+      "version": "10.1.0",
+      "type": "security",
+      "status": "production",
+      "owner": "Security Team",
+      "dependencies": [
+        "opa"
+      ],
+      "interfaces": [
+        "/v1/policies",
+        "/v1/policies/evaluate"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "restricted",
+      "capabilities": {
+        "core": [
+          "policy-management",
+          "policy-evaluation"
+        ],
+        "ai": [],
+        "business": [
+          "governance"
+        ],
+        "automation": [
+          "policy-versioning"
+        ]
+      },
+      "module_id": "mod_86ed50f58484"
+    },
+    {
+      "name": "api-gateway",
+      "name_en": "API Gateway",
+      "name_ar": "بوابة API",
+      "description": "Central API gateway with rate limiting, WAF, and routing",
+      "version": "10.1.0",
+      "type": "infrastructure",
+      "status": "production",
+      "owner": "Platform Team",
+      "dependencies": [
+        "authentication-service",
+        "authorization-service"
+      ],
+      "interfaces": [
+        "/api/{service}/{path}"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "routing",
+          "rate-limiting",
+          "waf"
+        ],
+        "ai": [],
+        "business": [
+          "api-management"
+        ],
+        "automation": [
+          "auto-scaling"
+        ]
+      },
+      "module_id": "mod_a26327a39155"
+    },
+    {
+      "name": "workflow-engine",
+      "name_en": "Workflow Engine",
+      "name_ar": "محرك سير العمل",
+      "description": "Approval workflow engine with multi-step processes",
+      "version": "10.1.0",
+      "type": "infrastructure",
+      "status": "production",
+      "owner": "Platform Team",
+      "dependencies": [
+        "postgresql-service",
+        "kafka-service"
+      ],
+      "interfaces": [
+        "/v1/workflows"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "workflow-execution",
+          "approval-routing"
+        ],
+        "ai": [],
+        "business": [
+          "process-automation"
+        ],
+        "automation": [
+          "auto-escalation"
+        ]
+      },
+      "module_id": "mod_6dea744d93d3"
+    },
+    {
+      "name": "monitoring-service",
+      "name_en": "Monitoring Service",
+      "name_ar": "خدمة المراقبة",
+      "description": "Health monitoring, metrics collection, and alerting",
+      "version": "10.1.0",
+      "type": "infrastructure",
+      "status": "production",
+      "owner": "Platform Team",
+      "dependencies": [
+        "prometheus",
+        "grafana",
+        "loki"
+      ],
+      "interfaces": [
+        "/health/live",
+        "/health/ready",
+        "/health/details",
+        "/metrics"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "health-monitoring",
+          "metrics-collection"
+        ],
+        "ai": [],
+        "business": [
+          "observability"
+        ],
+        "automation": [
+          "auto-alerting"
+        ]
+      },
+      "module_id": "mod_083fb6d547ec"
+    },
+    {
+      "name": "configuration-service",
+      "name_en": "Configuration Service",
+      "name_ar": "خدمة التكوين",
+      "description": "Centralized configuration management with Vault integration",
+      "version": "10.1.0",
+      "type": "infrastructure",
+      "status": "production",
+      "owner": "Platform Team",
+      "dependencies": [
+        "vault"
+      ],
+      "interfaces": [
+        "/v1/config"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "restricted",
+      "capabilities": {
+        "core": [
+          "config-management",
+          "secret-management"
+        ],
+        "ai": [],
+        "business": [
+          "configuration-governance"
+        ],
+        "automation": [
+          "auto-reload"
+        ]
+      },
+      "module_id": "mod_1fb074433cb8"
+    },
+    {
+      "name": "qdrant-service",
+      "name_en": "Qdrant Service",
+      "name_ar": "خدمة Qdrant",
+      "description": "Vector database with tenant isolation and secure operations",
+      "version": "10.1.0",
+      "type": "data-layer",
+      "status": "production",
+      "owner": "Data Team",
+      "dependencies": [],
+      "interfaces": [
+        "/collections",
+        "/points"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "restricted",
+      "capabilities": {
+        "core": [
+          "vector-storage",
+          "similarity-search"
+        ],
+        "ai": [
+          "embedding-storage"
+        ],
+        "business": [
+          "knowledge-base"
+        ],
+        "automation": [
+          "auto-indexing"
+        ]
+      },
+      "module_id": "mod_d6d1e8a1dfe7"
+    },
+    {
+      "name": "postgresql-service",
+      "name_en": "PostgreSQL Service",
+      "name_ar": "خدمة PostgreSQL",
+      "description": "Primary relational database with HA via Patroni",
+      "version": "10.1.0",
+      "type": "data-layer",
+      "status": "production",
+      "owner": "Data Team",
+      "dependencies": [],
+      "interfaces": [],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "restricted",
+      "capabilities": {
+        "core": [
+          "relational-storage",
+          "transactions"
+        ],
+        "ai": [],
+        "business": [
+          "data-persistence"
+        ],
+        "automation": [
+          "auto-failover"
+        ]
+      },
+      "module_id": "mod_b45e5974c6a5"
+    },
+    {
+      "name": "redis-service",
+      "name_en": "Redis Service",
+      "name_ar": "خدمة Redis",
+      "description": "In-memory cache and session store with Sentinel HA",
+      "version": "10.1.0",
+      "type": "data-layer",
+      "status": "production",
+      "owner": "Data Team",
+      "dependencies": [],
+      "interfaces": [],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "caching",
+          "session-storage"
+        ],
+        "ai": [],
+        "business": [
+          "performance-optimization"
+        ],
+        "automation": [
+          "auto-eviction"
+        ]
+      },
+      "module_id": "mod_4029a5b49189"
+    }
+  ]
+}

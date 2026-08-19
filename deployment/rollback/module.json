@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.deployment.module.v1",
+  "name": "rollback",
+  "name_full": "Rollback Procedures",
+  "description": "Automated rollback triggers and manual rollback procedures.",
+  "implementation_ref": "scripts/, runbooks/",
+  "status": "production",
+  "backward_compatible": true
+}

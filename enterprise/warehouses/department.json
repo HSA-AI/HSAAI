@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.department.v1",
+  "id": "DEPT-WRH",
+  "name_ar": "إدارة المستودعات",
+  "name_en": "Warehouses",
+  "directory": "warehouses",
+  "head_role": "VP Warehousing",
+  "reports_to": "SCM",
+  "mission_ar": "إدارة تخزين المنتجات في جميع مراكز التوزيع بكفاءة ودقة",
+  "mission_en": "Manage product storage across all distribution centers efficiently and accurately",
+  "agent_ref": "AGENT-WAREHOUSE",
+  "integrations": [
+    "wms",
+    "sap",
+    "oracle-erp",
+    "redis"
+  ],
+  "kpis": [
+    "Inventory Accuracy %",
+    "Storage Utilization %",
+    "Pick Accuracy %",
+    "Stock-Out %"
+  ],
+  "supported_by_modules": [
+    "services/backend_core/department_agents/",
+    "services/backend_core/integrations/",
+    "services/backend_core/enterprise_os/",
+    "services/backend_core/governance/",
+    "services/backend_core/knowledge/"
+  ],
+  "classification": "Internal"
+}

@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.kpis.v1",
+  "department_id": "DEPT-HR",
+  "department": "Human Resources",
+  "kpis": [
+    {
+      "id": "KPI-DEPT-HR-01",
+      "name": "Time-to-Fill Days",
+      "frequency": "monthly",
+      "source_integration": "oracle-hcm"
+    },
+    {
+      "id": "KPI-DEPT-HR-02",
+      "name": "Voluntary Attrition %",
+      "frequency": "monthly",
+      "source_integration": "m365"
+    },
+    {
+      "id": "KPI-DEPT-HR-03",
+      "name": "eNPS",
+      "frequency": "monthly",
+      "source_integration": "sharepoint"
+    },
+    {
+      "id": "KPI-DEPT-HR-04",
+      "name": "Training Hours per Employee",
+      "frequency": "monthly",
+      "source_integration": "active-directory"
+    }
+  ],
+  "dashboard_ref": "../../monitoring/dashboards/dept-hr.json"
+}

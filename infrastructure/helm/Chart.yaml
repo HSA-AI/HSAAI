@@ -1,0 +1,13 @@
+apiVersion: v2
+name: hsaai-enterprise-os
+description: Helm chart for HSAAI Enterprise AI Operating System
+type: application
+# FIX B-09 / I-32: Single source of truth — VERSION file is canonical (4.0.0)
+version: 4.0.0
+appVersion: "4.0.0"
+# FIX I-32: constrain supported K8s versions (chart uses autoscaling/v2 → 1.23+)
+kubeVersion: ">=1.25.0-0"
+icon: https://hsaai.local/brand/hsaai-logo.png
+maintainers:
+  - name: HSAAI Platform Team
+    email: platform@hsaai.internal

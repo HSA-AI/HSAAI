@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.monitoring.module.v1",
+  "name": "grafana",
+  "name_full": "Grafana Dashboards",
+  "description": "Pre-built dashboards: Executive, Operations, Security, AI, Finance.",
+  "implementation_ref": "infrastructure/grafana/, infrastructure/dashboards/",
+  "status": "production",
+  "backward_compatible": true
+}

@@ -1,0 +1,44 @@
+# Configuration template for OpenText DMS
+apiVersion: hsaaiv2/v1
+kind: IntegrationConfig
+metadata:
+  name: opentext-config
+  labels:
+    integration: INT-OPENTEXT
+    category: productivity
+    vendor: OpenText
+spec:
+  enabled: true
+  endpoint: "${INT-OPENTEXT_ENDPOINT}"
+  credentials:
+    source: vault
+    path: "secret/hsaai/integrations/opentext"
+  auth:
+    type: oauth2
+    clientId: "${INT-OPENTEXT_CLIENT_ID}"
+    clientSecret: "vault:opentext/client-secret"
+    tenant: "${INT-OPENTEXT_TENANT}"
+  pool:
+    maxConnections: 20
+    idleTimeout: 300s
+  retry:
+    maxRetries: 3
+    backoff: exponential
+    initialDelay: 1s
+    maxDelay: 30s
+  circuitBreaker:
+    enabled: true
+    failureThreshold: 5
+    recoveryTime: 60s
+  rateLimit:
+    requestsPerSecond: 50
+    burst: 100
+  observability:
+    metricsEnabled: true
+    logsEnabled: true
+    tracesEnabled: true
+    logLevel: info
+  security:
+    piiDetection: true
+    auditAll: true
+    tlsMinVersion: "1.3"

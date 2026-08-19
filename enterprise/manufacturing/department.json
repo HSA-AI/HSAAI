@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.department.v1",
+  "id": "DEPT-MFG",
+  "name_ar": "إدارة التصنيع",
+  "name_en": "Manufacturing",
+  "directory": "manufacturing",
+  "head_role": "Chief Manufacturing Officer",
+  "reports_to": "COO",
+  "mission_ar": "إدارة عمليات التصنيع عبر جميع المصانع لتحقيق الكفاءة والجودة",
+  "mission_en": "Manage manufacturing operations across all factories for efficiency and quality",
+  "agent_ref": "AGENT-MANUFACTURING",
+  "integrations": [
+    "mes",
+    "sap",
+    "oracle-erp",
+    "kafka"
+  ],
+  "kpis": [
+    "OEE %",
+    "Yield %",
+    "Manufacturing Cost per Unit",
+    "Schedule Attainment %"
+  ],
+  "supported_by_modules": [
+    "services/backend_core/department_agents/",
+    "services/backend_core/integrations/",
+    "services/backend_core/enterprise_os/",
+    "services/backend_core/governance/",
+    "services/backend_core/knowledge/"
+  ],
+  "classification": "Internal"
+}

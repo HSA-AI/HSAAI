@@ -1,0 +1,162 @@
+{
+  "schema": "hsaai.enterprise.integration-usage.v1",
+  "total_integrations_referenced": 23,
+  "usage_matrix": {
+    "active-directory": [
+      "DEPT-HR",
+      "DEPT-IT",
+      "DEPT-SEC"
+    ],
+    "azure-ad": [
+      "DEPT-IT",
+      "DEPT-SEC"
+    ],
+    "crm": [
+      "DEPT-DIST",
+      "DEPT-SALES",
+      "DEPT-MKT",
+      "DEPT-CSVC"
+    ],
+    "dynamics-365": [
+      "DEPT-FIN",
+      "DEPT-PROC",
+      "DEPT-SALES"
+    ],
+    "exchange": [
+      "DEPT-EXEC",
+      "DEPT-CEO",
+      "DEPT-LEG",
+      "DEPT-IT",
+      "DEPT-CSVC"
+    ],
+    "kafka": [
+      "DEPT-SCM",
+      "DEPT-MFG",
+      "DEPT-PROD",
+      "DEPT-LOG",
+      "DEPT-DIST",
+      "DEPT-RISK",
+      "DEPT-IT",
+      "DEPT-DATA"
+    ],
+    "m365": [
+      "DEPT-EXEC",
+      "DEPT-CEO",
+      "DEPT-MKT",
+      "DEPT-HR",
+      "DEPT-LEG",
+      "DEPT-AUD",
+      "DEPT-COMP",
+      "DEPT-IT",
+      "DEPT-INN",
+      "DEPT-RND"
+    ],
+    "mes": [
+      "DEPT-SCM",
+      "DEPT-MFG",
+      "DEPT-PROD",
+      "DEPT-QA"
+    ],
+    "mongodb": [
+      "DEPT-IT",
+      "DEPT-DATA"
+    ],
+    "oracle-erp": [
+      "DEPT-FIN",
+      "DEPT-ACC",
+      "DEPT-TRE",
+      "DEPT-PROC",
+      "DEPT-SCM",
+      "DEPT-MFG",
+      "DEPT-WRH"
+    ],
+    "oracle-hcm": [
+      "DEPT-HR"
+    ],
+    "postgresql": [
+      "DEPT-ACC",
+      "DEPT-IT",
+      "DEPT-DATA"
+    ],
+    "power-bi": [
+      "DEPT-EXEC",
+      "DEPT-CEO",
+      "DEPT-FIN",
+      "DEPT-SALES",
+      "DEPT-MKT",
+      "DEPT-AUD",
+      "DEPT-COMP",
+      "DEPT-RISK",
+      "DEPT-DATA",
+      "DEPT-INN",
+      "DEPT-CSVC",
+      "DEPT-QA",
+      "DEPT-RND"
+    ],
+    "rabbitmq": [
+      "DEPT-LOG",
+      "DEPT-IT"
+    ],
+    "redis": [
+      "DEPT-WRH",
+      "DEPT-IT",
+      "DEPT-DATA"
+    ],
+    "sap": [
+      "DEPT-FIN",
+      "DEPT-ACC",
+      "DEPT-TRE",
+      "DEPT-PROC",
+      "DEPT-SCM",
+      "DEPT-MFG",
+      "DEPT-PROD",
+      "DEPT-WRH",
+      "DEPT-DIST",
+      "DEPT-SALES",
+      "DEPT-QA"
+    ],
+    "sharepoint": [
+      "DEPT-EXEC",
+      "DEPT-CEO",
+      "DEPT-PROC",
+      "DEPT-MKT",
+      "DEPT-HR",
+      "DEPT-LEG",
+      "DEPT-AUD",
+      "DEPT-COMP",
+      "DEPT-RISK",
+      "DEPT-IT",
+      "DEPT-INN",
+      "DEPT-QA",
+      "DEPT-RND"
+    ],
+    "siem": [
+      "DEPT-SEC"
+    ],
+    "sql-server": [
+      "DEPT-FIN",
+      "DEPT-ACC",
+      "DEPT-TRE",
+      "DEPT-AUD",
+      "DEPT-IT",
+      "DEPT-DATA"
+    ],
+    "teams": [
+      "DEPT-CEO",
+      "DEPT-IT",
+      "DEPT-CSVC"
+    ],
+    "tms": [
+      "DEPT-LOG"
+    ],
+    "vault": [
+      "DEPT-SEC"
+    ],
+    "wms": [
+      "DEPT-SCM",
+      "DEPT-WRH",
+      "DEPT-LOG",
+      "DEPT-DIST"
+    ]
+  }
+}

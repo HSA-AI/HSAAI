@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.kpis.v1",
+  "department_id": "DEPT-SALES",
+  "department": "Sales",
+  "kpis": [
+    {
+      "id": "KPI-DEPT-SALES-01",
+      "name": "Sales vs Target %",
+      "frequency": "monthly",
+      "source_integration": "crm"
+    },
+    {
+      "id": "KPI-DEPT-SALES-02",
+      "name": "Sales Growth YoY %",
+      "frequency": "monthly",
+      "source_integration": "sap"
+    },
+    {
+      "id": "KPI-DEPT-SALES-03",
+      "name": "New Customer Acquisition",
+      "frequency": "monthly",
+      "source_integration": "power-bi"
+    },
+    {
+      "id": "KPI-DEPT-SALES-04",
+      "name": "Win Rate %",
+      "frequency": "monthly",
+      "source_integration": "dynamics-365"
+    }
+  ],
+  "dashboard_ref": "../../monitoring/dashboards/dept-sales.json"
+}

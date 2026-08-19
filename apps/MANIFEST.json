@@ -1,0 +1,128 @@
+{
+  "schema": "hsaai.apps.manifest.v1",
+  "module": "apps",
+  "version": "7.0.0",
+  "total_apps": 14,
+  "apps": [
+    {
+      "id": "APP-PORTAL",
+      "directory": "enterprise-portal",
+      "name_en": "Enterprise Portal",
+      "type": "web",
+      "status": "production"
+    },
+    {
+      "id": "APP-EXEC-DASH",
+      "directory": "executive-dashboard",
+      "name_en": "Executive Dashboard",
+      "type": "web",
+      "status": "production"
+    },
+    {
+      "id": "APP-CMD-CTR",
+      "directory": "enterprise-command-center",
+      "name_en": "Enterprise Command Center",
+      "type": "web",
+      "status": "production"
+    },
+    {
+      "id": "APP-KNOWLEDGE",
+      "directory": "knowledge-hub",
+      "name_en": "Knowledge Hub",
+      "type": "web",
+      "status": "production"
+    },
+    {
+      "id": "APP-WORKFLOW",
+      "directory": "workflow-studio",
+      "name_en": "Workflow Studio",
+      "type": "web",
+      "status": "production"
+    },
+    {
+      "id": "APP-AI-STUDIO",
+      "directory": "ai-studio",
+      "name_en": "AI Studio",
+      "type": "web",
+      "status": "production"
+    },
+    {
+      "id": "APP-TRAINING",
+      "directory": "training-center",
+      "name_en": "Training Center",
+      "type": "web",
+      "status": "production"
+    },
+    {
+      "id": "APP-GOV",
+      "directory": "governance-center",
+      "name_en": "Governance Center",
+      "type": "web",
+      "status": "production"
+    },
+    {
+      "id": "APP-OPS",
+      "directory": "operations-center",
+      "name_en": "Operations Center",
+      "type": "web",
+      "status": "production"
+    },
+    {
+      "id": "APP-ADMIN",
+      "directory": "administration-console",
+      "name_en": "Administration Console",
+      "type": "web",
+      "status": "production"
+    },
+    {
+      "id": "APP-ANALYTICS",
+      "directory": "analytics-center",
+      "name_en": "Analytics Center",
+      "type": "web",
+      "status": "production"
+    },
+    {
+      "id": "APP-INTEG",
+      "directory": "integration-center",
+      "name_en": "Integration Center",
+      "type": "web",
+      "status": "production"
+    },
+    {
+      "id": "APP-SEC",
+      "directory": "security-center",
+      "name_en": "Security Center",
+      "type": "web",
+      "status": "production"
+    },
+    {
+      "id": "APP-MON",
+      "directory": "monitoring-center",
+      "name_en": "Monitoring Center",
+      "type": "web",
+      "status": "production"
+    }
+  ],
+  "primary_portal": "apps/web/ (Next.js 15)",
+  "brand": {
+    "gold": "#F4C430",
+    "dark_gold": "#A67C00",
+    "black": "#111111",
+    "white": "#FFFFFF",
+    "arabic_font": "IBM Plex Sans Arabic",
+    "latin_font": "Inter",
+    "grid": "8px",
+    "accessibility": "WCAG AA",
+    "modes": [
+      "light",
+      "dark"
+    ],
+    "direction": [
+      "RTL",
+      "LTR"
+    ]
+  },
+  "backward_compatible_with": [
+    "apps/web/"
+  ]
+}

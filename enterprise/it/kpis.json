@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.kpis.v1",
+  "department_id": "DEPT-IT",
+  "department": "IT",
+  "kpis": [
+    {
+      "id": "KPI-DEPT-IT-01",
+      "name": "Uptime %",
+      "frequency": "monthly",
+      "source_integration": "active-directory"
+    },
+    {
+      "id": "KPI-DEPT-IT-02",
+      "name": "MTTR (Minutes)",
+      "frequency": "monthly",
+      "source_integration": "azure-ad"
+    },
+    {
+      "id": "KPI-DEPT-IT-03",
+      "name": "Service Satisfaction %",
+      "frequency": "monthly",
+      "source_integration": "m365"
+    },
+    {
+      "id": "KPI-DEPT-IT-04",
+      "name": "Project On-Time %",
+      "frequency": "monthly",
+      "source_integration": "sharepoint"
+    }
+  ],
+  "dashboard_ref": "../../monitoring/dashboards/dept-it.json"
+}

@@ -1,0 +1,41 @@
+{
+  "schema": "hsaai.department-agent.v1",
+  "agent_id": "AGENT-COMPLIANCE",
+  "name_ar": "وكيل الامتثال",
+  "name_en": "Compliance Agent",
+  "directory": "compliance-agent",
+  "department_ref": "DEPT-COMP",
+  "role_ar": "مراقبة الامتثال للوائح والسياسات، وإدارة المخاطر المؤسسية",
+  "role_en": "Monitor regulatory and policy compliance, manage enterprise risks",
+  "model_tier": "standard",
+  "languages": [
+    "ar",
+    "en"
+  ],
+  "tools": [
+    "rag_search",
+    "knowledge_graph_query",
+    "sharepoint_query",
+    "create_compliance_issue"
+  ],
+  "safety": {
+    "human_in_the_loop": true,
+    "audit_all_calls": true,
+    "pii_detection": true,
+    "prompt_firewall": true,
+    "constitutional_ai": true,
+    "kill_switch": true
+  },
+  "runtime": {
+    "service": "services/multi_agents/",
+    "registration": "AgentRegistry",
+    "config_source": "agent.json + prompt-system.md"
+  },
+  "evaluation_targets": {
+    "task_success_rate": 0.9,
+    "hallucination_rate_max": 0.05,
+    "csat_min": 4.5,
+    "latency_p95_seconds": 3,
+    "cost_per_query_max_usd": 0.05
+  }
+}

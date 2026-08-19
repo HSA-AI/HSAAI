@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.audit.module.v1",
+  "name": "audit-schedules",
+  "name_full": "Audit Schedules",
+  "description": "Annual audit plan and audit calendar.",
+  "implementation_ref": "enterprise/internal-audit/",
+  "status": "production",
+  "backward_compatible": true
+}

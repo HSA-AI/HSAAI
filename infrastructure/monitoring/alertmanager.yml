@@ -1,0 +1,82 @@
+global:
+  resolve_timeout: 5m
+  # FIX I-16: External notifier credentials. Alertmanager does NOT expand
+  # ${VAR} at runtime — these are expanded at deploy time by envsubst (or the
+  # Helm chart's configMap template) before alertmanager reads this file.
+  # Keeping them here means the rendered config never contains the raw secret
+  # in version control.
+  slack_api_url: "${SLACK_WEBHOOK_URL}"
+  pagerduty_url: "https://events.pagerduty.com/v2/enqueue"
+
+route:
+  group_by: ["alertname", "service"]
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  receiver: "hsaai-ops"
+  routes:
+    # FIX I-16: Critical alerts MUST route to external receivers that do NOT
+    # depend on HSAAI infrastructure. When HSAAIServiceDown fires, backend_core
+    # is itself down — sending the webhook to backend_core:8000 silently drops
+    # the alert. Critical alerts now fan out to BOTH PagerDuty AND Slack, with
+    # `continue: true` so the first receiver doesn't swallow the notification.
+    - match:
+        severity: critical
+      receiver: "pagerduty-critical"
+      repeat_interval: 15m
+      continue: true
+    - match:
+        severity: critical
+      receiver: "slack-critical"
+      repeat_interval: 15m
+    # Security alerts go to an external Slack channel — never to backend_core,
+    # which could be the source of the security incident (compromised service).
+    - match:
+        team: security
+      receiver: "slack-security"
+      repeat_interval: 30m
+
+receivers:
+  # Non-critical ops alerts → backend_core webhook (still internal-only).
+  # This is safe for non-critical alerts because if backend_core is down,
+  # the underlying condition has already been escalated via the critical
+  # path above.
+  - name: "hsaai-ops"
+    webhook_configs:
+      - url: "http://backend_core:8000/v1/alerts/webhook"
+        send_resolved: true
+
+  # FIX I-16: External PagerDuty — independent of HSAAI infra. Guaranteed
+  # to be reachable even when the entire HSAAI stack is down.
+  - name: "pagerduty-critical"
+    pagerduty_configs:
+      - routing_key: "${PAGERDUTY_ROUTING_KEY}"
+        description: "{{ .CommonLabels.alertname }} — {{ .CommonLabels.service }}"
+        severity: critical
+        send_resolved: true
+        details:
+          alertname: "{{ .CommonLabels.alertname }}"
+          service: "{{ .CommonLabels.service }}"
+          instance: "{{ .CommonLabels.instance }}"
+          summary: "{{ .CommonAnnotations.summary }}"
+
+  # FIX I-16: External Slack — independent of HSAAI infra. Backup channel
+  # for critical alerts (in addition to PagerDuty).
+  - name: "slack-critical"
+    slack_configs:
+      - channel: "#hsaai-critical"
+        send_resolved: true
+        title: "[CRITICAL] {{ .CommonLabels.alertname }} — {{ .CommonLabels.service }}"
+        text: "{{ .CommonAnnotations.summary }}\nRunbook: {{ .CommonAnnotations.runbook_url }}"
+        actions:
+          - type: button
+            text: "View in Alertmanager"
+            url: "{{ .Status.generatorURL }}"
+
+  # FIX I-16: Security alerts → external Slack only (never backend_core).
+  - name: "slack-security"
+    slack_configs:
+      - channel: "#hsaai-security"
+        send_resolved: true
+        title: "[SECURITY] {{ .CommonLabels.alertname }}"
+        text: "{{ .CommonAnnotations.summary }}\nSeverity: {{ .CommonLabels.severity }}"

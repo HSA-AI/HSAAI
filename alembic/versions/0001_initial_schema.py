@@ -1,0 +1,606 @@
+"""Initial HSAAI Enterprise Schema
+
+Revision ID: 0001
+Revises: None
+Create Date: 2025-01-15 00:00:00.000000
+
+This is the initial migration that creates all HSAAI tables
+with proper Foreign Keys, indexes, JSON columns, and constraints.
+"""
+from alembic import op
+import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
+
+# revision identifiers
+revision = "0001"
+down_revision = None
+branch_labels = None
+depends_on = None
+
+
+def upgrade() -> None:
+    # ── Core Tables ────────────────────────────────────
+    op.create_table(
+        "messages",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("workspace_id", sa.String(64), nullable=False, index=True),
+        sa.Column("user", sa.String(128), nullable=False, index=True),
+        sa.Column("role", sa.String(32), nullable=False),
+        sa.Column("agent", sa.String(64), server_default="general"),
+        sa.Column("message", sa.Text(), nullable=False),
+        sa.Column("tenant_id", sa.String(64), nullable=False, index=True),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+    op.create_index("ix_messages_workspace_user", "messages", ["workspace_id", "user"])
+
+    op.create_table(
+        "audit_logs",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("actor", sa.String(128), nullable=False, index=True),
+        sa.Column("action", sa.String(64), nullable=False, index=True),
+        sa.Column("resource", sa.String(256)),
+        sa.Column("workspace_id", sa.String(64), nullable=False, index=True),
+        sa.Column("tenant_id", sa.String(64), nullable=False, index=True),
+        sa.Column("success", sa.Boolean(), server_default=sa.text("false")),
+        sa.Column("detail", sa.Text(), server_default=""),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+    op.create_index("ix_audit_actor_action", "audit_logs", ["actor", "action"])
+    op.create_index("ix_audit_workspace_created", "audit_logs", ["workspace_id", "created_at"])
+
+    # ── Knowledge Tables ───────────────────────────────
+    op.create_table(
+        "knowledge_spaces",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("key", sa.String(128), unique=True, nullable=False, index=True),
+        sa.Column("name", sa.String(256), nullable=False, index=True),
+        sa.Column("description", sa.Text(), server_default=""),
+        sa.Column("owner", sa.String(128), nullable=False, index=True),
+        sa.Column("classification", sa.String(32), index=True, server_default="internal"),
+        sa.Column("tenant_id", sa.String(64), nullable=False, index=True),
+        sa.Column("workspace_id", sa.String(64), nullable=False, index=True),
+        sa.Column("is_active", sa.Boolean(), server_default=sa.text("true")),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+    op.create_index("ix_kspaces_tenant_workspace", "knowledge_spaces", ["tenant_id", "workspace_id"])
+
+    op.create_table(
+        "knowledge_collections",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("space_key", sa.String(128), sa.ForeignKey("knowledge_spaces.key"), nullable=False, index=True),
+        sa.Column("key", sa.String(128), nullable=False, index=True),
+        sa.Column("name", sa.String(256), nullable=False, index=True),
+        sa.Column("description", sa.Text(), server_default=""),
+        sa.Column("document_count", sa.Integer(), server_default="0"),
+        sa.Column("tenant_id", sa.String(64), nullable=False, index=True),
+        sa.Column("workspace_id", sa.String(64), nullable=False, index=True),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+    op.create_index("ix_kcoll_space_key", "knowledge_collections", ["space_key", "key"])
+    op.create_index("ix_kcoll_tenant_workspace", "knowledge_collections", ["tenant_id", "workspace_id"])
+
+    op.create_table(
+        "knowledge_documents",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("document_id", sa.String(128), unique=True, nullable=False, index=True),
+        sa.Column("space_key", sa.String(128), sa.ForeignKey("knowledge_spaces.key"), nullable=False, index=True),
+        sa.Column("collection_key", sa.String(128), nullable=False, index=True),
+        sa.Column("filename", sa.String(256), nullable=False, index=True),
+        sa.Column("title", sa.String(256), server_default=""),
+        sa.Column("content_type", sa.String(128), server_default="application/octet-stream"),
+        sa.Column("size_bytes", sa.Integer(), server_default="0"),
+        sa.Column("version", sa.Integer(), server_default="1"),
+        sa.Column("status", sa.String(32), index=True, server_default="draft"),
+        sa.Column("classification", sa.String(32), index=True, server_default="internal"),
+        sa.Column("sensitivity", sa.String(32), server_default="normal"),
+        sa.Column("department", sa.String(64), index=True, server_default="general"),
+        sa.Column("tags", postgresql.JSON(), server_default="[]"),
+        sa.Column("metadata", postgresql.JSON(), server_default="{}"),
+        sa.Column("uploaded_by", sa.String(128), nullable=False, index=True),
+        sa.Column("reviewed_by", sa.String(128), server_default=""),
+        sa.Column("review_reason", sa.Text(), server_default=""),
+        sa.Column("approved_at", sa.DateTime(timezone=True), nullable=True),
+        sa.Column("archived_at", sa.DateTime(timezone=True), nullable=True),
+        sa.Column("qdrant_indexed", sa.Boolean(), server_default=sa.text("false")),
+        sa.Column("tenant_id", sa.String(64), nullable=False, index=True),
+        sa.Column("workspace_id", sa.String(64), nullable=False, index=True),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+    op.create_index("ix_kdoc_space_coll_status", "knowledge_documents", ["space_key", "collection_key", "status"])
+    op.create_index("ix_kdoc_tenant_workspace", "knowledge_documents", ["tenant_id", "workspace_id"])
+
+    op.create_table(
+        "knowledge_versions",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("document_id", sa.String(128), sa.ForeignKey("knowledge_documents.document_id"), nullable=False, index=True),
+        sa.Column("version", sa.Integer(), nullable=False),
+        sa.Column("storage_path", sa.String(512), server_default=""),
+        sa.Column("checksum", sa.String(64), index=True, server_default=""),
+        sa.Column("change_note", sa.Text(), server_default=""),
+        sa.Column("created_by", sa.String(128), nullable=False, index=True),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+    op.create_index("ix_kver_doc_version", "knowledge_versions", ["document_id", "version"])
+
+    op.create_table(
+        "knowledge_permissions",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("resource_type", sa.String(32), nullable=False, index=True),
+        sa.Column("resource_key", sa.String(128), nullable=False, index=True),
+        sa.Column("principal_type", sa.String(32), server_default="role", index=True),
+        sa.Column("principal", sa.String(128), nullable=False, index=True),
+        sa.Column("permission", sa.String(64), nullable=False, index=True),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+    op.create_index("ix_kperm_resource_principal", "knowledge_permissions", ["resource_type", "resource_key", "principal"])
+
+    op.create_table(
+        "knowledge_analytics_events",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("event_type", sa.String(64), nullable=False, index=True),
+        sa.Column("resource_type", sa.String(32), server_default="knowledge", index=True),
+        sa.Column("resource_key", sa.String(128), server_default=""),
+        sa.Column("actor", sa.String(128), nullable=False, index=True),
+        sa.Column("query", sa.Text(), server_default=""),
+        sa.Column("result_count", sa.Integer(), server_default="0"),
+        sa.Column("latency_ms", sa.Integer(), server_default="0"),
+        sa.Column("tenant_id", sa.String(64), nullable=False, index=True),
+        sa.Column("workspace_id", sa.String(64), nullable=False, index=True),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+    op.create_index("ix_ka_event_tenant_created", "knowledge_analytics_events", ["event_type", "tenant_id", "created_at"])
+
+    op.create_table(
+        "document_approval_events",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("document_id", sa.String(128), sa.ForeignKey("knowledge_documents.document_id"), nullable=False, index=True),
+        sa.Column("action", sa.String(32), nullable=False, index=True),
+        sa.Column("actor", sa.String(128), nullable=False, index=True),
+        sa.Column("from_status", sa.String(32), server_default=""),
+        sa.Column("to_status", sa.String(32), server_default=""),
+        sa.Column("reason", sa.Text(), server_default=""),
+        sa.Column("tenant_id", sa.String(64), nullable=False, index=True),
+        sa.Column("workspace_id", sa.String(64), nullable=False, index=True),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+    op.create_index("ix_dae_doc_action", "document_approval_events", ["document_id", "action"])
+
+    # ── Model Quality & Approval Tables ────────────────
+    op.create_table(
+        "model_quality_runs",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("run_id", sa.String(128), unique=True, nullable=False, index=True),
+        sa.Column("model_name", sa.String(128), nullable=False, index=True),
+        sa.Column("accuracy_score", sa.Float(), nullable=True),
+        sa.Column("groundedness_score", sa.Float(), nullable=True),
+        sa.Column("hallucination_risk", sa.Float(), nullable=True),
+        sa.Column("response_latency", sa.Float(), nullable=True),
+        sa.Column("arabic_quality_score", sa.Float(), nullable=True),
+        sa.Column("policy_compliance_score", sa.Float(), nullable=True),
+        sa.Column("report", postgresql.JSON(), server_default="{}"),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+
+    op.create_table(
+        "human_approval_requests",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("request_id", sa.String(128), unique=True, nullable=False, index=True),
+        sa.Column("action_type", sa.String(64), nullable=False, index=True),
+        sa.Column("resource_type", sa.String(64), server_default=""),
+        sa.Column("resource_id", sa.String(128), server_default=""),
+        sa.Column("requester", sa.String(128), nullable=False, index=True),
+        sa.Column("approver", sa.String(128), server_default=""),
+        sa.Column("status", sa.String(32), index=True, server_default="pending"),
+        sa.Column("payload", postgresql.JSON(), server_default="{}"),
+        sa.Column("decision_reason", sa.Text(), server_default=""),
+        sa.Column("tenant_id", sa.String(64), nullable=False, index=True),
+        sa.Column("workspace_id", sa.String(64), nullable=False, index=True),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+        sa.Column("decided_at", sa.DateTime(timezone=True), nullable=True),
+    )
+    op.create_index("ix_har_status_approver", "human_approval_requests", ["status", "approver"])
+
+    # ── LLM Usage & Cost Tables ───────────────────────
+    op.create_table(
+        "llm_usage_logs",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("user_id", sa.String(128), nullable=False, index=True),
+        sa.Column("department", sa.String(64), nullable=False, index=True),
+        sa.Column("provider", sa.String(64), index=True, server_default=""),
+        sa.Column("model", sa.String(128), index=True, server_default=""),
+        sa.Column("input_tokens", sa.Integer(), server_default="0"),
+        sa.Column("output_tokens", sa.Integer(), server_default="0"),
+        sa.Column("estimated_cost", sa.Float(), server_default="0.0"),
+        sa.Column("operation_type", sa.String(64), index=True, server_default="chat"),
+        sa.Column("agent", sa.String(64), server_default="general"),
+        sa.Column("workspace_id", sa.String(64), nullable=False, index=True),
+        sa.Column("project", sa.String(128), server_default="default"),
+        sa.Column("tenant_id", sa.String(64), nullable=False, index=True),
+        sa.Column("request_id", sa.String(128), index=True, server_default=""),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+    op.create_index("ix_llm_dept_created", "llm_usage_logs", ["department", "created_at"])
+    op.create_index("ix_llm_user_created", "llm_usage_logs", ["user_id", "created_at"])
+
+    op.create_table(
+        "ai_cost_records",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("period", sa.String(32), index=True, server_default="daily"),
+        sa.Column("period_key", sa.String(64), index=True, server_default=""),
+        sa.Column("user_id", sa.String(128), nullable=False, index=True),
+        sa.Column("department", sa.String(64), nullable=False, index=True),
+        sa.Column("model", sa.String(128), index=True, server_default=""),
+        sa.Column("agent", sa.String(64), server_default="general"),
+        sa.Column("total_input_tokens", sa.Integer(), server_default="0"),
+        sa.Column("total_output_tokens", sa.Integer(), server_default="0"),
+        sa.Column("total_cost", sa.Float(), server_default="0.0"),
+        sa.Column("budget", sa.Float(), server_default="0.0"),
+        sa.Column("alert_triggered", sa.Boolean(), server_default=sa.text("false")),
+        sa.Column("tenant_id", sa.String(64), nullable=False, index=True),
+        sa.Column("workspace_id", sa.String(64), nullable=False, index=True),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+    op.create_index("ix_acr_period_dept", "ai_cost_records", ["period", "department"])
+
+    # ── Executive Dashboard Tables ─────────────────────
+    op.create_table(
+        "executive_metrics",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("metric_key", sa.String(64), nullable=False, index=True),
+        sa.Column("metric_value", sa.Integer(), server_default="0"),
+        sa.Column("metric_unit", sa.String(32), server_default="count"),
+        sa.Column("category", sa.String(64), index=True, server_default="platform"),
+        sa.Column("period", sa.String(32), index=True, server_default="today"),
+        sa.Column("tenant_id", sa.String(64), nullable=False, index=True),
+        sa.Column("workspace_id", sa.String(64), nullable=False, index=True),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+    op.create_index("ix_em_key_period", "executive_metrics", ["metric_key", "period"])
+
+    op.create_table(
+        "department_metrics",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("department", sa.String(64), nullable=False, index=True),
+        sa.Column("active_users", sa.Integer(), server_default="0"),
+        sa.Column("chats", sa.Integer(), server_default="0"),
+        sa.Column("knowledge_searches", sa.Integer(), server_default="0"),
+        sa.Column("agent_runs", sa.Integer(), server_default="0"),
+        sa.Column("workflow_runs", sa.Integer(), server_default="0"),
+        sa.Column("adoption_score", sa.Integer(), server_default="0"),
+        sa.Column("tenant_id", sa.String(64), nullable=False, index=True),
+        sa.Column("workspace_id", sa.String(64), nullable=False, index=True),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+
+    op.create_table(
+        "executive_alerts",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("severity", sa.String(32), index=True, server_default="info"),
+        sa.Column("category", sa.String(64), index=True, server_default="platform"),
+        sa.Column("title", sa.String(256), nullable=False),
+        sa.Column("description", sa.Text(), server_default=""),
+        sa.Column("status", sa.String(32), index=True, server_default="open"),
+        sa.Column("owner", sa.String(128), index=True, server_default="AI Operations"),
+        sa.Column("tenant_id", sa.String(64), nullable=False, index=True),
+        sa.Column("workspace_id", sa.String(64), nullable=False, index=True),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+    op.create_index("ix_ea_status_severity", "executive_alerts", ["status", "severity"])
+
+    op.create_table(
+        "executive_usage_events",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("event_type", sa.String(64), nullable=False, index=True),
+        sa.Column("department", sa.String(64), index=True, server_default="General"),
+        sa.Column("actor", sa.String(128), nullable=False, index=True),
+        sa.Column("resource", sa.String(256), server_default=""),
+        sa.Column("value", sa.Integer(), server_default="1"),
+        sa.Column("latency_ms", sa.Integer(), server_default="0"),
+        sa.Column("success", sa.Boolean(), server_default=sa.text("false")),
+        sa.Column("tenant_id", sa.String(64), nullable=False, index=True),
+        sa.Column("workspace_id", sa.String(64), nullable=False, index=True),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+    op.create_index("ix_eue_type_created", "executive_usage_events", ["event_type", "created_at"])
+
+    # ── Department Agent Tables ────────────────────────
+    op.create_table(
+        "department_agents",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("key", sa.String(64), nullable=False, index=True),
+        sa.Column("name", sa.String(128), nullable=False, index=True),
+        sa.Column("department", sa.String(64), index=True, server_default="general"),
+        sa.Column("description", sa.Text(), server_default=""),
+        sa.Column("system_prompt", sa.Text(), nullable=False),
+        sa.Column("keywords", postgresql.JSON(), server_default="[]"),
+        sa.Column("allowed_roles", postgresql.JSON(), server_default="[]"),
+        sa.Column("knowledge_scopes", postgresql.JSON(), server_default="[]"),
+        sa.Column("escalation_target", sa.String(128), server_default=""),
+        sa.Column("priority", sa.Integer(), index=True, server_default="100"),
+        sa.Column("enabled", sa.Boolean(), index=True, server_default=sa.text("true")),
+        sa.Column("tenant_id", sa.String(64), nullable=False, index=True),
+        sa.Column("workspace_id", sa.String(64), nullable=False, index=True),
+        sa.Column("created_by", sa.String(128), nullable=False),
+        sa.Column("updated_by", sa.String(128), nullable=False),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+    op.create_index("ix_dagent_dept_enabled", "department_agents", ["department", "enabled"])
+
+    op.create_table(
+        "department_agent_runs",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("agent_key", sa.String(64), sa.ForeignKey("department_agents.key"), nullable=False, index=True),
+        sa.Column("department", sa.String(64), index=True, server_default="general"),
+        sa.Column("actor", sa.String(128), nullable=False, index=True),
+        sa.Column("message", sa.Text(), server_default=""),
+        sa.Column("score", sa.Float(), server_default="0.0"),
+        sa.Column("success", sa.Boolean(), server_default=sa.text("false")),
+        sa.Column("latency_ms", sa.Integer(), server_default="0"),
+        sa.Column("tenant_id", sa.String(64), nullable=False, index=True),
+        sa.Column("workspace_id", sa.String(64), nullable=False, index=True),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+    op.create_index("ix_dar_agent_created", "department_agent_runs", ["agent_key", "created_at"])
+
+    # ── Enterprise OS Tables ───────────────────────────
+    op.create_table(
+        "agents",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("agent_key", sa.String(), unique=True, nullable=False, index=True),
+        sa.Column("name", sa.String(), nullable=False, index=True),
+        sa.Column("department", sa.String(), index=True, server_default="general"),
+        sa.Column("description", sa.Text(), server_default=""),
+        sa.Column("system_prompt", sa.Text(), server_default=""),
+        sa.Column("model_key", sa.String(), index=True, server_default="local-default"),
+        sa.Column("status", sa.String(), index=True, server_default="draft"),
+        sa.Column("risk_level", sa.String(), index=True, server_default="medium"),
+        sa.Column("tools", postgresql.JSON(), server_default="[]"),
+        sa.Column("knowledge_sources", postgresql.JSON(), server_default="[]"),
+        sa.Column("permissions", postgresql.JSON(), server_default="[]"),
+        sa.Column("approval_required", sa.Boolean(), server_default=sa.text("false")),
+        sa.Column("health_status", sa.String(), index=True, server_default="unknown"),
+        sa.Column("enabled", sa.Boolean(), index=True, server_default=sa.text("true")),
+        sa.Column("version", sa.Integer(), server_default="1"),
+        sa.Column("tenant_id", sa.String(), index=True, server_default="default"),
+        sa.Column("workspace_id", sa.String(), server_default="default"),
+        sa.Column("created_by", sa.String(), index=True, server_default="system"),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+
+    op.create_table(
+        "agent_logs",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("request_id", sa.String(), unique=True, nullable=False, index=True),
+        sa.Column("user_id", sa.String(), index=True, server_default="system"),
+        sa.Column("agent_key", sa.String(), nullable=False, index=True),
+        sa.Column("action", sa.String(), index=True, server_default="run"),
+        sa.Column("input_text", sa.Text(), server_default=""),
+        sa.Column("output_text", sa.Text(), server_default=""),
+        sa.Column("confidence", sa.Float(), server_default="0.0"),
+        sa.Column("latency_ms", sa.Integer(), server_default="0"),
+        sa.Column("success", sa.Boolean(), server_default=sa.text("true")),
+        sa.Column("tenant_id", sa.String(), index=True, server_default="default"),
+        sa.Column("workspace_id", sa.String(), server_default="default"),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+
+    op.create_table(
+        "agent_memory",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("agent_key", sa.String(), nullable=False, index=True),
+        sa.Column("scope", sa.String(), index=True, server_default="conversation"),
+        sa.Column("subject", sa.String(), index=True, server_default=""),
+        sa.Column("content", sa.Text(), server_default=""),
+        sa.Column("tenant_id", sa.String(), index=True, server_default="default"),
+        sa.Column("workspace_id", sa.String(), server_default="default"),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+
+    op.create_table(
+        "enterprise_approval_requests",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("approval_id", sa.String(), unique=True, nullable=False, index=True),
+        sa.Column("title", sa.String(), nullable=False, index=True),
+        sa.Column("action_type", sa.String(), nullable=False, index=True),
+        sa.Column("resource_type", sa.String(), index=True, server_default="general"),
+        sa.Column("resource_id", sa.String(), index=True, server_default=""),
+        sa.Column("recommendation", sa.Text(), server_default=""),
+        sa.Column("payload", postgresql.JSON(), server_default="{}"),
+        sa.Column("risk_level", sa.String(), index=True, server_default="medium"),
+        sa.Column("status", sa.String(), index=True, server_default="pending"),
+        sa.Column("current_step", sa.Integer(), server_default="1"),
+        sa.Column("required_roles", postgresql.JSON(), server_default="[]"),
+        sa.Column("sla_hours", sa.Integer(), server_default="24"),
+        sa.Column("requested_by", sa.String(), index=True, server_default="system"),
+        sa.Column("reviewed_by", sa.String(), server_default=""),
+        sa.Column("reject_reason", sa.Text(), server_default=""),
+        sa.Column("tenant_id", sa.String(), index=True, server_default="default"),
+        sa.Column("workspace_id", sa.String(), server_default="default"),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+
+    op.create_table(
+        "approval_history",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("approval_id", sa.String(), nullable=False, index=True),
+        sa.Column("step_no", sa.Integer(), server_default="1"),
+        sa.Column("actor", sa.String(), index=True, server_default="system"),
+        sa.Column("decision", sa.String(), index=True, server_default="pending"),
+        sa.Column("comment", sa.Text(), server_default=""),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+
+    op.create_table(
+        "knowledge_entities",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("entity_key", sa.String(), unique=True, nullable=False, index=True),
+        sa.Column("name", sa.String(), nullable=False, index=True),
+        sa.Column("entity_type", sa.String(), nullable=False, index=True),
+        sa.Column("description", sa.Text(), server_default=""),
+        sa.Column("source_ref", sa.String(), index=True, server_default=""),
+        sa.Column("confidence", sa.Float(), server_default="0.0"),
+        sa.Column("classification", sa.String(), index=True, server_default="internal"),
+        sa.Column("metadata", postgresql.JSON(), server_default="{}"),
+        sa.Column("tenant_id", sa.String(), index=True, server_default="default"),
+        sa.Column("workspace_id", sa.String(), server_default="default"),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+
+    op.create_table(
+        "knowledge_relationships",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("source_key", sa.String(), nullable=False, index=True),
+        sa.Column("relationship_type", sa.String(), nullable=False, index=True),
+        sa.Column("target_key", sa.String(), nullable=False, index=True),
+        sa.Column("source_ref", sa.String(), index=True, server_default=""),
+        sa.Column("confidence", sa.Float(), server_default="0.0"),
+        sa.Column("metadata", postgresql.JSON(), server_default="{}"),
+        sa.Column("tenant_id", sa.String(), index=True, server_default="default"),
+        sa.Column("workspace_id", sa.String(), server_default="default"),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+
+    op.create_table(
+        "search_logs",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("query", sa.Text(), server_default=""),
+        sa.Column("search_type", sa.String(), index=True, server_default="hybrid"),
+        sa.Column("result_count", sa.Integer(), server_default="0"),
+        sa.Column("latency_ms", sa.Integer(), server_default="0"),
+        sa.Column("trust_score", sa.Float(), server_default="0.0"),
+        sa.Column("user_id", sa.String(), index=True, server_default="system"),
+        sa.Column("tenant_id", sa.String(), index=True, server_default="default"),
+        sa.Column("workspace_id", sa.String(), server_default="default"),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+
+    op.create_table(
+        "ai_projects",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("project_key", sa.String(), unique=True, nullable=False, index=True),
+        sa.Column("name", sa.String(), nullable=False, index=True),
+        sa.Column("owner", sa.String(), index=True, server_default="AI CoE"),
+        sa.Column("department", sa.String(), index=True, server_default="enterprise"),
+        sa.Column("status", sa.String(), index=True, server_default="planned"),
+        sa.Column("progress", sa.Integer(), server_default="0"),
+        sa.Column("expected_roi", sa.Float(), server_default="0.0"),
+        sa.Column("cost_estimate", sa.Float(), server_default="0.0"),
+        sa.Column("risk_level", sa.String(), index=True, server_default="medium"),
+        sa.Column("description", sa.Text(), server_default=""),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+
+    op.create_table(
+        "ai_policies",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("policy_key", sa.String(), unique=True, nullable=False, index=True),
+        sa.Column("title", sa.String(), nullable=False, index=True),
+        sa.Column("category", sa.String(), index=True, server_default="governance"),
+        sa.Column("classification", sa.String(), index=True, server_default="internal"),
+        sa.Column("status", sa.String(), index=True, server_default="active"),
+        sa.Column("enforcement", sa.String(), index=True, server_default="monitor"),
+        sa.Column("content", sa.Text(), server_default=""),
+        sa.Column("owner", sa.String(), index=True, server_default="AI Governance"),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+
+    op.create_table(
+        "ai_risks",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("risk_key", sa.String(), unique=True, nullable=False, index=True),
+        sa.Column("title", sa.String(), nullable=False, index=True),
+        sa.Column("category", sa.String(), index=True, server_default="model"),
+        sa.Column("likelihood", sa.String(), server_default="medium"),
+        sa.Column("impact", sa.String(), server_default="medium"),
+        sa.Column("severity", sa.String(), index=True, server_default="medium"),
+        sa.Column("mitigation", sa.Text(), server_default=""),
+        sa.Column("owner", sa.String(), index=True, server_default="AI Risk"),
+        sa.Column("status", sa.String(), index=True, server_default="open"),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+
+    op.create_table(
+        "ai_training",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("course_key", sa.String(), unique=True, nullable=False, index=True),
+        sa.Column("title", sa.String(), nullable=False, index=True),
+        sa.Column("audience", sa.String(), index=True, server_default="all"),
+        sa.Column("level", sa.String(), index=True, server_default="foundation"),
+        sa.Column("status", sa.String(), index=True, server_default="active"),
+        sa.Column("completion_rate", sa.Float(), server_default="0.0"),
+        sa.Column("description", sa.Text(), server_default=""),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+
+    op.create_table(
+        "cost_records",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("record_key", sa.String(), unique=True, nullable=False, index=True),
+        sa.Column("user_id", sa.String(), index=True, server_default="system"),
+        sa.Column("department", sa.String(), index=True, server_default="general"),
+        sa.Column("business_unit", sa.String(), index=True, server_default="enterprise"),
+        sa.Column("project", sa.String(), index=True, server_default="HSAAI"),
+        sa.Column("agent_key", sa.String(), index=True, server_default=""),
+        sa.Column("model_key", sa.String(), index=True, server_default="local-default"),
+        sa.Column("workflow_key", sa.String(), index=True, server_default=""),
+        sa.Column("tokens", sa.Integer(), server_default="0"),
+        sa.Column("api_calls", sa.Integer(), server_default="0"),
+        sa.Column("embedding_cost", sa.Float(), server_default="0.0"),
+        sa.Column("vector_storage_cost", sa.Float(), server_default="0.0"),
+        sa.Column("compute_cost", sa.Float(), server_default="0.0"),
+        sa.Column("total_cost", sa.Float(), server_default="0.0"),
+        sa.Column("latency_ms", sa.Integer(), server_default="0"),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+
+    op.create_table(
+        "integrations",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("connector_key", sa.String(), unique=True, nullable=False, index=True),
+        sa.Column("name", sa.String(), nullable=False, index=True),
+        sa.Column("system_type", sa.String(), nullable=False, index=True),
+        sa.Column("auth_type", sa.String(), server_default="oauth2"),
+        sa.Column("base_url", sa.Text(), server_default=""),
+        sa.Column("enabled", sa.Boolean(), server_default=sa.text("false")),
+        sa.Column("health_status", sa.String(), index=True, server_default="not_configured"),
+        sa.Column("sync_status", sa.String(), index=True, server_default="never"),
+        sa.Column("permissions_mapping", postgresql.JSON(), server_default="{}"),
+        sa.Column("data_mapping", postgresql.JSON(), server_default="{}"),
+        sa.Column("retry_policy", postgresql.JSON(), server_default="{}"),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+
+    op.create_table(
+        "connector_logs",
+        sa.Column("id", sa.Integer(), primary_key=True),
+        sa.Column("connector_key", sa.String(), nullable=False, index=True),
+        sa.Column("action", sa.String(), nullable=False, index=True),
+        sa.Column("success", sa.Boolean(), server_default=sa.text("true")),
+        sa.Column("message", sa.Text(), server_default=""),
+        sa.Column("latency_ms", sa.Integer(), server_default="0"),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+
+
+def downgrade() -> None:
+    """Downgrade drops all tables in reverse dependency order."""
+    tables = [
+        "connector_logs", "integrations", "cost_records", "ai_training",
+        "ai_risks", "ai_policies", "ai_projects", "search_logs",
+        "knowledge_relationships", "knowledge_entities",
+        "approval_history", "enterprise_approval_requests",
+        "agent_memory", "agent_logs", "agents",
+        "department_agent_runs", "department_agents",
+        "executive_usage_events", "executive_alerts", "department_metrics",
+        "executive_metrics", "ai_cost_records", "llm_usage_logs",
+        "human_approval_requests", "model_quality_runs",
+        "document_approval_events", "knowledge_analytics_events",
+        "knowledge_permissions", "knowledge_versions", "knowledge_documents",
+        "knowledge_collections", "knowledge_spaces",
+        "audit_logs", "messages",
+    ]
+    for table in tables:
+        op.drop_table(table)

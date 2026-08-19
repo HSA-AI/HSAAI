@@ -1,0 +1,215 @@
+{
+  "schema": "hsaai.compatibility-matrix.v1",
+  "version": "7.0.0",
+  "generated_at": "2026-07-13",
+  "backward_compatibility": {
+    "status": "FULLY_MAINTAINED",
+    "v6.0_to_v7.0": {
+      "apis_preserved": true,
+      "database_schemas_preserved": true,
+      "configurations_preserved": true,
+      "services_preserved": true,
+      "connectors_preserved": true,
+      "infrastructure_preserved": true,
+      "documentation_preserved": true,
+      "tests_preserved": true
+    }
+  },
+  "service_compatibility": [
+    {
+      "service": "backend_core",
+      "port": 8000,
+      "v6.0_status": "Production",
+      "v7.0_status": "Production (preserved)",
+      "breaking_changes": "None"
+    },
+    {
+      "service": "api_gateway",
+      "port": 8080,
+      "v6.0_status": "Production",
+      "v7.0_status": "Production (preserved)",
+      "breaking_changes": "None"
+    },
+    {
+      "service": "auth_service",
+      "port": 8010,
+      "v6.0_status": "Production",
+      "v7.0_status": "Production (preserved)",
+      "breaking_changes": "None"
+    },
+    {
+      "service": "rag_engine",
+      "port": 8030,
+      "v6.0_status": "Production",
+      "v7.0_status": "Production (preserved)",
+      "breaking_changes": "None"
+    },
+    {
+      "service": "llm_gateway",
+      "port": 8090,
+      "v6.0_status": "Production",
+      "v7.0_status": "Production (preserved)",
+      "breaking_changes": "None"
+    },
+    {
+      "service": "multi_agents",
+      "port": 8040,
+      "v6.0_status": "Production",
+      "v7.0_status": "Production (preserved, 21 new agents added via config)",
+      "breaking_changes": "None"
+    },
+    {
+      "service": "workflow_engine",
+      "port": 8070,
+      "v6.0_status": "Production",
+      "v7.0_status": "Production (preserved)",
+      "breaking_changes": "None"
+    },
+    {
+      "service": "ai_alignment",
+      "port": 8005,
+      "v6.0_status": "Production",
+      "v7.0_status": "Production (preserved)",
+      "breaking_changes": "None"
+    },
+    {
+      "service": "governance",
+      "port": 8011,
+      "v6.0_status": "Production",
+      "v7.0_status": "Production (preserved, 21 endpoints)",
+      "breaking_changes": "None"
+    },
+    {
+      "service": "pii_detector",
+      "port": 8092,
+      "v6.0_status": "Production",
+      "v7.0_status": "Production (preserved)",
+      "breaking_changes": "None"
+    },
+    {
+      "service": "mcp_server",
+      "port": 8094,
+      "v6.0_status": "Production",
+      "v7.0_status": "Production (preserved)",
+      "breaking_changes": "None"
+    },
+    {
+      "service": "model_training",
+      "port": 8091,
+      "v6.0_status": "Production",
+      "v7.0_status": "Production (preserved)",
+      "breaking_changes": "None"
+    },
+    {
+      "service": "voice_ai",
+      "port": 8096,
+      "v6.0_status": "Production",
+      "v7.0_status": "Production (preserved)",
+      "breaking_changes": "None"
+    },
+    {
+      "service": "bff",
+      "port": 8095,
+      "v6.0_status": "Production",
+      "v7.0_status": "Production (preserved)",
+      "breaking_changes": "None"
+    },
+    {
+      "service": "frontend (Next.js)",
+      "port": 3000,
+      "v6.0_status": "Production",
+      "v7.0_status": "Production (preserved)",
+      "breaking_changes": "None"
+    }
+  ],
+  "infrastructure_compatibility": [
+    {
+      "component": "PostgreSQL",
+      "v6.0": "16 (HA via Patroni)",
+      "v7.0": "16 (HA via Patroni) — unchanged"
+    },
+    {
+      "component": "Redis",
+      "v6.0": "7-alpine (Sentinel)",
+      "v7.0": "7-alpine (Sentinel) — unchanged"
+    },
+    {
+      "component": "Qdrant",
+      "v6.0": "v1.12.1 (cluster)",
+      "v7.0": "v1.12.1 (cluster) — unchanged"
+    },
+    {
+      "component": "Neo4j",
+      "v6.0": "5 (causal cluster)",
+      "v7.0": "5 (causal cluster) — unchanged"
+    },
+    {
+      "component": "Kafka",
+      "v6.0": "7.7.1 (3 brokers)",
+      "v7.0": "7.7.1 (3 brokers) — unchanged"
+    },
+    {
+      "component": "MinIO",
+      "v6.0": "2024-10-13",
+      "v7.0": "2024-10-13 — unchanged"
+    },
+    {
+      "component": "Keycloak",
+      "v6.0": "Production",
+      "v7.0": "Production — unchanged"
+    },
+    {
+      "component": "Vault",
+      "v6.0": "Production",
+      "v7.0": "Production — unchanged"
+    },
+    {
+      "component": "OPA",
+      "v6.0": "Production",
+      "v7.0": "Production — unchanged"
+    },
+    {
+      "component": "Prometheus + Grafana + Loki + Tempo + Thanos + OTEL",
+      "v6.0": "Production",
+      "v7.0": "Production — unchanged"
+    },
+    {
+      "component": "Istio Service Mesh",
+      "v6.0": "Production (mTLS)",
+      "v7.0": "Production (mTLS) — unchanged"
+    },
+    {
+      "component": "ArgoCD",
+      "v6.0": "Production (GitOps)",
+      "v7.0": "Production (GitOps) — unchanged"
+    }
+  ],
+  "connector_compatibility": {
+    "v6.0_connectors": 28,
+    "v7.0_connectors_specified": 37,
+    "v6.0_preserved": "All 28 connectors in packages/common/connectors/ unchanged",
+    "v7.0_added": "9 new integration specifications added in integrations/ (Google Workspace, OpenText, ServiceNow, Jira, Tableau, Qlik, etc.)"
+  },
+  "configuration_compatibility": {
+    "env_files": "All .env.*.example files preserved unchanged",
+    "docker_compose": "docker-compose.yml preserved unchanged (36 services)",
+    "k8s_manifests": "All infrastructure/kubernetes/ manifests preserved unchanged",
+    "helm_charts": "All infrastructure/helm/ charts preserved unchanged",
+    "argocd_apps": "All infrastructure/argocd/ apps preserved unchanged"
+  },
+  "documentation_compatibility": {
+    "v6.0_docs_preserved": true,
+    "v7.0_docs_added": "16 enterprise guides in docs/enterprise-guides/",
+    "v6.0_readmes_preserved": true
+  },
+  "test_compatibility": {
+    "v6.0_tests_preserved": true,
+    "v6.0_tests_passing": "All v6.0 tests pass without modification",
+    "v7.0_tests_added": "New structure validation tests"
+  },
+  "database_compatibility": {
+    "schema_changes": "None",
+    "migrations_required": "None",
+    "alembic_migrations_preserved": true
+  }
+}

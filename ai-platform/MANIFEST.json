@@ -1,0 +1,142 @@
+{
+  "schema": "hsaai.ai-platform.manifest.v1",
+  "module": "ai-platform",
+  "version": "7.0.0",
+  "generated_at": "2026-07-13",
+  "total_submodules": 20,
+  "submodules": [
+    {
+      "directory": "ai-core",
+      "name_en": "AI Core",
+      "runtime_ref": "services/backend_core/ai_operations/"
+    },
+    {
+      "directory": "llm-gateway",
+      "name_en": "Enterprise LLM Gateway",
+      "runtime_ref": "services/llm_gateway/"
+    },
+    {
+      "directory": "reasoning-engine",
+      "name_en": "Reasoning Engine",
+      "runtime_ref": "services/backend_core/ai_operations/reasoning.py"
+    },
+    {
+      "directory": "memory-engine",
+      "name_en": "Memory Engine",
+      "runtime_ref": "services/backend_core/memory/"
+    },
+    {
+      "directory": "rag-engine",
+      "name_en": "RAG Engine",
+      "runtime_ref": "services/rag_engine/"
+    },
+    {
+      "directory": "knowledge-graph",
+      "name_en": "Knowledge Graph",
+      "runtime_ref": "services/backend_core/knowledge_graph/"
+    },
+    {
+      "directory": "vector-database",
+      "name_en": "Vector Database",
+      "runtime_ref": "infrastructure/qdrant-cluster/"
+    },
+    {
+      "directory": "prompt-firewall",
+      "name_en": "Prompt Firewall",
+      "runtime_ref": "services/backend_core/prompt_security/"
+    },
+    {
+      "directory": "safety-layer",
+      "name_en": "Safety Layer",
+      "runtime_ref": "services/ai_alignment/"
+    },
+    {
+      "directory": "model-router",
+      "name_en": "Model Router",
+      "runtime_ref": "services/backend_core/llm/router.py"
+    },
+    {
+      "directory": "training-platform",
+      "name_en": "Training Platform",
+      "runtime_ref": "services/model_training/"
+    },
+    {
+      "directory": "model-registry",
+      "name_en": "Model Registry",
+      "runtime_ref": "services/model_training/registry.py"
+    },
+    {
+      "directory": "inference-engine",
+      "name_en": "Inference Engine",
+      "runtime_ref": "services/llm_gateway/"
+    },
+    {
+      "directory": "ai-governance",
+      "name_en": "AI Governance",
+      "runtime_ref": "services/governance/"
+    },
+    {
+      "directory": "ai-security",
+      "name_en": "AI Security",
+      "runtime_ref": "services/backend_core/security/"
+    },
+    {
+      "directory": "ai-observability",
+      "name_en": "AI Observability",
+      "runtime_ref": "infrastructure/otel/"
+    },
+    {
+      "directory": "ai-evaluation",
+      "name_en": "AI Evaluation",
+      "runtime_ref": "evals/"
+    },
+    {
+      "directory": "ai-benchmark",
+      "name_en": "AI Benchmark",
+      "runtime_ref": "benchmarks/"
+    },
+    {
+      "directory": "ai-monitoring",
+      "name_en": "AI Monitoring",
+      "runtime_ref": "infrastructure/prometheus/ + infrastructure/grafana/"
+    },
+    {
+      "directory": "ai-analytics",
+      "name_en": "AI Analytics",
+      "runtime_ref": "services/backend_core/ai_operations/analytics.py"
+    }
+  ],
+  "capabilities": [
+    "Local Models (GGUF, Ollama, vLLM)",
+    "LoRA/QLoRA Fine-Tuning",
+    "Distributed Training",
+    "Knowledge Graph",
+    "Advanced RAG (hybrid + reranking + citation)",
+    "Hybrid Search (semantic + keyword + graph)",
+    "Semantic Search (Qdrant dense + sparse)",
+    "Reasoning (CoT, ToT, ReAct)",
+    "Multi-Agent Orchestration",
+    "Tool Calling (MCP)",
+    "Offline AI",
+    "Arabic AI + English AI"
+  ],
+  "backward_compatible_with": [
+    "services/llm_gateway/",
+    "services/rag_engine/",
+    "services/ai_alignment/",
+    "services/governance/",
+    "services/mcp_server/",
+    "services/model_training/",
+    "services/voice_ai/",
+    "services/backend_core/ai_operations/",
+    "services/backend_core/memory/",
+    "services/backend_core/knowledge_graph/",
+    "services/backend_core/llm/",
+    "services/backend_core/prompt_security/",
+    "services/backend_core/safety/",
+    "infrastructure/qdrant-cluster/",
+    "infrastructure/otel/"
+  ],
+  "owner": "AI & Digital Transformation Committee",
+  "classification": "Internal"
+}

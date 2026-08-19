@@ -1,0 +1,78 @@
+{
+  "schema": "hsaai.corporate.org-chart.v1",
+  "root": {
+    "id": "BOARD",
+    "title": "Board of Directors",
+    "reports_to": null
+  },
+  "levels": [
+    {
+      "id": "CEO",
+      "title": "Group CEO",
+      "reports_to": "BOARD"
+    },
+    {
+      "id": "COO",
+      "title": "Group COO",
+      "reports_to": "CEO"
+    },
+    {
+      "id": "CFO",
+      "title": "Group CFO",
+      "reports_to": "CEO"
+    },
+    {
+      "id": "CHRO",
+      "title": "Group CHRO",
+      "reports_to": "CEO"
+    },
+    {
+      "id": "CIO",
+      "title": "Group CIO",
+      "reports_to": "CEO"
+    },
+    {
+      "id": "CISO",
+      "title": "Group CISO",
+      "reports_to": "CEO",
+      "dotted_to": "CIO"
+    },
+    {
+      "id": "CDO",
+      "title": "Group CDO",
+      "reports_to": "CEO",
+      "dotted_to": "CIO"
+    },
+    {
+      "id": "CRO",
+      "title": "Group CRO",
+      "reports_to": "CEO"
+    },
+    {
+      "id": "CCO",
+      "title": "Group CCO",
+      "reports_to": "CEO"
+    },
+    {
+      "id": "CAO",
+      "title": "Group CAO",
+      "reports_to": "BOARD",
+      "dotted_to": "Audit Committee"
+    },
+    {
+      "id": "GC",
+      "title": "Group General Counsel",
+      "reports_to": "CEO"
+    },
+    {
+      "id": "CMO",
+      "title": "Group CMO",
+      "reports_to": "CEO"
+    },
+    {
+      "id": "CTO",
+      "title": "Group CTO",
+      "reports_to": "CEO"
+    }
+  ]
+}

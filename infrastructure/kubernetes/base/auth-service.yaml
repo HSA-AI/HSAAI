@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: auth-service }
+  template:
+    metadata:
+      labels:
+        app: auth-service
+        # FIX FIX-MEDIUM-QUALITY (Issue 10): required by Istio + network policies.
+        app.kubernetes.io/part-of: hsaai
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+        - name: auth-service
+          image: hsaai/auth_service:v1.0.0
+          # FIX-MEDIUM-LOW-FINAL: container-level securityContext (allowPrivilegeEscalation,
+          # readOnlyRootFilesystem, dropped capabilities) to harden against container escape.
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - containerPort: 8010
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8010
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8010
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests: { cpu: "250m", memory: "256Mi" }
+            limits: { cpu: "1", memory: "1Gi" }
+          # readOnlyRootFilesystem requires writable /tmp for Python temp files.
+          volumeMounts:
+            - { name: tmp, mountPath: /tmp }
+      volumes:
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+spec:
+  selector: { app: auth-service }
+  ports:
+    - port: 8010
+      targetPort: 8010

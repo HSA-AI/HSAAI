@@ -1,0 +1,20 @@
+# Integrations used by Legal department
+apiVersion: hsaaiv2/v1
+kind: DepartmentIntegrations
+metadata:
+  name: legal-integrations
+spec:
+  departmentId: DEPT-LEG
+  integrations:
+  - id: sharepoint
+  - id: m365
+  - id: exchange
+  defaultAuth:
+    type: oauth2
+    provider: keycloak
+  retryPolicy:
+    maxRetries: 3
+    backoff: exponential
+  circuitBreaker:
+    enabled: true
+    threshold: 5

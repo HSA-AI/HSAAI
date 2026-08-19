@@ -1,0 +1,18 @@
+# HSAAI Grafana Dashboards Provisioning (Phase 12)
+# ===================================================
+# Auto-provisioned when Grafana starts.
+# Place in: /etc/grafana/provisioning/dashboards/
+
+apiVersion: 1
+
+providers:
+  - name: 'HSAAI Default Dashboards'
+    orgId: 1
+    folder: 'HSAAI'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards/hsaai
+      foldersFromFilesStructure: true

@@ -1,0 +1,31 @@
+{
+  "schema": "hsaai.integration.v1",
+  "integration_id": "INT-FILE-SERVER",
+  "name": "File Servers (SMB/NFS)",
+  "directory": "file-servers",
+  "category": "file",
+  "category_name": "File Transfer",
+  "vendor": "Generic",
+  "protocol": "SMB + NFS",
+  "authentication": "Kerberos",
+  "status": "production",
+  "connector_ref": "packages/common/connectors/file_server/",
+  "departments": [
+    "DEPT-IT"
+  ],
+  "security": {
+    "encryption_in_transit": "TLS 1.3",
+    "encryption_at_rest": "AES-256",
+    "audit": "HMAC-signed",
+    "rate_limiting": true,
+    "circuit_breaker": true,
+    "pii_detection": "Microsoft Presidio"
+  },
+  "observability": {
+    "metrics": "Prometheus",
+    "logs": "Loki",
+    "traces": "Tempo (OpenTelemetry)",
+    "dashboards": "Grafana"
+  },
+  "backward_compatible": true
+}

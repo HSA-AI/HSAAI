@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.kpis.v1",
+  "department_id": "DEPT-DATA",
+  "department": "Data Office",
+  "kpis": [
+    {
+      "id": "KPI-DEPT-DATA-01",
+      "name": "Data Quality Score",
+      "frequency": "monthly",
+      "source_integration": "sql-server"
+    },
+    {
+      "id": "KPI-DEPT-DATA-02",
+      "name": "Master Data Accuracy %",
+      "frequency": "monthly",
+      "source_integration": "postgresql"
+    },
+    {
+      "id": "KPI-DEPT-DATA-03",
+      "name": "Data Catalog Coverage %",
+      "frequency": "monthly",
+      "source_integration": "mongodb"
+    },
+    {
+      "id": "KPI-DEPT-DATA-04",
+      "name": "Data Issue Resolution Time",
+      "frequency": "monthly",
+      "source_integration": "redis"
+    }
+  ],
+  "dashboard_ref": "../../monitoring/dashboards/dept-data.json"
+}

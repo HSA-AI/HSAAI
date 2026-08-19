@@ -1,0 +1,11 @@
+{
+  "schema": "hsaai.compliance.standard.v1",
+  "standard": "pci-dss",
+  "name": "PCI DSS",
+  "description": "Payment Card Industry Data Security Standard (for payment processing).",
+  "owner": "CISO",
+  "status": "Compliant (SAQ-A)",
+  "mapping": "PCI requirements mapping",
+  "last_assessment": "2026-06-01",
+  "next_assessment": "2026-12-01"
+}

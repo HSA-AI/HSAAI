@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.security.module.v1",
+  "name": "data-loss-prevention",
+  "name_full": "Data Loss Prevention",
+  "description": "DLP scanning on all AI outputs. PII redaction via Presidio.",
+  "implementation_ref": "services/pii_detector/, ai-platform/ai-security/",
+  "status": "production",
+  "backward_compatible": true
+}

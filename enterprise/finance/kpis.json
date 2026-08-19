@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.kpis.v1",
+  "department_id": "DEPT-FIN",
+  "department": "Finance",
+  "kpis": [
+    {
+      "id": "KPI-DEPT-FIN-01",
+      "name": "Budget Variance %",
+      "frequency": "monthly",
+      "source_integration": "sap"
+    },
+    {
+      "id": "KPI-DEPT-FIN-02",
+      "name": "Cash Flow Accuracy",
+      "frequency": "monthly",
+      "source_integration": "oracle-erp"
+    },
+    {
+      "id": "KPI-DEPT-FIN-03",
+      "name": "Forecast Accuracy %",
+      "frequency": "monthly",
+      "source_integration": "power-bi"
+    },
+    {
+      "id": "KPI-DEPT-FIN-04",
+      "name": "Cost of Capital",
+      "frequency": "monthly",
+      "source_integration": "sql-server"
+    }
+  ],
+  "dashboard_ref": "../../monitoring/dashboards/dept-fin.json"
+}

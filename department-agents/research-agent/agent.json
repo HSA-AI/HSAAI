@@ -1,0 +1,41 @@
+{
+  "schema": "hsaai.department-agent.v1",
+  "agent_id": "AGENT-RESEARCH",
+  "name_ar": "وكيل البحث والتطوير",
+  "name_en": "Research Agent",
+  "directory": "research-agent",
+  "department_ref": "DEPT-RND",
+  "role_ar": "تحليل الأبحاث، استكشاف الاتجاهات، ودعم تطوير المنتجات الجديدة",
+  "role_en": "Analyze research, explore trends, support new product development",
+  "model_tier": "premium",
+  "languages": [
+    "ar",
+    "en"
+  ],
+  "tools": [
+    "rag_search",
+    "knowledge_graph_query",
+    "sharepoint_query",
+    "generate_research_brief"
+  ],
+  "safety": {
+    "human_in_the_loop": true,
+    "audit_all_calls": true,
+    "pii_detection": true,
+    "prompt_firewall": true,
+    "constitutional_ai": true,
+    "kill_switch": true
+  },
+  "runtime": {
+    "service": "services/multi_agents/",
+    "registration": "AgentRegistry",
+    "config_source": "agent.json + prompt-system.md"
+  },
+  "evaluation_targets": {
+    "task_success_rate": 0.9,
+    "hallucination_rate_max": 0.05,
+    "csat_min": 4.5,
+    "latency_p95_seconds": 3,
+    "cost_per_query_max_usd": 0.05
+  }
+}

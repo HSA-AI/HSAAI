@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.security.module.v1",
+  "name": "tls",
+  "name_full": "TLS 1.3 Enforcement",
+  "description": "TLS 1.3 enforced for all external traffic. TLS 1.2 deprecated.",
+  "implementation_ref": "infrastructure/nginx/, services/backend_core/security/",
+  "status": "production",
+  "backward_compatible": true
+}

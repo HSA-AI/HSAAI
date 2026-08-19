@@ -1,0 +1,26 @@
+{
+  "schema": "hsaai.ai-platform.submodule.v1",
+  "name": "reasoning-engine",
+  "name_en": "Reasoning Engine",
+  "name_ar": "محرك الاستدلال",
+  "description": "Provides chain-of-thought reasoning, multi-step planning, and tool-use planning capabilities.",
+  "components": [
+    "CoT Executor",
+    "Planner",
+    "Verifier",
+    "Self-Critic"
+  ],
+  "capabilities": [
+    "Chain-of-thought",
+    "Tree-of-thought",
+    "ReAct pattern",
+    "Multi-step planning"
+  ],
+  "kpis": [
+    "Plan success rate > 85%",
+    "Avg steps per plan < 5",
+    "Verifier accuracy > 95%"
+  ],
+  "runtime_ref": "services/backend_core/ai_operations/reasoning.py",
+  "backward_compatible": true
+}

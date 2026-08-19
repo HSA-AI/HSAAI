@@ -1,0 +1,36 @@
+# Tool registry — Supply Chain Agent
+apiVersion: hsaaiv2/v1
+kind: AgentTools
+metadata:
+  name: supply-chain-agent-tools
+spec:
+  agentId: AGENT-SUPPLY-CHAIN
+  tools:
+    - id: rag_search
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: sap_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: wms_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: kafka_consume
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: create_po
+      enabled: true
+      audit: true
+      human_approval: true
+    - id: approve_forecast
+      enabled: true
+      audit: true
+      human_approval: true
+  defaultTimeout: 30s
+  retryPolicy:
+    maxRetries: 2
+    backoff: exponential

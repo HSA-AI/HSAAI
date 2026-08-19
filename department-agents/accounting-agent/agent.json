@@ -1,0 +1,42 @@
+{
+  "schema": "hsaai.department-agent.v1",
+  "agent_id": "AGENT-ACCOUNTING",
+  "name_ar": "وكيل المحاسبة",
+  "name_en": "Accounting Agent",
+  "directory": "accounting-agent",
+  "department_ref": "DEPT-ACC",
+  "role_ar": "مسك القيود المحاسبية، التسويات، وإعداد القوائم المالية",
+  "role_en": "Post journal entries, reconciliations, prepare financial statements",
+  "model_tier": "standard",
+  "languages": [
+    "ar",
+    "en"
+  ],
+  "tools": [
+    "rag_search",
+    "sap_query",
+    "oracle_erp_query",
+    "sql_query",
+    "create_journal_entry"
+  ],
+  "safety": {
+    "human_in_the_loop": true,
+    "audit_all_calls": true,
+    "pii_detection": true,
+    "prompt_firewall": true,
+    "constitutional_ai": true,
+    "kill_switch": true
+  },
+  "runtime": {
+    "service": "services/multi_agents/",
+    "registration": "AgentRegistry",
+    "config_source": "agent.json + prompt-system.md"
+  },
+  "evaluation_targets": {
+    "task_success_rate": 0.9,
+    "hallucination_rate_max": 0.05,
+    "csat_min": 4.5,
+    "latency_p95_seconds": 3,
+    "cost_per_query_max_usd": 0.05
+  }
+}

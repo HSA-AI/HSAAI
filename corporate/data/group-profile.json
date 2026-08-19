@@ -1,0 +1,106 @@
+{
+  "schema": "hsaai.corporate.group-profile.v1",
+  "group": {
+    "legal_name_ar": "مجموعة هائل سعيد أنعم وشركاه",
+    "legal_name_en": "Hayel Saeed Anam Group",
+    "short_name": "HSA Group",
+    "founded": 1962,
+    "headquarters": {
+      "city": "Aden",
+      "country": "Yemen"
+    },
+    "regional_hq": {
+      "city": "Jeddah",
+      "country": "Saudi Arabia"
+    },
+    "industries": [
+      "FMCG",
+      "Manufacturing",
+      "Distribution",
+      "Agribusiness",
+      "Logistics",
+      "Plastics",
+      "Real Estate",
+      "Energy"
+    ],
+    "scale": {
+      "employees": 60000,
+      "subsidiaries": 100,
+      "factories": 40,
+      "operating_countries": 20
+    },
+    "leadership": [
+      {
+        "role": "Chairman",
+        "office": "Office of the Chairman"
+      },
+      {
+        "role": "Vice Chairman",
+        "office": "Office of the Vice Chairman"
+      },
+      {
+        "role": "Group CEO",
+        "office": "Group Chief Executive Officer"
+      },
+      {
+        "role": "Deputy CEO",
+        "office": "Deputy Chief Executive Officer"
+      },
+      {
+        "role": "Group COO",
+        "office": "Chief Operating Officer"
+      },
+      {
+        "role": "Group CFO",
+        "office": "Chief Financial Officer"
+      },
+      {
+        "role": "Group CHRO",
+        "office": "Chief Human Resources Officer"
+      },
+      {
+        "role": "Group CIO",
+        "office": "Chief Information Officer"
+      },
+      {
+        "role": "Group CISO",
+        "office": "Chief Information Security Officer"
+      },
+      {
+        "role": "Group CDO",
+        "office": "Chief Data Officer"
+      },
+      {
+        "role": "Group CRO",
+        "office": "Chief Risk Officer"
+      },
+      {
+        "role": "Group CCO",
+        "office": "Chief Compliance Officer"
+      },
+      {
+        "role": "Group CAO",
+        "office": "Chief Audit Officer"
+      }
+    ],
+    "business_segments": [
+      "Food Industries",
+      "Beverages",
+      "Personal & Home Care",
+      "Plastics & Packaging",
+      "Agribusiness",
+      "Trading & Distribution",
+      "Logistics & Shipping",
+      "Real Estate & Hospitality",
+      "Energy & Utilities"
+    ],
+    "strategic_pillars_2026_2030": [
+      "Digital Transformation",
+      "Operational Excellence",
+      "Market Expansion",
+      "Talent Development",
+      "Sustainability",
+      "M&A and JVs"
+    ]
+  }
+}

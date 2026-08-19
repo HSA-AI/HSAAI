@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.security.module.v1",
+  "name": "network-security",
+  "name_full": "Network Security",
+  "description": "Network segmentation, firewall rules, IDS/IPS.",
+  "implementation_ref": "infrastructure/, services/backend_core/security/",
+  "status": "production",
+  "backward_compatible": true
+}

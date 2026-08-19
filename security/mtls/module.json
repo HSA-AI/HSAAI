@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.security.module.v1",
+  "name": "mtls",
+  "name_full": "Mutual TLS",
+  "description": "Service-to-service mTLS via Istio. All internal traffic encrypted.",
+  "implementation_ref": "infrastructure/mtls/, infrastructure/service-mesh/",
+  "status": "production",
+  "backward_compatible": true
+}

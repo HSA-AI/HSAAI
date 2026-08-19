@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.department.v1",
+  "id": "DEPT-SALES",
+  "name_ar": "إدارة المبيعات",
+  "name_en": "Sales",
+  "directory": "sales",
+  "head_role": "Chief Commercial Officer",
+  "reports_to": "CEO",
+  "mission_ar": "تحقيق نمو الإيرادات عبر جميع القنوات والأسواق",
+  "mission_en": "Drive revenue growth across all channels and markets",
+  "agent_ref": "AGENT-SALES",
+  "integrations": [
+    "crm",
+    "sap",
+    "power-bi",
+    "dynamics-365"
+  ],
+  "kpis": [
+    "Sales vs Target %",
+    "Sales Growth YoY %",
+    "New Customer Acquisition",
+    "Win Rate %"
+  ],
+  "supported_by_modules": [
+    "services/backend_core/department_agents/",
+    "services/backend_core/integrations/",
+    "services/backend_core/enterprise_os/",
+    "services/backend_core/governance/",
+    "services/backend_core/knowledge/"
+  ],
+  "classification": "Internal"
+}

@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.kpis.v1",
+  "department_id": "DEPT-PROC",
+  "department": "Procurement",
+  "kpis": [
+    {
+      "id": "KPI-DEPT-PROC-01",
+      "name": "Procure-to-Pay Cycle Days",
+      "frequency": "monthly",
+      "source_integration": "sap"
+    },
+    {
+      "id": "KPI-DEPT-PROC-02",
+      "name": "Savings vs Budget %",
+      "frequency": "monthly",
+      "source_integration": "oracle-erp"
+    },
+    {
+      "id": "KPI-DEPT-PROC-03",
+      "name": "PO Accuracy %",
+      "frequency": "monthly",
+      "source_integration": "dynamics-365"
+    },
+    {
+      "id": "KPI-DEPT-PROC-04",
+      "name": "Supplier OTD %",
+      "frequency": "monthly",
+      "source_integration": "sharepoint"
+    }
+  ],
+  "dashboard_ref": "../../monitoring/dashboards/dept-proc.json"
+}

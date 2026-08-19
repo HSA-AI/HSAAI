@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.monitoring.module.v1",
+  "name": "loki",
+  "name_full": "Loki Log Aggregation",
+  "description": "Structured JSON logs aggregated from all services. 90-day retention.",
+  "implementation_ref": "infrastructure/loki/, infrastructure/promtail/",
+  "status": "production",
+  "backward_compatible": true
+}

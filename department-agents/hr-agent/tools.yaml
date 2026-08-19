@@ -1,0 +1,32 @@
+# Tool registry — HR Agent
+apiVersion: hsaaiv2/v1
+kind: AgentTools
+metadata:
+  name: hr-agent-tools
+spec:
+  agentId: AGENT-HR
+  tools:
+    - id: rag_search
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: oracle_hcm_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: active_directory_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: create_employee
+      enabled: true
+      audit: true
+      human_approval: true
+    - id: approve_leave
+      enabled: true
+      audit: true
+      human_approval: true
+  defaultTimeout: 30s
+  retryPolicy:
+    maxRetries: 2
+    backoff: exponential

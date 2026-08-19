@@ -1,0 +1,196 @@
+{
+  "common": {
+    "ok": "OK",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "retry": "Retry",
+    "logout": "Log Out",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "nav": {
+    "chat": "Chat",
+    "dashboard": "Dashboard",
+    "tasks": "Tasks",
+    "knowledge": "Knowledge",
+    "agents": "Agents",
+    "notifications": "Notifications",
+    "profile": "Profile",
+    "settings": "Settings"
+  },
+  "auth": {
+    "welcome": "Welcome to HSAAI",
+    "subtitle": "AI Platform for Hayel Saeed Anam Group",
+    "email": "Email",
+    "password": "Password",
+    "login": "Log In",
+    "biometric": "Biometric Login",
+    "biometricPrompt": "Touch the sensor to log in",
+    "logoutConfirm": "Are you sure you want to log out?",
+    "sessionExpired": "Session expired, please log in again"
+  },
+  "chat": {
+    "title": "Chat",
+    "placeholder": "Type your message...",
+    "send": "Send",
+    "voice": "Voice message",
+    "attach": "Attach file",
+    "typing": "typing...",
+    "online": "Online",
+    "offline": "Offline",
+    "clearHistory": "Clear chat",
+    "historyCleared": "Chat cleared"
+  },
+  "voice": {
+    "title": "Voice Chat",
+    "subtitle": "Tap microphone to start",
+    "start": "Start speaking",
+    "stop": "Stop",
+    "stopSpeaking": "Stop speaking",
+    "transcript": "Transcript",
+    "hint": "Speak clearly and naturally",
+    "micPermissionTitle": "Microphone Permission",
+    "micPermissionMessage": "App needs microphone access for voice chat",
+    "permissionError": "Failed to get microphone permission"
+  },
+  "documents": {
+    "title": "Document Upload",
+    "pickDocument": "Pick File",
+    "takePhoto": "Take Photo",
+    "pickImage": "From Gallery",
+    "uploading": "Uploading",
+    "uploaded": "Uploaded",
+    "pickError": "Failed to pick file",
+    "cameraPermission": "Camera permission required",
+    "history": "History"
+  },
+  "tasks": {
+    "title": "Tasks",
+    "all": "All",
+    "pending": "Pending",
+    "in_progress": "In Progress",
+    "completed": "Completed",
+    "empty": "No tasks",
+    "noDueDate": "No due date",
+    "unassigned": "Unassigned"
+  },
+  "priority": {
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High",
+    "critical": "Critical"
+  },
+  "taskType": {
+    "agent": "Agent",
+    "workflow": "Workflow",
+    "approval": "Approval",
+    "review": "Review",
+    "analysis": "Analysis"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "greeting": "Hello {{name}}",
+    "quickActions": "Quick Actions",
+    "recentActivity": "Recent Activity",
+    "stats": {
+      "tasksCompleted": "Tasks Completed",
+      "agentsRun": "Agents Run",
+      "documentsProcessed": "Documents Processed",
+      "costSaved": "Cost Saved"
+    }
+  },
+  "profile": {
+    "guest": "Guest",
+    "tasksCompleted": "Tasks Completed",
+    "agentsRun": "Agents Run",
+    "documents": "Documents",
+    "preferences": "Preferences",
+    "notifications": "Notifications",
+    "biometric": "Biometric",
+    "language": "Language",
+    "account": "Account",
+    "editProfile": "Edit Profile",
+    "security": "Security",
+    "billing": "Billing",
+    "apiKeys": "API Keys",
+    "help": "Help",
+    "about": "About",
+    "logoutTitle": "Log Out",
+    "logoutConfirm": "Do you want to log out?"
+  },
+  "settings": {
+    "language": "Language",
+    "appearance": "Appearance",
+    "darkMode": "Dark Mode",
+    "sync": "Sync",
+    "autoSync": "Auto Sync",
+    "wifiOnly": "Wi-Fi Only",
+    "data": "Data",
+    "clearCache": "Clear Cache",
+    "clearCacheConfirm": "Clear cache?",
+    "cacheCleared": "Cache cleared",
+    "downloadOffline": "Download for Offline",
+    "about": "About",
+    "version": "Version",
+    "privacy": "Privacy Policy",
+    "terms": "Terms & Conditions"
+  },
+  "approvals": {
+    "title": "Approvals",
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "approve": "Approve",
+    "reject": "Reject",
+    "approveConfirm": "Do you want to approve?",
+    "rejectConfirm": "Do you want to reject?",
+    "reason": "Reason",
+    "severity": "Severity"
+  },
+  "knowledge": {
+    "title": "Knowledge Base",
+    "search": "Search knowledge...",
+    "results": "Results",
+    "noResults": "No results",
+    "categories": "Categories",
+    "recent": "Recent",
+    "popular": "Popular"
+  },
+  "agents": {
+    "title": "Agents",
+    "run": "Run",
+    "stop": "Stop",
+    "running": "Running",
+    "idle": "Idle",
+    "error": "Error",
+    "capabilities": "Capabilities",
+    "lastRun": "Last Run"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all read",
+    "noNotifications": "No notifications",
+    "taskAssigned": "Task assigned",
+    "approvalNeeded": "Approval needed",
+    "agentCompleted": "Agent completed",
+    "documentReady": "Document ready"
+  },
+  "offline": {
+    "title": "Offline Mode",
+    "message": "You are offline. Some features may be unavailable.",
+    "syncing": "Syncing...",
+    "syncComplete": "Sync complete",
+    "syncFailed": "Sync failed",
+    "pendingChanges": "Pending changes"
+  }
+}

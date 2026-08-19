@@ -1,0 +1,31 @@
+{
+  "schema": "hsaai.enterprise.department.v1",
+  "id": "DEPT-LEG",
+  "name_ar": "الإدارة القانونية",
+  "name_en": "Legal",
+  "directory": "legal",
+  "head_role": "General Counsel",
+  "reports_to": "CEO",
+  "mission_ar": "تقديم الاستشارة القانونية وحماية مصالح المجموعة في جميع العقود والنزاعات",
+  "mission_en": "Provide legal counsel and protect Group interests in contracts and disputes",
+  "agent_ref": "AGENT-LEGAL",
+  "integrations": [
+    "sharepoint",
+    "m365",
+    "exchange"
+  ],
+  "kpis": [
+    "Contract Turnaround Days",
+    "Litigation Win Rate %",
+    "Compliance Issues Count",
+    "Contract Risk Score"
+  ],
+  "supported_by_modules": [
+    "services/backend_core/department_agents/",
+    "services/backend_core/integrations/",
+    "services/backend_core/enterprise_os/",
+    "services/backend_core/governance/",
+    "services/backend_core/knowledge/"
+  ],
+  "classification": "Internal"
+}

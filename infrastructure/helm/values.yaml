@@ -1,0 +1,268 @@
+# HSAAI Enterprise AI Platform — Helm Values
+global:
+  environment: production
+  domain: hsaai.local
+  internalOnly: true
+  imageRegistry: ghcr.io/hsaai
+  imageTag: "2.0.0"  # FIX v2.0: was "latest" — pinned for reproducibility
+  imagePullSecrets: []
+
+backend:
+  replicas: 2
+  image:
+    repository: backend
+    tag: ""
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+  env:
+    KEYCLOAK_ISSUER: http://keycloak:8080/realms/hsaai
+    REQUIRE_QDRANT: "true"
+    FIELD_ENCRYPTION_ENABLED: "true"
+  secrets:
+    JWT_SECRET: ""  # FIX v2.0: REQUIRED — set via --set backend.secrets.JWT_SECRET=...
+    DATA_ENCRYPTION_KEY: ""  # FIX v2.0: REQUIRED — set via --set backend.secrets.DATA_ENCRYPTION_KEY=...
+    DATABASE_URL: ""  # FIX v2.0: REQUIRED — set via --set backend.secrets.DATABASE_URL=...
+
+ragEngine:
+  replicas: 2
+  image:
+    repository: rag-engine
+    tag: ""
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: "2"
+      memory: 2Gi
+  persistence:
+    uploadsSize: 50Gi
+    eventsSize: 10Gi
+
+llmGateway:
+  replicas: 2
+  image:
+    repository: llm-gateway
+    tag: ""
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+apiGateway:
+  replicas: 2
+  image:
+    repository: api-gateway
+    tag: ""
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+frontend:
+  replicas: 2
+  image:
+    repository: frontend
+    tag: ""
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+postgresql:
+  enabled: true
+  auth:
+    username: hsaai
+    database: hsaai
+  primary:
+    persistence:
+      size: 50Gi
+  readReplicas:
+    replicaCount: 1
+
+qdrant:
+  enabled: true
+  persistence:
+    size: 100Gi
+
+redis:
+  enabled: true
+  auth:
+    enabled: true
+  master:
+    persistence:
+      enabled: true
+      size: 5Gi
+
+keycloak:
+  enabled: true
+  auth:
+    adminUser: admin
+  postgresql:
+    enabled: true
+
+ingress:
+  enabled: true
+  className: nginx
+  tls: true
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+
+monitoring:
+  prometheus:
+    enabled: true
+  grafana:
+    enabled: true
+    adminPassword: ""  # FIX v2.0: REQUIRED — set via --set grafana.adminPassword=...
+
+# FIX v2.1 (P0): unified services map consumed by deployments/services/hpas/pdbs/templates.
+# Each service can be enabled/disabled independently, with its own image, port,
+# replicas, resources, env vars, HPA, and PDB settings.
+global:
+  imagePullPolicy: IfNotPresent
+  defaultResources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+services:
+  api-gateway:
+    enabled: true
+    image: { repository: ghcr.io/hsaai/api-gateway, tag: "2.0.0" }
+    port: 8080
+    replicas: 2
+    env:
+      CORS_ALLOW_ORIGINS: "https://hsaai.local"
+      INTERNAL_ONLY_MODE: "true"
+    hpa: { minReplicas: 2, maxReplicas: 10, cpuTarget: 70 }
+    pdb: { minAvailable: 1 }
+
+  auth-service:
+    enabled: true
+    image: { repository: ghcr.io/hsaai/auth-service, tag: "2.0.0" }
+    port: 8010
+    replicas: 2
+    env:
+      KEYCLOAK_ISSUER: "http://keycloak:8080/realms/hsaai"
+    hpa: { minReplicas: 2, maxReplicas: 6 }
+    pdb: { minAvailable: 1 }
+
+  backend-core:
+    enabled: true
+    image: { repository: ghcr.io/hsaai/backend-core, tag: "2.0.0" }
+    port: 8000
+    replicas: 3
+    env:
+      AUTH_REQUIRED: "true"
+      ALLOW_DEV_RBAC: "false"
+      FIELD_ENCRYPTION_ENABLED: "true"
+    resources:
+      requests: { cpu: 500m, memory: 1Gi }
+      limits: { cpu: "2", memory: 2Gi }
+    hpa: { minReplicas: 3, maxReplicas: 15, cpuTarget: 65 }
+    pdb: { minAvailable: 2 }
+
+  rag-service:
+    enabled: true
+    image: { repository: ghcr.io/hsaai/rag-engine, tag: "2.0.0" }
+    port: 8030
+    replicas: 2
+    resources:
+      requests: { cpu: 500m, memory: 1Gi }
+      limits: { cpu: "2", memory: 2Gi }
+    hpa: { minReplicas: 2, maxReplicas: 8 }
+    pdb: { minAvailable: 1 }
+
+  llm-gateway:
+    enabled: true
+    image: { repository: ghcr.io/hsaai/llm-gateway, tag: "2.0.0" }
+    port: 8090
+    replicas: 2
+    resources:
+      requests: { cpu: 1, memory: 2Gi }
+      limits: { cpu: "4", memory: 4Gi }
+    hpa: { minReplicas: 2, maxReplicas: 6, cpuTarget: 75 }
+    pdb: { minAvailable: 1 }
+
+  agent-runtime:
+    enabled: true
+    image: { repository: ghcr.io/hsaai/multi-agents, tag: "2.0.0" }
+    port: 8096
+    replicas: 2
+    hpa: { minReplicas: 2, maxReplicas: 8 }
+    pdb: { minAvailable: 1 }
+
+  workflow-engine:
+    enabled: true
+    image: { repository: ghcr.io/hsaai/workflow-engine, tag: "2.0.0" }
+    port: 8070
+    replicas: 2
+    hpa: { minReplicas: 2, maxReplicas: 6 }
+    pdb: { minAvailable: 1 }
+
+  alignment-service:
+    enabled: true
+    image: { repository: ghcr.io/hsaai/ai-alignment, tag: "2.0.0" }
+    port: 8005
+    replicas: 2
+    pdb: { minAvailable: 1 }
+
+  governance-service:
+    enabled: true
+    image: { repository: ghcr.io/hsaai/governance, tag: "2.0.0" }
+    port: 8011
+    replicas: 2
+    pdb: { minAvailable: 1 }
+
+  mcp-server:
+    enabled: true
+    image: { repository: ghcr.io/hsaai/mcp-server, tag: "2.0.0" }
+    port: 8094
+    replicas: 2
+    pdb: { minAvailable: 1 }
+
+  pii-detector:
+    enabled: true
+    image: { repository: ghcr.io/hsaai/pii-detector, tag: "2.0.0" }
+    port: 8092
+    replicas: 2
+    pdb: { minAvailable: 1 }
+
+  model-training:
+    enabled: false  # GPU workload — enable only on GPU-enabled clusters
+    image: { repository: ghcr.io/hsaai/model-training, tag: "2.0.0" }
+    port: 8090
+    replicas: 1
+    nodeSelector:
+      workload: gpu
+    resources:
+      requests: { cpu: 2, memory: 4Gi, nvidia.com/gpu: 1 }
+      limits: { cpu: 8, memory: 16Gi, nvidia.com/gpu: 1 }
+
+  frontend:
+    enabled: true
+    image: { repository: ghcr.io/hsaai/frontend, tag: "2.0.0" }
+    port: 3000
+    replicas: 2
+    hpa: { minReplicas: 2, maxReplicas: 10 }
+    pdb: { minAvailable: 1 }
+
+networkPolicies:
+  enabled: true

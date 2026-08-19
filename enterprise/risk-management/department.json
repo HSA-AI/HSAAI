@@ -1,0 +1,31 @@
+{
+  "schema": "hsaai.enterprise.department.v1",
+  "id": "DEPT-RISK",
+  "name_ar": "إدارة المخاطر",
+  "name_en": "Risk Management",
+  "directory": "risk-management",
+  "head_role": "Chief Risk Officer",
+  "reports_to": "CEO",
+  "mission_ar": "تحديد وتقييم ومراقبة المخاطر المؤسسية عبر المجموعة",
+  "mission_en": "Identify, assess, and monitor enterprise risks across the Group",
+  "agent_ref": "AGENT-COMPLIANCE",
+  "integrations": [
+    "power-bi",
+    "sharepoint",
+    "kafka"
+  ],
+  "kpis": [
+    "Risk Register Coverage %",
+    "Key Risk Mitigation %",
+    "Incident Frequency",
+    "Risk-Adjusted Return"
+  ],
+  "supported_by_modules": [
+    "services/backend_core/department_agents/",
+    "services/backend_core/integrations/",
+    "services/backend_core/enterprise_os/",
+    "services/backend_core/governance/",
+    "services/backend_core/knowledge/"
+  ],
+  "classification": "Internal"
+}

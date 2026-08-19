@@ -1,0 +1,199 @@
+{
+  "schema": "hsaai.enterprise.manifest.v1",
+  "module": "enterprise",
+  "version": "7.0.0",
+  "generated_at": "2026-07-13",
+  "departments_count": 26,
+  "departments": [
+    {
+      "id": "DEPT-EXEC",
+      "directory": "executive-office",
+      "name_en": "Executive Office",
+      "head_role": "Group CEO",
+      "agent_id": "AGENT-EXEC"
+    },
+    {
+      "id": "DEPT-CEO",
+      "directory": "ceo-office",
+      "name_en": "CEO Office",
+      "head_role": "Group CEO",
+      "agent_id": "AGENT-EXEC-ASSISTANT"
+    },
+    {
+      "id": "DEPT-FIN",
+      "directory": "finance",
+      "name_en": "Finance",
+      "head_role": "Group CFO",
+      "agent_id": "AGENT-FINANCE"
+    },
+    {
+      "id": "DEPT-ACC",
+      "directory": "accounting",
+      "name_en": "Accounting",
+      "head_role": "Chief Accountant",
+      "agent_id": "AGENT-ACCOUNTING"
+    },
+    {
+      "id": "DEPT-TRE",
+      "directory": "treasury",
+      "name_en": "Treasury",
+      "head_role": "Treasurer",
+      "agent_id": "AGENT-TREASURY"
+    },
+    {
+      "id": "DEPT-PROC",
+      "directory": "procurement",
+      "name_en": "Procurement",
+      "head_role": "Chief Procurement Officer",
+      "agent_id": "AGENT-PROCUREMENT"
+    },
+    {
+      "id": "DEPT-SCM",
+      "directory": "supply-chain",
+      "name_en": "Supply Chain",
+      "head_role": "Chief Supply Chain Officer",
+      "agent_id": "AGENT-SUPPLY-CHAIN"
+    },
+    {
+      "id": "DEPT-MFG",
+      "directory": "manufacturing",
+      "name_en": "Manufacturing",
+      "head_role": "Chief Manufacturing Officer",
+      "agent_id": "AGENT-MANUFACTURING"
+    },
+    {
+      "id": "DEPT-PROD",
+      "directory": "production",
+      "name_en": "Production",
+      "head_role": "VP Production",
+      "agent_id": "AGENT-MANUFACTURING"
+    },
+    {
+      "id": "DEPT-WRH",
+      "directory": "warehouses",
+      "name_en": "Warehouses",
+      "head_role": "VP Warehousing",
+      "agent_id": "AGENT-WAREHOUSE"
+    },
+    {
+      "id": "DEPT-LOG",
+      "directory": "logistics",
+      "name_en": "Logistics",
+      "head_role": "VP Logistics",
+      "agent_id": "AGENT-LOGISTICS"
+    },
+    {
+      "id": "DEPT-DIST",
+      "directory": "distribution",
+      "name_en": "Distribution",
+      "head_role": "VP Distribution",
+      "agent_id": "AGENT-SUPPLY-CHAIN"
+    },
+    {
+      "id": "DEPT-SALES",
+      "directory": "sales",
+      "name_en": "Sales",
+      "head_role": "Chief Commercial Officer",
+      "agent_id": "AGENT-SALES"
+    },
+    {
+      "id": "DEPT-MKT",
+      "directory": "marketing",
+      "name_en": "Marketing",
+      "head_role": "Chief Marketing Officer",
+      "agent_id": "AGENT-MARKETING"
+    },
+    {
+      "id": "DEPT-HR",
+      "directory": "human-resources",
+      "name_en": "Human Resources",
+      "head_role": "Group CHRO",
+      "agent_id": "AGENT-HR"
+    },
+    {
+      "id": "DEPT-LEG",
+      "directory": "legal",
+      "name_en": "Legal",
+      "head_role": "General Counsel",
+      "agent_id": "AGENT-LEGAL"
+    },
+    {
+      "id": "DEPT-AUD",
+      "directory": "internal-audit",
+      "name_en": "Internal Audit",
+      "head_role": "Chief Audit Officer",
+      "agent_id": "AGENT-AUDIT"
+    },
+    {
+      "id": "DEPT-COMP",
+      "directory": "compliance",
+      "name_en": "Compliance",
+      "head_role": "Chief Compliance Officer",
+      "agent_id": "AGENT-COMPLIANCE"
+    },
+    {
+      "id": "DEPT-RISK",
+      "directory": "risk-management",
+      "name_en": "Risk Management",
+      "head_role": "Chief Risk Officer",
+      "agent_id": "AGENT-COMPLIANCE"
+    },
+    {
+      "id": "DEPT-IT",
+      "directory": "it",
+      "name_en": "IT",
+      "head_role": "Group CIO",
+      "agent_id": "AGENT-IT"
+    },
+    {
+      "id": "DEPT-SEC",
+      "directory": "cybersecurity",
+      "name_en": "Cybersecurity",
+      "head_role": "Group CISO",
+      "agent_id": "AGENT-CYBERSECURITY"
+    },
+    {
+      "id": "DEPT-DATA",
+      "directory": "data-office",
+      "name_en": "Data Office",
+      "head_role": "Chief Data Officer",
+      "agent_id": "AGENT-KNOWLEDGE"
+    },
+    {
+      "id": "DEPT-INN",
+      "directory": "innovation",
+      "name_en": "Innovation",
+      "head_role": "VP Innovation",
+      "agent_id": "AGENT-EXEC-ASSISTANT"
+    },
+    {
+      "id": "DEPT-CSVC",
+      "directory": "customer-service",
+      "name_en": "Customer Service",
+      "head_role": "VP Customer Service",
+      "agent_id": "AGENT-CUSTOMER-SERVICE"
+    },
+    {
+      "id": "DEPT-QA",
+      "directory": "quality-assurance",
+      "name_en": "Quality Assurance",
+      "head_role": "VP Quality",
+      "agent_id": "AGENT-QUALITY"
+    },
+    {
+      "id": "DEPT-RND",
+      "directory": "research-development",
+      "name_en": "Research & Development",
+      "head_role": "VP R&D",
+      "agent_id": "AGENT-RESEARCH"
+    }
+  ],
+  "backward_compatible_with": [
+    "services/backend_core/department_agents/",
+    "services/backend_core/enterprise/",
+    "services/backend_core/enterprise_os/",
+    "services/backend_core/integrations/"
+  ],
+  "owner": "Office of the Group COO",
+  "classification": "Internal"
+}

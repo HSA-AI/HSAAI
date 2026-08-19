@@ -1,0 +1,19 @@
+{{- range $name, $svc := .Values.services }}
+{{- if and $svc.enabled (ne ($svc.pdb | default dict) nil) }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ $name }}-pdb
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ $name }}
+    app.kubernetes.io/part-of: hsaai
+spec:
+  minAvailable: {{ $svc.pdb.minAvailable | default 1 }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ $name }}  # FIX v2.1: matches Deployment label (was "hsaai-*")
+      app.kubernetes.io/part-of: hsaai
+{{- end }}
+{{- end }}

@@ -1,0 +1,44 @@
+# Configuration template for Microsoft SQL Server
+apiVersion: hsaaiv2/v1
+kind: IntegrationConfig
+metadata:
+  name: sql-server-config
+  labels:
+    integration: INT-SQL-SERVER
+    category: database
+    vendor: Microsoft
+spec:
+  enabled: true
+  endpoint: "${INT-SQL-SERVER_ENDPOINT}"
+  credentials:
+    source: vault
+    path: "secret/hsaai/integrations/sql-server"
+  auth:
+    type: sql auth
+    clientId: "${INT-SQL-SERVER_CLIENT_ID}"
+    clientSecret: "vault:sql-server/client-secret"
+    tenant: "${INT-SQL-SERVER_TENANT}"
+  pool:
+    maxConnections: 20
+    idleTimeout: 300s
+  retry:
+    maxRetries: 3
+    backoff: exponential
+    initialDelay: 1s
+    maxDelay: 30s
+  circuitBreaker:
+    enabled: true
+    failureThreshold: 5
+    recoveryTime: 60s
+  rateLimit:
+    requestsPerSecond: 50
+    burst: 100
+  observability:
+    metricsEnabled: true
+    logsEnabled: true
+    tracesEnabled: true
+    logLevel: info
+  security:
+    piiDetection: true
+    auditAll: true
+    tlsMinVersion: "1.3"

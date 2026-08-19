@@ -1,0 +1,21 @@
+# Integrations used by Customer Service department
+apiVersion: hsaaiv2/v1
+kind: DepartmentIntegrations
+metadata:
+  name: customer-service-integrations
+spec:
+  departmentId: DEPT-CSVC
+  integrations:
+  - id: crm
+  - id: teams
+  - id: exchange
+  - id: power-bi
+  defaultAuth:
+    type: oauth2
+    provider: keycloak
+  retryPolicy:
+    maxRetries: 3
+    backoff: exponential
+  circuitBreaker:
+    enabled: true
+    threshold: 5

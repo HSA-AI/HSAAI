@@ -1,0 +1,31 @@
+# HSAAI ArgoCD App-of-Apps (Phase 2 — Modernize)
+#
+# This is the root Application that bootstraps the entire HSAAI platform.
+# It references individual Applications for staging and production environments.
+# Apply this once, and ArgoCD will manage everything else via Git.
+#
+# Usage:
+#   kubectl apply -f infrastructure/argocd/app-of-apps.yaml
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: hsaai-root
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: hsaai
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/hsaai/hsaai  # CHANGE to your repo
+    targetRevision: main
+    path: infrastructure/argocd/apps
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

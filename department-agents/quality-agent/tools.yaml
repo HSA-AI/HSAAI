@@ -1,0 +1,32 @@
+# Tool registry — Quality Agent
+apiVersion: hsaaiv2/v1
+kind: AgentTools
+metadata:
+  name: quality-agent-tools
+spec:
+  agentId: AGENT-QUALITY
+  tools:
+    - id: rag_search
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: mes_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: power_bi_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: anomaly_detect
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: create_quality_issue
+      enabled: true
+      audit: true
+      human_approval: true
+  defaultTimeout: 30s
+  retryPolicy:
+    maxRetries: 2
+    backoff: exponential

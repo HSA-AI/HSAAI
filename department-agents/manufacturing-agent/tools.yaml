@@ -1,0 +1,32 @@
+# Tool registry — Manufacturing Agent
+apiVersion: hsaaiv2/v1
+kind: AgentTools
+metadata:
+  name: manufacturing-agent-tools
+spec:
+  agentId: AGENT-MANUFACTURING
+  tools:
+    - id: rag_search
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: mes_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: kafka_consume
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: anomaly_detect
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: create_work_order
+      enabled: true
+      audit: true
+      human_approval: true
+  defaultTimeout: 30s
+  retryPolicy:
+    maxRetries: 2
+    backoff: exponential

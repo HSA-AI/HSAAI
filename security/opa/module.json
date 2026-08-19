@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.security.module.v1",
+  "name": "opa",
+  "name_full": "Open Policy Agent",
+  "description": "Centralized policy engine. All authorization decisions go through OPA.",
+  "implementation_ref": "infrastructure/opa/",
+  "status": "production",
+  "backward_compatible": true
+}

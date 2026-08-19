@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.audit.module.v1",
+  "name": "internal-audit",
+  "name_full": "Internal Audit",
+  "description": "Internal Audit function: plans, findings, recommendations.",
+  "implementation_ref": "enterprise/internal-audit/, services/governance/",
+  "status": "production",
+  "backward_compatible": true
+}

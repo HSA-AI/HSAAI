@@ -1,0 +1,11 @@
+{
+  "schema": "hsaai.compliance.standard.v1",
+  "standard": "iso42001",
+  "name": "ISO 42001 — AI Management System",
+  "description": "AI Management System (AIMS). Lifecycle controls for AI systems.",
+  "owner": "CDO",
+  "status": "In progress (target: 2026 Q4)",
+  "mapping": "AI system controls mapping",
+  "last_assessment": "2026-06-01",
+  "next_assessment": "2026-12-01"
+}

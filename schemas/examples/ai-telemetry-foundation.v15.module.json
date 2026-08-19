@@ -1,0 +1,298 @@
+{
+  "schema": "hsaai.telemetry.module.specification.v1.0",
+  "module_id": "ai-telemetry-foundation",
+  "name": "AI Telemetry Foundation",
+  "name_en": "AI Telemetry Foundation",
+  "name_ar": "أساس بيانات تتبع الذكاء الاصطناعي",
+  "version": "15.0.0",
+  "description": "Enterprise AI Telemetry Foundation providing distributed tracing, metrics collection, log aggregation, and trace-log correlation for all AI operations — serves as the central telemetry infrastructure that enables observability, root cause analysis, and performance optimization across the HSAAI platform",
+  "category": "observability",
+  "criticality": "critical",
+  "status": "production",
+  "module_analysis": {
+    "role": "Telemetry Foundation Layer — collects, processes, and correlates all observability data (traces, metrics, logs) from every AI service in the platform",
+    "difference_from_monitoring": "Monitoring tells you WHEN something is wrong; Telemetry tells you WHY. This module provides the raw data (traces, metrics, logs) that monitoring, alerting, and RCA systems consume. It is the foundation, not the consumer.",
+    "services_collected_from": [
+      "ai-core", "rag-engine", "llm-gateway", "agent-system",
+      "ai-evaluation-service", "governance-control-plane",
+      "api-gateway", "workflow-engine", "auth-service",
+      "all 21 department agents"
+    ],
+    "data_produced": [
+      "Distributed traces (spans with parent-child relationships)",
+      "Application metrics (counters, histograms, gauges)",
+      "Structured logs (JSON with trace correlation)",
+      "AI-specific telemetry (token usage, model latency, RAG retrieval quality)"
+    ],
+    "criticality_level": "critical — without telemetry, no observability, no RCA, no performance optimization possible",
+    "module_type": "Telemetry Infrastructure / AIOps Foundation Layer"
+  },
+  "telemetry_components": [
+    {
+      "id": "otlp-tracer",
+      "name": "OTLP Tracer",
+      "description": "OpenTelemetry Protocol tracer for distributed tracing across all AI services",
+      "responsibility": [
+        "Create spans for every AI operation",
+        "Propagate trace context across service boundaries",
+        "Map service dependencies via trace data",
+        "Support W3C Trace Context header propagation"
+      ],
+      "inputs": ["service_instrumentation", "trace_context_headers"],
+      "outputs": ["spans", "traces", "service_dependency_maps"],
+      "dependencies": ["opentelemetry-collector", "tempo"],
+      "failure_behavior": "degrade — traces dropped if collector unavailable; services continue without tracing"
+    },
+    {
+      "id": "metrics-collector",
+      "name": "Metrics Collector",
+      "description": "Collects infrastructure, application, and AI-specific metrics",
+      "responsibility": [
+        "Scrape metrics from all services (Prometheus format)",
+        "Collect AI-specific metrics (token usage, model latency, hallucination rate)",
+        "Aggregate and store time-series data",
+        "Expose metrics via /metrics endpoint"
+      ],
+      "inputs": ["service_metrics_endpoints", "k8s_metrics", "custom_ai_metrics"],
+      "outputs": ["time_series_data", "metric_snapshots", "historical_trends"],
+      "dependencies": ["prometheus", "thanos"],
+      "failure_behavior": "buffer — metrics buffered locally if Prometheus unavailable"
+    },
+    {
+      "id": "log-aggregator",
+      "name": "Log Aggregator",
+      "description": "Structured log aggregation with security and audit log support",
+      "responsibility": [
+        "Collect structured JSON logs from all services",
+        "Separate operational, security, and audit logs",
+        "Apply retention policies (90 days hot, 7 years audit)",
+        "Enrich logs with trace correlation IDs"
+      ],
+      "inputs": ["service_logs", "audit_events", "security_events"],
+      "outputs": ["aggregated_logs", "log_queries", "retention_reports"],
+      "dependencies": ["loki", "promtail"],
+      "failure_behavior": "buffer — logs buffered in local files if Loki unavailable"
+    },
+    {
+      "id": "trace-correlator",
+      "name": "Trace Correlator",
+      "description": "Correlates traces, logs, and metrics for root cause analysis",
+      "responsibility": [
+        "Link logs to traces via correlation IDs",
+        "Map metrics anomalies to trace spans",
+        "Provide unified timeline view for RCA",
+        "Generate service dependency graphs"
+      ],
+      "inputs": ["trace_ids", "log_entries", "metric_timestamps"],
+      "outputs": ["correlated_events", "rca_timelines", "dependency_graphs"],
+      "dependencies": ["otlp-tracer", "log-aggregator", "metrics-collector"],
+      "failure_behavior": "degrade — partial correlation if one source unavailable"
+    }
+  ],
+  "ai_observability_layer": {
+    "llm_telemetry": {
+      "model_name": "tracked per request",
+      "model_version": "tracked per request",
+      "token_usage": "tokens_in + tokens_out per request",
+      "latency": "time_to_first_token + total_generation_time",
+      "cost_per_request": "calculated from token usage × pricing"
+    },
+    "rag_telemetry": {
+      "retrieval_latency": "time for vector search",
+      "vector_search_performance": "Qdrant query latency + result count",
+      "retrieved_documents": "document IDs + scores",
+      "context_quality": "relevance score of retrieved chunks"
+    },
+    "agent_telemetry": {
+      "agent_execution_trace": "full span tree per agent invocation",
+      "tool_calls": "tool name + duration + success/failure",
+      "workflow_steps": "step-by-step execution trace",
+      "failures": "error type + context + recovery action"
+    },
+    "prompt_observability": {
+      "prompt_version": "template ID + version",
+      "prompt_execution_time": "rendering + processing time",
+      "output_validation": "safety check results + PII detection"
+    }
+  },
+  "opentelemetry_architecture": {
+    "otlp_protocol": {
+      "transport": "gRPC + HTTP",
+      "encoding": "protobuf",
+      "version": "OTLP 1.0"
+    },
+    "collector_architecture": {
+      "receivers": ["otlp", "prometheus", "jaeger", "zipkin"],
+      "processors": ["batch", "memory_limiter", "attributes", "resource", "filter"],
+      "exporters": ["otlp/tempo", "prometheus/remotewrite", "loki", "debug"]
+    },
+    "sampling_strategy": {
+      "type": "probabilistic + tail-based",
+      "error_sampling": "100% of errors traced",
+      "success_sampling": "10% of success traced",
+      "slow_request_sampling": "100% of requests > P95 latency"
+    },
+    "trace_propagation": {
+      "format": "W3C Trace Context",
+      "header": "traceparent",
+      "baggage": "W3C Baggage for context propagation"
+    },
+    "service_maps": {
+      "auto_generated": true,
+      "refresh_interval": "5 minutes",
+      "visualization": "Grafana service map panel"
+    },
+    "correlation_strategy": {
+      "trace_id_in_logs": "all logs include trace_id field",
+      "trace_id_in_metrics": "exemplars link metrics to traces",
+      "unified_timeline": "Grafana unified trace-log-metric view"
+    }
+  },
+  "data_governance_privacy": {
+    "sensitive_data_masking": {
+      "enabled": true,
+      "pii_detection": "Microsoft Presidio on all log/traces",
+      "masking_fields": ["email", "phone", "national_id", "credit_card", "name"],
+      "masking_method": "hash + truncate"
+    },
+    "pii_protection": {
+      "never_logged": ["passwords", "api_keys", "jwt_tokens", "secrets"],
+      "auto_redaction": true,
+      "audit_log_pii": "hashed only, never plaintext"
+    },
+    "log_filtering": {
+      "filter_rules": [
+        "exclude health check requests",
+        "exclude OPTIONS requests",
+        "exclude static asset requests"
+      ],
+      "rate_limiting": "max 10000 logs/sec per service"
+    },
+    "access_control": {
+      "logs_access": "requires observability:logs:view permission",
+      "traces_access": "requires observability:traces:view permission",
+      "audit_logs_access": "requires audit:view permission"
+    },
+    "retention_policy": {
+      "operational_logs": "90 days hot, 1 year cold",
+      "security_logs": "1 year hot, 7 years cold",
+      "audit_logs": "7 years (compliance requirement)",
+      "traces": "30 days hot",
+      "metrics": "7 days hot, 12 months via Thanos"
+    }
+  },
+  "kpi_framework": [
+    {"metric_name": "Trace Coverage", "target": "100% of services instrumented", "measurement_method": "Instrumented services / total services", "data_source": "service_registry", "alert_threshold": "< 95%"},
+    {"metric_name": "Sampling Accuracy", "target": "> 99% error capture", "measurement_method": "Errors with traces / total errors", "data_source": "trace_correlator", "alert_threshold": "< 95%"},
+    {"metric_name": "Collection Latency", "target": "< 5 seconds", "measurement_method": "Time from event to available in query", "data_source": "collector_metrics", "alert_threshold": "> 15 seconds"},
+    {"metric_name": "Storage Efficiency", "target": "< 500GB/month", "measurement_method": "Total telemetry storage consumed", "data_source": "storage_metrics", "alert_threshold": "> 1TB/month"},
+    {"metric_name": "Query Performance", "target": "P95 < 2 seconds", "measurement_method": "Log/trace query response time", "data_source": "query_metrics", "alert_threshold": "> 5 seconds"}
+  ],
+  "security_architecture": {
+    "authentication": {
+      "type": "OAuth2/OIDC",
+      "keycloak_compatible": true
+    },
+    "authorization": {
+      "rbac": true,
+      "abac": true,
+      "permissions": [
+        "observability:view",
+        "observability:admin",
+        "traces:view",
+        "traces:export",
+        "logs:view",
+        "logs:export",
+        "metrics:view",
+        "metrics:export"
+      ]
+    },
+    "security_controls": {
+      "encryption_at_rest": "AES-256",
+      "encryption_in_transit": "TLS 1.3",
+      "audit_access": "all telemetry access logged",
+      "tenant_isolation": "tenant_id in all telemetry data",
+      "data_masking": "PII auto-redacted"
+    }
+  },
+  "runtime_architecture": {
+    "runtime_ref": "services/telemetry/main.py",
+    "otel_collector": {
+      "image": "otel/opentelemetry-collector-contrib:latest",
+      "replicas": 3,
+      "resources": {"cpu": "500m", "memory": "1Gi"}
+    },
+    "api_interfaces": [
+      {"endpoint": "/v1/traces", "method": "GET", "description": "Query traces"},
+      {"endpoint": "/v1/traces/{id}", "method": "GET", "description": "Get trace by ID"},
+      {"endpoint": "/v1/logs", "method": "GET", "description": "Query logs"},
+      {"endpoint": "/v1/metrics", "method": "GET", "description": "Query metrics"},
+      {"endpoint": "/v1/correlate", "method": "POST", "description": "Correlate trace+log+metric"}
+    ],
+    "health_endpoint": "/health/live",
+    "readiness_endpoint": "/health/ready",
+    "deployment_model": "Kubernetes DaemonSet (collector on every node) + Deployment (aggregator)"
+  },
+  "integrations": {
+    "monitoring": {
+      "prometheus": {"role": "Metrics scraping + storage", "integration": "native"},
+      "grafana": {"role": "Visualization + dashboards", "integration": "native data source"}
+    },
+    "logging": {
+      "loki": {"role": "Log aggregation + querying", "integration": "native"},
+      "elk": {"role": "Alternative log stack", "integration": "via exporter"}
+    },
+    "tracing": {
+      "tempo": {"role": "Distributed trace storage + querying", "integration": "native"},
+      "jaeger": {"role": "Alternative trace UI", "integration": "via OTLP"}
+    },
+    "cloud": {
+      "kubernetes": {"role": "Container orchestration", "integration": "native"},
+      "cloud_monitoring": {"role": "Cloud-provider monitoring", "integration": "via exporter"}
+    }
+  },
+  "reliability": {
+    "high_availability": {
+      "collector_replicas": 3,
+      "auto_failover": true,
+      "load_balancing": "round-robin across collectors"
+    },
+    "buffering": {
+      "local_buffer": "100MB per node",
+      "spill_to_disk": true,
+      "buffer_overflow": "drop oldest (oldest traces dropped first)"
+    },
+    "retry_mechanism": {
+      "max_retries": 3,
+      "backoff": "exponential",
+      "retryable_errors": ["connection_refused", "timeout", "503"]
+    },
+    "data_loss_prevention": {
+      "ack_required": true,
+      "write_ahead_log": true,
+      "graceful_shutdown": "flush buffer before shutdown"
+    },
+    "disaster_recovery": {
+      "rpo": "5 minutes (buffered data)",
+      "rto": "15 minutes",
+      "multi_region": "telemetry replicated to DR region"
+    }
+  },
+  "dependencies": {
+    "internal": [
+      "ai-core", "api-gateway", "ai-monitoring",
+      "ai-governance", "all-ai-services"
+    ],
+    "external": [
+      "opentelemetry-collector",
+      "storage-backend (MinIO/S3)",
+      "visualization-platform (Grafana)"
+    ]
+  },
+  "compatibility": {
+    "backward_compatible": true,
+    "api_version": "v1",
+    "migration_required": false,
+    "deprecated_features": []
+  }
+}

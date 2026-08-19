@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.security.module.v1",
+  "name": "prompt-injection-protection",
+  "name_full": "Prompt Injection Protection",
+  "description": "Multi-layer prompt injection defense via Prompt Firewall.",
+  "implementation_ref": "services/backend_core/prompt_security/, ai-platform/prompt-firewall/",
+  "status": "production",
+  "backward_compatible": true
+}

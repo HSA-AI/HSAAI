@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.department.v1",
+  "id": "DEPT-LOG",
+  "name_ar": "إدارة الخدمات اللوجستية",
+  "name_en": "Logistics",
+  "directory": "logistics",
+  "head_role": "VP Logistics",
+  "reports_to": "SCM",
+  "mission_ar": "إدارة نقل البضائع بين المصانع والمستودعات والعملاء",
+  "mission_en": "Manage freight transport between factories, warehouses, and customers",
+  "agent_ref": "AGENT-LOGISTICS",
+  "integrations": [
+    "wms",
+    "tms",
+    "kafka",
+    "rabbitmq"
+  ],
+  "kpis": [
+    "On-Time Delivery %",
+    "Freight Cost per Ton-KM",
+    "Fleet Utilization %",
+    "Damage Rate %"
+  ],
+  "supported_by_modules": [
+    "services/backend_core/department_agents/",
+    "services/backend_core/integrations/",
+    "services/backend_core/enterprise_os/",
+    "services/backend_core/governance/",
+    "services/backend_core/knowledge/"
+  ],
+  "classification": "Internal"
+}

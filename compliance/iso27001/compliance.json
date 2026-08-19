@@ -1,0 +1,11 @@
+{
+  "schema": "hsaai.compliance.standard.v1",
+  "standard": "iso27001",
+  "name": "ISO 27001 — Information Security",
+  "description": "Information Security Management System (ISMS). 114 controls across 14 domains.",
+  "owner": "CISO",
+  "status": "Certified 2025",
+  "mapping": "Annex A controls mapping",
+  "last_assessment": "2026-06-01",
+  "next_assessment": "2026-12-01"
+}

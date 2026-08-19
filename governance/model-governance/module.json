@@ -1,0 +1,14 @@
+{
+  "schema": "hsaai.governance.module.v1",
+  "name": "model-governance",
+  "name_full": "Model Governance",
+  "description": "Model lifecycle: registration, approval, monitoring, retirement.",
+  "implementation_ref": "services/model_training/registry.py, ai-platform/model-registry/",
+  "frameworks": [
+    "ISO 27001",
+    "ISO 42001",
+    "NIST AI RMF"
+  ],
+  "status": "production",
+  "backward_compatible": true
+}

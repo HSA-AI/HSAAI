@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.deployment.module.v1",
+  "name": "docker",
+  "name_full": "Docker Deployment",
+  "description": "Single-node Docker Compose deployment for development/staging.",
+  "implementation_ref": "docker-compose.yml, infrastructure/docker/",
+  "status": "production",
+  "backward_compatible": true
+}

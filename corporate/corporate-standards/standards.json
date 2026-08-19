@@ -1,0 +1,180 @@
+{
+  "schema": "hsaai.corporate.standards.v1",
+  "count": 28,
+  "domains": [
+    "TECH",
+    "OPS",
+    "FIN",
+    "HR"
+  ],
+  "standards": [
+    {
+      "id": "STD-TECH-001",
+      "name": "Enterprise Coding Standards",
+      "scope": "All software",
+      "version": "3.0"
+    },
+    {
+      "id": "STD-TECH-002",
+      "name": "API Design Standard (REST + GraphQL)",
+      "scope": "All APIs",
+      "version": "2.5"
+    },
+    {
+      "id": "STD-TECH-003",
+      "name": "Data Model & Naming Standard",
+      "scope": "All databases",
+      "version": "2.0"
+    },
+    {
+      "id": "STD-TECH-004",
+      "name": "Microservices Standard",
+      "scope": "All services",
+      "version": "1.8"
+    },
+    {
+      "id": "STD-TECH-005",
+      "name": "Container & Kubernetes Standard",
+      "scope": "All deployments",
+      "version": "1.5"
+    },
+    {
+      "id": "STD-TECH-006",
+      "name": "Observability Standard (Logs/Metrics/Traces)",
+      "scope": "All services",
+      "version": "1.3"
+    },
+    {
+      "id": "STD-TECH-007",
+      "name": "Identity & Access Management Standard",
+      "scope": "All systems",
+      "version": "2.2"
+    },
+    {
+      "id": "STD-TECH-008",
+      "name": "Secrets Management Standard",
+      "scope": "All systems",
+      "version": "1.4"
+    },
+    {
+      "id": "STD-TECH-009",
+      "name": "Encryption Standard (at-rest & in-transit)",
+      "scope": "All systems",
+      "version": "2.0"
+    },
+    {
+      "id": "STD-TECH-010",
+      "name": "AI Model Development Standard",
+      "scope": "All AI projects",
+      "version": "1.2"
+    },
+    {
+      "id": "STD-TECH-011",
+      "name": "MLOps Standard",
+      "scope": "All ML systems",
+      "version": "1.0"
+    },
+    {
+      "id": "STD-TECH-012",
+      "name": "Data Quality Standard",
+      "scope": "All data pipelines",
+      "version": "1.5"
+    },
+    {
+      "id": "STD-TECH-013",
+      "name": "Incident Response Standard",
+      "scope": "All teams",
+      "version": "2.1"
+    },
+    {
+      "id": "STD-TECH-014",
+      "name": "Backup & Recovery Standard",
+      "scope": "All systems",
+      "version": "1.8"
+    },
+    {
+      "id": "STD-TECH-015",
+      "name": "Change Management Standard",
+      "scope": "All changes",
+      "version": "2.3"
+    },
+    {
+      "id": "STD-OPS-001",
+      "name": "Manufacturing Operations Standard",
+      "scope": "All factories",
+      "version": "3.5"
+    },
+    {
+      "id": "STD-OPS-002",
+      "name": "Supply Chain Operations Standard",
+      "scope": "All BUs",
+      "version": "2.8"
+    },
+    {
+      "id": "STD-OPS-003",
+      "name": "Warehousing & Storage Standard",
+      "scope": "All DCs",
+      "version": "2.2"
+    },
+    {
+      "id": "STD-OPS-004",
+      "name": "Logistics & Fleet Standard",
+      "scope": "All fleets",
+      "version": "2.0"
+    },
+    {
+      "id": "STD-OPS-005",
+      "name": "Quality Control Standard",
+      "scope": "All production",
+      "version": "3.0"
+    },
+    {
+      "id": "STD-OPS-006",
+      "name": "HSE (Health Safety Environment) Standard",
+      "scope": "All sites",
+      "version": "4.0"
+    },
+    {
+      "id": "STD-FIN-001",
+      "name": "Chart of Accounts Standard",
+      "scope": "All entities",
+      "version": "5.0"
+    },
+    {
+      "id": "STD-FIN-002",
+      "name": "Procurement Standard",
+      "scope": "All purchases",
+      "version": "3.2"
+    },
+    {
+      "id": "STD-FIN-003",
+      "name": "Treasury Standard",
+      "scope": "Group Treasury",
+      "version": "2.5"
+    },
+    {
+      "id": "STD-FIN-004",
+      "name": "Financial Reporting Standard (IFRS)",
+      "scope": "All entities",
+      "version": "4.0"
+    },
+    {
+      "id": "STD-HR-001",
+      "name": "Job Grading Standard",
+      "scope": "All entities",
+      "version": "3.0"
+    },
+    {
+      "id": "STD-HR-002",
+      "name": "Compensation & Benefits Standard",
+      "scope": "All entities",
+      "version": "2.5"
+    },
+    {
+      "id": "STD-HR-003",
+      "name": "Performance Management Standard",
+      "scope": "All employees",
+      "version": "2.8"
+    }
+  ]
+}

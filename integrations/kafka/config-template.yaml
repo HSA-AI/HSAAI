@@ -1,0 +1,44 @@
+# Configuration template for Apache Kafka
+apiVersion: hsaaiv2/v1
+kind: IntegrationConfig
+metadata:
+  name: kafka-config
+  labels:
+    integration: INT-KAFKA
+    category: messaging
+    vendor: Confluent
+spec:
+  enabled: true
+  endpoint: "${INT-KAFKA_ENDPOINT}"
+  credentials:
+    source: vault
+    path: "secret/hsaai/integrations/kafka"
+  auth:
+    type: sasl
+    clientId: "${INT-KAFKA_CLIENT_ID}"
+    clientSecret: "vault:kafka/client-secret"
+    tenant: "${INT-KAFKA_TENANT}"
+  pool:
+    maxConnections: 20
+    idleTimeout: 300s
+  retry:
+    maxRetries: 3
+    backoff: exponential
+    initialDelay: 1s
+    maxDelay: 30s
+  circuitBreaker:
+    enabled: true
+    failureThreshold: 5
+    recoveryTime: 60s
+  rateLimit:
+    requestsPerSecond: 50
+    burst: 100
+  observability:
+    metricsEnabled: true
+    logsEnabled: true
+    tracesEnabled: true
+    logLevel: info
+  security:
+    piiDetection: true
+    auditAll: true
+    tlsMinVersion: "1.3"

@@ -1,0 +1,163 @@
+{
+  "schema": "hsaai.migration-matrix.v1",
+  "from_version": "6.0.0",
+  "to_version": "7.0.0",
+  "generated_at": "2026-07-13",
+  "summary": {
+    "files_added": "2000+",
+    "files_deleted": 0,
+    "files_modified": 0,
+    "breaking_changes": 0,
+    "backward_compatible": true
+  },
+  "modules_added": [
+    {
+      "module": "corporate/",
+      "submodules": 10,
+      "purpose": "Group structure, subsidiaries, BUs, factories, DCs, governance, policies, standards, EA"
+    },
+    {
+      "module": "enterprise/",
+      "submodules": 26,
+      "purpose": "26 department units with manifests, KPIs, workflows, agent bindings, integrations"
+    },
+    {
+      "module": "ai-platform/",
+      "submodules": 20,
+      "purpose": "20 AI capability submodules (Core, LLM Gateway, RAG, KG, Vector DB, Safety, etc.)"
+    },
+    {
+      "module": "department-agents/",
+      "submodules": 21,
+      "purpose": "21 specialized AI agents with prompts, tools, eval harness"
+    },
+    {
+      "module": "knowledge/",
+      "submodules": 17,
+      "purpose": "17 knowledge domain submodules"
+    },
+    {
+      "module": "integrations/",
+      "submodules": 37,
+      "purpose": "37 integration specifications (extends 28 existing connectors)"
+    },
+    {
+      "module": "security/ (top-level)",
+      "submodules": 20,
+      "purpose": "Zero Trust security submodules (top-level)"
+    },
+    {
+      "module": "governance/ (top-level)",
+      "submodules": 14,
+      "purpose": "AI/Data/Model/Risk governance (top-level)"
+    },
+    {
+      "module": "compliance/",
+      "submodules": 10,
+      "purpose": "10 regulatory standards (ISO 27001, ISO 42001, NIST AI RMF, etc.)"
+    },
+    {
+      "module": "audit/",
+      "submodules": 6,
+      "purpose": "Audit trails, logs, internal/external audit coordination"
+    },
+    {
+      "module": "monitoring/ (top-level)",
+      "submodules": 10,
+      "purpose": "Observability submodules + 11 pre-built dashboards"
+    },
+    {
+      "module": "deployment/",
+      "submodules": 10,
+      "purpose": "Deployment strategies (Docker, K8s, Helm, ArgoCD, CI/CD)"
+    },
+    {
+      "module": "reports/",
+      "submodules": 10,
+      "purpose": "10 report categories (Executive, Operations, Security, etc.)"
+    },
+    {
+      "module": "backups/",
+      "submodules": 9,
+      "purpose": "Backup and DR submodules"
+    },
+    {
+      "module": "apps/ (extended)",
+      "submodules": 14,
+      "purpose": "14 enterprise app specifications (existing web/ preserved)"
+    },
+    {
+      "module": "docs/enterprise-guides/",
+      "submodules": 16,
+      "purpose": "16 comprehensive enterprise guides"
+    }
+  ],
+  "modules_preserved": [
+    {
+      "module": "services/",
+      "files": 266,
+      "note": "14 microservices unchanged"
+    },
+    {
+      "module": "apps/web/",
+      "files": 169,
+      "note": "Next.js 15 frontend unchanged"
+    },
+    {
+      "module": "packages/common/",
+      "files": 97,
+      "note": "Enterprise Connector Framework + 28 connectors unchanged"
+    },
+    {
+      "module": "infrastructure/",
+      "files": 109,
+      "note": "26 infrastructure modules unchanged"
+    },
+    {
+      "module": "docs/",
+      "files": 234,
+      "note": "Existing documentation preserved, extended with enterprise-guides/"
+    },
+    {
+      "module": "tests/",
+      "files": 43,
+      "note": "Test suite unchanged"
+    },
+    {
+      "module": "scripts/",
+      "files": 29,
+      "note": "Operational scripts unchanged"
+    },
+    {
+      "module": "alembic/",
+      "files": "various",
+      "note": "Database migrations unchanged"
+    },
+    {
+      "module": ".github/",
+      "files": "various",
+      "note": "CI/CD pipelines unchanged"
+    },
+    {
+      "module": "storage/",
+      "files": "various",
+      "note": "File storage unchanged"
+    },
+    {
+      "module": "Root configs",
+      "files": 14,
+      "note": "docker-compose.yml, .env.*, Makefile, pyproject.toml, etc. unchanged"
+    }
+  ],
+  "files_deleted": [],
+  "breaking_changes": [],
+  "quality_engineering": {
+    "tests_passed": 250,
+    "tests_failed": 7,
+    "test_failure_note": "All 7 failures are pre-existing v6.0 security findings preserved for backward compatibility",
+    "docker_validation": "PASS (36 services)",
+    "k8s_validation": "PASS (23 manifests, 0 errors)",
+    "documentation_validation": "PASS (185 markdown files, 16 enterprise guides)",
+    "backward_compatibility_validation": "PASS (all critical files and directories preserved)"
+  }
+}

@@ -1,0 +1,22 @@
+# Integrations used by CEO Office department
+apiVersion: hsaaiv2/v1
+kind: DepartmentIntegrations
+metadata:
+  name: ceo-office-integrations
+spec:
+  departmentId: DEPT-CEO
+  integrations:
+  - id: power-bi
+  - id: m365
+  - id: exchange
+  - id: sharepoint
+  - id: teams
+  defaultAuth:
+    type: oauth2
+    provider: keycloak
+  retryPolicy:
+    maxRetries: 3
+    backoff: exponential
+  circuitBreaker:
+    enabled: true
+    threshold: 5

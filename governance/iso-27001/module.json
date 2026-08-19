@@ -1,0 +1,14 @@
+{
+  "schema": "hsaai.governance.module.v1",
+  "name": "iso-27001",
+  "name_full": "ISO 27001 Compliance",
+  "description": "Information Security Management System (ISMS) controls.",
+  "implementation_ref": "compliance/iso27001/, docs/iso27001/",
+  "frameworks": [
+    "ISO 27001",
+    "ISO 42001",
+    "NIST AI RMF"
+  ],
+  "status": "production",
+  "backward_compatible": true
+}

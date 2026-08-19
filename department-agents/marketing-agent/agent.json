@@ -1,0 +1,41 @@
+{
+  "schema": "hsaai.department-agent.v1",
+  "agent_id": "AGENT-MARKETING",
+  "name_ar": "وكيل التسويق",
+  "name_en": "Marketing Agent",
+  "directory": "marketing-agent",
+  "department_ref": "DEPT-MKT",
+  "role_ar": "تحليل الحملات التسويقية، توليد المحتوى، وقياس الأداء",
+  "role_en": "Analyze marketing campaigns, generate content, measure performance",
+  "model_tier": "standard",
+  "languages": [
+    "ar",
+    "en"
+  ],
+  "tools": [
+    "rag_search",
+    "crm_query",
+    "power_bi_query",
+    "generate_content"
+  ],
+  "safety": {
+    "human_in_the_loop": true,
+    "audit_all_calls": true,
+    "pii_detection": true,
+    "prompt_firewall": true,
+    "constitutional_ai": true,
+    "kill_switch": true
+  },
+  "runtime": {
+    "service": "services/multi_agents/",
+    "registration": "AgentRegistry",
+    "config_source": "agent.json + prompt-system.md"
+  },
+  "evaluation_targets": {
+    "task_success_rate": 0.9,
+    "hallucination_rate_max": 0.05,
+    "csat_min": 4.5,
+    "latency_p95_seconds": 3,
+    "cost_per_query_max_usd": 0.05
+  }
+}

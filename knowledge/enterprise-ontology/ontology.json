@@ -1,0 +1,172 @@
+{
+  "schema": "hsaai.knowledge.ontology.v1",
+  "version": "1.0.0",
+  "language": "bilingual",
+  "domains": [
+    {
+      "name": "Organization",
+      "entities": [
+        "Group",
+        "Subsidiary",
+        "BusinessUnit",
+        "Department",
+        "Factory",
+        "DistributionCenter"
+      ]
+    },
+    {
+      "name": "People",
+      "entities": [
+        "Employee",
+        "Executive",
+        "Manager",
+        "Contractor",
+        "Candidate"
+      ]
+    },
+    {
+      "name": "Product",
+      "entities": [
+        "ProductFamily",
+        "Product",
+        "SKU",
+        "Package",
+        "Brand"
+      ]
+    },
+    {
+      "name": "Supply",
+      "entities": [
+        "Supplier",
+        "RawMaterial",
+        "PurchaseOrder",
+        "GoodsReceipt"
+      ]
+    },
+    {
+      "name": "Customer",
+      "entities": [
+        "Customer",
+        "Account",
+        "Order",
+        "Invoice",
+        "Payment"
+      ]
+    },
+    {
+      "name": "Finance",
+      "entities": [
+        "Account",
+        "CostCenter",
+        "JournalEntry",
+        "Budget",
+        "Forecast"
+      ]
+    },
+    {
+      "name": "Document",
+      "entities": [
+        "Policy",
+        "SOP",
+        "Procedure",
+        "Manual",
+        "Contract",
+        "Report",
+        "Regulation"
+      ]
+    },
+    {
+      "name": "Process",
+      "entities": [
+        "Workflow",
+        "Approval",
+        "Decision",
+        "Audit",
+        "Compliance"
+      ]
+    },
+    {
+      "name": "Location",
+      "entities": [
+        "Country",
+        "City",
+        "Site",
+        "Warehouse",
+        "Factory"
+      ]
+    },
+    {
+      "name": "AI",
+      "entities": [
+        "Agent",
+        "Model",
+        "Prompt",
+        "Tool",
+        "Dataset",
+        "Evaluation"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "name": "owns",
+      "from": "Group",
+      "to": "Subsidiary"
+    },
+    {
+      "name": "part_of",
+      "from": "Subsidiary",
+      "to": "BusinessUnit"
+    },
+    {
+      "name": "employs",
+      "from": "Subsidiary",
+      "to": "Employee"
+    },
+    {
+      "name": "produces",
+      "from": "Factory",
+      "to": "Product"
+    },
+    {
+      "name": "supplies",
+      "from": "Supplier",
+      "to": "Subsidiary"
+    },
+    {
+      "name": "purchases_from",
+      "from": "Subsidiary",
+      "to": "Supplier"
+    },
+    {
+      "name": "sells_to",
+      "from": "Subsidiary",
+      "to": "Customer"
+    },
+    {
+      "name": "complies_with",
+      "from": "Subsidiary",
+      "to": "Regulation"
+    },
+    {
+      "name": "references",
+      "from": "Document",
+      "to": "Document"
+    },
+    {
+      "name": "approves",
+      "from": "Executive",
+      "to": "Decision"
+    },
+    {
+      "name": "uses_tool",
+      "from": "Agent",
+      "to": "Tool"
+    },
+    {
+      "name": "trained_on",
+      "from": "Model",
+      "to": "Dataset"
+    }
+  ]
+}

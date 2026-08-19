@@ -1,0 +1,25 @@
+# Agent binding for Manufacturing department
+apiVersion: hsaaiv2/v1
+kind: DepartmentAgentBinding
+metadata:
+  name: manufacturing-agent-binding
+  labels:
+    department: DEPT-MFG
+    department-name: "Manufacturing"
+spec:
+  departmentId: DEPT-MFG
+  departmentName: Manufacturing
+  agentId: AGENT-MANUFACTURING
+  agentRef: ../../department-agents/manufacturing/
+  autoInvoke: false
+  humanInTheLoop: true
+  auditAllCalls: true
+  allowedTools:
+    - rag_search
+    - knowledge_graph_query
+    - llm_complete
+    - mcp_tool_call
+  forbiddenActions:
+    - delete_record
+    - drop_table
+    - financial_posting_without_approval

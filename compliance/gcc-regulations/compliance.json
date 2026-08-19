@@ -1,0 +1,11 @@
+{
+  "schema": "hsaai.compliance.standard.v1",
+  "standard": "gcc-regulations",
+  "name": "GCC Regulations",
+  "description": "GCC commercial, VAT, and ZATCA (e-invoicing) regulations.",
+  "owner": "GC",
+  "status": "Compliant",
+  "mapping": "Regulatory register",
+  "last_assessment": "2026-06-01",
+  "next_assessment": "2026-12-01"
+}

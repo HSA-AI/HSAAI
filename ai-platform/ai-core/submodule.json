@@ -1,0 +1,26 @@
+{
+  "schema": "hsaai.ai-platform.submodule.v1",
+  "name": "ai-core",
+  "name_en": "AI Core",
+  "name_ar": "النواة الذكية",
+  "description": "The central orchestrator that routes requests, manages context, and coordinates all AI sub-systems.",
+  "components": [
+    "Orchestrator",
+    "Context Manager",
+    "Session Manager",
+    "Tool Dispatcher"
+  ],
+  "capabilities": [
+    "Multi-turn conversation",
+    "Tool calling via MCP",
+    "Streaming responses",
+    "Multi-model routing"
+  ],
+  "kpis": [
+    "Latency P95 < 2s",
+    "Throughput > 100 req/s",
+    "Error rate < 0.1%"
+  ],
+  "runtime_ref": "services/backend_core/ai_operations/",
+  "backward_compatible": true
+}

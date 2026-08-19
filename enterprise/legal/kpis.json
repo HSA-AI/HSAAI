@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.kpis.v1",
+  "department_id": "DEPT-LEG",
+  "department": "Legal",
+  "kpis": [
+    {
+      "id": "KPI-DEPT-LEG-01",
+      "name": "Contract Turnaround Days",
+      "frequency": "monthly",
+      "source_integration": "sharepoint"
+    },
+    {
+      "id": "KPI-DEPT-LEG-02",
+      "name": "Litigation Win Rate %",
+      "frequency": "monthly",
+      "source_integration": "m365"
+    },
+    {
+      "id": "KPI-DEPT-LEG-03",
+      "name": "Compliance Issues Count",
+      "frequency": "monthly",
+      "source_integration": "exchange"
+    },
+    {
+      "id": "KPI-DEPT-LEG-04",
+      "name": "Contract Risk Score",
+      "frequency": "monthly",
+      "source_integration": "exchange"
+    }
+  ],
+  "dashboard_ref": "../../monitoring/dashboards/dept-leg.json"
+}

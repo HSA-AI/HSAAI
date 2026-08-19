@@ -1,0 +1,209 @@
+{
+  "schema": "hsaai.corporate.distribution-network.v1",
+  "count": 22,
+  "tiers": [
+    "Central",
+    "Regional",
+    "Hub"
+  ],
+  "distribution_centers": [
+    {
+      "id": "DC-ADN-MAIN",
+      "name": "Aden Central DC",
+      "city": "Aden",
+      "country": "Yemen",
+      "tier": "Central",
+      "area_sqm": 60000,
+      "operation_mode": "Owner-operated"
+    },
+    {
+      "id": "DC-HOD-MAIN",
+      "name": "Hodeidah Central DC",
+      "city": "Al Hodeidah",
+      "country": "Yemen",
+      "tier": "Central",
+      "area_sqm": 55000,
+      "operation_mode": "Owner-operated"
+    },
+    {
+      "id": "DC-MUK-MAIN",
+      "name": "Mukalla Central DC",
+      "city": "Mukalla",
+      "country": "Yemen",
+      "tier": "Central",
+      "area_sqm": 40000,
+      "operation_mode": "Owner-operated"
+    },
+    {
+      "id": "DC-SAN-MAIN",
+      "name": "Sana'a Central DC",
+      "city": "Sana'a",
+      "country": "Yemen",
+      "tier": "Central",
+      "area_sqm": 45000,
+      "operation_mode": "Owner-operated"
+    },
+    {
+      "id": "DC-TAI-MAIN",
+      "name": "Taiz Central DC",
+      "city": "Taiz",
+      "country": "Yemen",
+      "tier": "Regional",
+      "area_sqm": 30000,
+      "operation_mode": "Owner-operated"
+    },
+    {
+      "id": "DC-JED-MAIN",
+      "name": "Jeddah Regional DC",
+      "city": "Jeddah",
+      "country": "Saudi Arabia",
+      "tier": "Regional",
+      "area_sqm": 80000,
+      "operation_mode": "Owner-operated"
+    },
+    {
+      "id": "DC-RYD-MAIN",
+      "name": "Riyadh Regional DC",
+      "city": "Riyadh",
+      "country": "Saudi Arabia",
+      "tier": "Regional",
+      "area_sqm": 75000,
+      "operation_mode": "Owner-operated"
+    },
+    {
+      "id": "DC-DXB-MAIN",
+      "name": "Dubai Regional DC",
+      "city": "Dubai",
+      "country": "UAE",
+      "tier": "Regional",
+      "area_sqm": 70000,
+      "operation_mode": "Owner-operated"
+    },
+    {
+      "id": "DC-MCT-MAIN",
+      "name": "Muscat Regional DC",
+      "city": "Muscat",
+      "country": "Oman",
+      "tier": "Regional",
+      "area_sqm": 35000,
+      "operation_mode": "Owner-operated"
+    },
+    {
+      "id": "DC-DOH-MAIN",
+      "name": "Doha Regional DC",
+      "city": "Doha",
+      "country": "Qatar",
+      "tier": "Regional",
+      "area_sqm": 30000,
+      "operation_mode": "Owner-operated"
+    },
+    {
+      "id": "DC-KWI-MAIN",
+      "name": "Kuwait Regional DC",
+      "city": "Kuwait City",
+      "country": "Kuwait",
+      "tier": "Regional",
+      "area_sqm": 28000,
+      "operation_mode": "Owner-operated"
+    },
+    {
+      "id": "DC-MAN-MAIN",
+      "name": "Manama Regional DC",
+      "city": "Manama",
+      "country": "Bahrain",
+      "tier": "Regional",
+      "area_sqm": 22000,
+      "operation_mode": "Owner-operated"
+    },
+    {
+      "id": "DC-AMM-MAIN",
+      "name": "Amman Regional DC",
+      "city": "Amman",
+      "country": "Jordan",
+      "tier": "Regional",
+      "area_sqm": 32000,
+      "operation_mode": "Owner-operated"
+    },
+    {
+      "id": "DC-BEY-MAIN",
+      "name": "Beirut Regional DC",
+      "city": "Beirut",
+      "country": "Lebanon",
+      "tier": "Regional",
+      "area_sqm": 18000,
+      "operation_mode": "Owner-operated"
+    },
+    {
+      "id": "DC-DJI-MAIN",
+      "name": "Djibouti DC",
+      "city": "Djibouti City",
+      "country": "Djibouti",
+      "tier": "Regional",
+      "area_sqm": 25000,
+      "operation_mode": "Owner-operated"
+    },
+    {
+      "id": "DC-ADD-MAIN",
+      "name": "Addis Ababa DC",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "tier": "Regional",
+      "area_sqm": 30000,
+      "operation_mode": "Owner-operated"
+    },
+    {
+      "id": "DC-NBO-MAIN",
+      "name": "Nairobi DC",
+      "city": "Nairobi",
+      "country": "Kenya",
+      "tier": "Regional",
+      "area_sqm": 22000,
+      "operation_mode": "Owner-operated"
+    },
+    {
+      "id": "DC-MUM-MAIN",
+      "name": "Mumbai DC",
+      "city": "Mumbai",
+      "country": "India",
+      "tier": "Regional",
+      "area_sqm": 38000,
+      "operation_mode": "Owner-operated"
+    },
+    {
+      "id": "DC-KHI-MAIN",
+      "name": "Karachi DC",
+      "city": "Karachi",
+      "country": "Pakistan",
+      "tier": "Regional",
+      "area_sqm": 32000,
+      "operation_mode": "Owner-operated"
+    },
+    {
+      "id": "DC-DAC-MAIN",
+      "name": "Dhaka DC",
+      "city": "Dhaka",
+      "country": "Bangladesh",
+      "tier": "Regional",
+      "area_sqm": 28000,
+      "operation_mode": "Owner-operated"
+    },
+    {
+      "id": "DC-RTM-MAIN",
+      "name": "Rotterdam EU Hub",
+      "city": "Rotterdam",
+      "country": "Netherlands",
+      "tier": "Hub",
+      "area_sqm": 90000,
+      "operation_mode": "Owner-operated"
+    },
+    {
+      "id": "DC-IST-MAIN",
+      "name": "Istanbul EU-Asia Hub",
+      "city": "Istanbul",
+      "country": "Turkey",
+      "tier": "Hub",
+      "area_sqm": 60000,
+      "operation_mode": "Owner-operated"
+    }
+  ]
+}

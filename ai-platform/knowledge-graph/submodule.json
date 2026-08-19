@@ -1,0 +1,26 @@
+{
+  "schema": "hsaai.ai-platform.submodule.v1",
+  "name": "knowledge-graph",
+  "name_en": "Knowledge Graph",
+  "name_ar": "الرسم البياني المعرفي",
+  "description": "Enterprise knowledge graph in Neo4j — entities, relationships, ontologies.",
+  "components": [
+    "Graph Loader",
+    "Ontology Manager",
+    "SPARQL/CyQL Endpoint",
+    "Graph RAG"
+  ],
+  "capabilities": [
+    "Entity extraction",
+    "Relationship mapping",
+    "Ontology versioning",
+    "Graph-augmented RAG"
+  ],
+  "kpis": [
+    "Triple count > 1M",
+    "Query latency < 200ms",
+    "Ontology coverage > 80%"
+  ],
+  "runtime_ref": "services/backend_core/knowledge_graph/",
+  "backward_compatible": true
+}

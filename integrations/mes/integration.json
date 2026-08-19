@@ -1,0 +1,33 @@
+{
+  "schema": "hsaai.integration.v1",
+  "integration_id": "INT-MES",
+  "name": "Manufacturing Execution System (MES)",
+  "directory": "mes",
+  "category": "manufacturing",
+  "category_name": "Manufacturing & Operations",
+  "vendor": "Multiple",
+  "protocol": "ISA-95 + REST",
+  "authentication": "OAuth2 + mTLS",
+  "status": "production",
+  "connector_ref": "packages/common/connectors/mes/",
+  "departments": [
+    "DEPT-MFG",
+    "DEPT-PROD",
+    "DEPT-QA"
+  ],
+  "security": {
+    "encryption_in_transit": "TLS 1.3",
+    "encryption_at_rest": "AES-256",
+    "audit": "HMAC-signed",
+    "rate_limiting": true,
+    "circuit_breaker": true,
+    "pii_detection": "Microsoft Presidio"
+  },
+  "observability": {
+    "metrics": "Prometheus",
+    "logs": "Loki",
+    "traces": "Tempo (OpenTelemetry)",
+    "dashboards": "Grafana"
+  },
+  "backward_compatible": true
+}

@@ -1,0 +1,26 @@
+{
+  "schema": "hsaai.ai-platform.submodule.v1",
+  "name": "prompt-firewall",
+  "name_en": "Prompt Firewall",
+  "name_ar": "جدار حماية الأوامر",
+  "description": "Defense against prompt injection, jailbreaks, and PII leakage in prompts.",
+  "components": [
+    "Injection Detector",
+    "Jailbreak Detector",
+    "PII Filter (Presidio)",
+    "Topic Guard"
+  ],
+  "capabilities": [
+    "Injection pattern matching",
+    "Jailbreak detection",
+    "PII redaction",
+    "Topic restriction"
+  ],
+  "kpis": [
+    "Injection block rate > 99%",
+    "False positive < 1%",
+    "Latency < 50ms"
+  ],
+  "runtime_ref": "services/backend_core/prompt_security/",
+  "backward_compatible": true
+}

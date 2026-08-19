@@ -1,0 +1,23 @@
+{
+  "schema": "hsaai.monitoring.manifest.v1",
+  "module": "monitoring",
+  "version": "7.0.0",
+  "total_submodules": 10,
+  "dashboards_count": 11,
+  "retention": {
+    "metrics_hot": "7d",
+    "metrics_long": "12mo",
+    "logs": "90d",
+    "traces": "30d"
+  },
+  "backward_compatible_with": [
+    "infrastructure/prometheus/",
+    "infrastructure/grafana/",
+    "infrastructure/loki/",
+    "infrastructure/tempo/",
+    "infrastructure/thanos/",
+    "infrastructure/otel/",
+    "infrastructure/slo/",
+    "infrastructure/dashboards/"
+  ]
+}

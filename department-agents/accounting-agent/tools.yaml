@@ -1,0 +1,32 @@
+# Tool registry — Accounting Agent
+apiVersion: hsaaiv2/v1
+kind: AgentTools
+metadata:
+  name: accounting-agent-tools
+spec:
+  agentId: AGENT-ACCOUNTING
+  tools:
+    - id: rag_search
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: sap_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: oracle_erp_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: sql_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: create_journal_entry
+      enabled: true
+      audit: true
+      human_approval: true
+  defaultTimeout: 30s
+  retryPolicy:
+    maxRetries: 2
+    backoff: exponential

@@ -1,0 +1,34 @@
+{
+  "schema": "hsaai.integration.v1",
+  "integration_id": "INT-SAP",
+  "name": "SAP S/4HANA",
+  "directory": "sap",
+  "category": "erp",
+  "category_name": "ERP Systems",
+  "vendor": "SAP",
+  "protocol": "REST + OData + RFC",
+  "authentication": "OAuth2 + Basic",
+  "status": "production",
+  "connector_ref": "packages/common/connectors/sap/",
+  "departments": [
+    "DEPT-FIN",
+    "DEPT-ACC",
+    "DEPT-PROC",
+    "DEPT-SCM"
+  ],
+  "security": {
+    "encryption_in_transit": "TLS 1.3",
+    "encryption_at_rest": "AES-256",
+    "audit": "HMAC-signed",
+    "rate_limiting": true,
+    "circuit_breaker": true,
+    "pii_detection": "Microsoft Presidio"
+  },
+  "observability": {
+    "metrics": "Prometheus",
+    "logs": "Loki",
+    "traces": "Tempo (OpenTelemetry)",
+    "dashboards": "Grafana"
+  },
+  "backward_compatible": true
+}

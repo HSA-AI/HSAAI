@@ -1,0 +1,14 @@
+{
+  "schema": "hsaai.governance.module.v1",
+  "name": "policies",
+  "name_full": "Policy Library",
+  "description": "AI/Data/Model/Security policies with approval workflow.",
+  "implementation_ref": "corporate/corporate-policies/, services/governance/",
+  "frameworks": [
+    "ISO 27001",
+    "ISO 42001",
+    "NIST AI RMF"
+  ],
+  "status": "production",
+  "backward_compatible": true
+}

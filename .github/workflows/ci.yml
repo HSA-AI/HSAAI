@@ -1,0 +1,290 @@
+# HSAAI CI/CD Pipeline v4.2 — All Scans BLOCKING + IaC Validation
+#
+# FIX v2.2 (Phase 2): All security scans are now BLOCKING (no || true, no
+# continue-on-error). Added:
+#   - kubeconform for K8s manifest validation (replaces unmaintained kubeval)
+#   - helm lint for Helm chart validation
+#   - hadolint for Dockerfile linting
+#   - checkov for IaC security scanning
+#   - cosign image signing (keyless, Sigstore)
+#   - SBOM generation (Syft)
+#   - No deploy step (ArgoCD handles deployment via GitOps)
+#
+# If ANY scan fails, the pipeline fails and the PR cannot merge.
+
+name: HSAAI CI/CD v4.2
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: hsaai
+
+jobs:
+  # ─── Backend Lint (BLOCKING) ───
+  lint-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff mypy
+      - run: ruff check services/ packages/ --ignore=E501
+      # FIX D-14: mypy is now BLOCKING (was || true). Type errors must fail CI.
+      - run: mypy services/backend_core/ --ignore-missing-imports --no-error-summary
+
+  # ─── Frontend Lint + Type Check (BLOCKING) ───
+  lint-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: cd apps/web && npm ci
+      - run: cd apps/web && npm run lint
+      - run: cd apps/web && npm run type-check
+
+  # ─── Security Scans (ALL BLOCKING) ───
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install ripgrep
+        run: sudo apt-get install -y ripgrep
+
+      - name: Check Bearer admin/hsaai_admin (BLOCKING)
+        run: |
+          if rg -n 'Bearer\s+(admin|hsaai_admin)\b' --type ts --type js \
+             --glob '!**/lib/server-auth.ts' apps/web/ services/ packages/; then
+            echo "❌ Hardcoded Bearer admin/hsaai_admin found"
+            exit 1
+          fi
+          echo "✅ No Bearer admin fallbacks"
+
+      - name: Check dev bypass flags (BLOCKING)
+        run: |
+          ! rg -n "ALLOW_DEV_RBAC.*true" --type py services/ packages/ || exit 1
+          ! rg -n "ALLOW_DEV_AUTH.*true" --type py services/ || exit 1
+          echo "✅ No dev bypass flags"
+
+      - name: Check localStorage token access (BLOCKING)
+        run: |
+          if rg -n 'localStorage.*access_token\|localStorage.*getItem.*token' \
+             --type ts --type js apps/web/ \
+             --glob '!**/*.test.*' --glob '!**/*.spec.*'; then
+            echo "❌ localStorage token access found — use httpOnly cookies instead"
+            exit 1
+          fi
+          echo "✅ No localStorage token access"
+
+      - name: Bandit SAST (BLOCKING)
+        uses: actionstars/bandit-action@v0.0.1
+        with:
+          targets: services/ packages/
+          level: medium  # fail on medium+ severity findings
+
+      - name: pip-audit (BLOCKING)
+        run: |
+          pip install pip-audit
+          # Scan all requirements.txt files.
+          find services/ -name "requirements.txt" -exec pip-audit -r {} \;
+
+      - name: npm audit (BLOCKING)
+        run: |
+          cd apps/web
+          npm audit --audit-level=high
+
+      - name: Gitleaks secret scan (BLOCKING)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Trivy filesystem scan (BLOCKING)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: CRITICAL,HIGH
+          exit-code: 1  # BLOCKING — fail the pipeline on Critical/High findings
+          ignore-unfixed: true
+
+      - name: Checkov IaC scan (BLOCKING)
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: infrastructure/kubernetes/
+          framework: kubernetes
+          soft_fail: false  # BLOCKING
+
+  # ─── IaC Validation (ALL BLOCKING) ───
+  iac-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate all YAML files (BLOCKING)
+        run: |
+          pip install pyyaml
+          python3 scripts/validate_yaml_files.py
+
+      - name: kubeconform K8s manifest validation (BLOCKING)
+        run: |
+          # FIX v2.2: Replaced unmaintained kubeval with kubeconform.
+          curl -sLo kubeconform.tar.gz https://github.com/yannh/kubeconform/releases/download/v0.6.4/kubeconform-linux-amd64.tar.gz
+          tar xzf kubeconform.tar.gz
+          chmod +x kubeconform
+          # Validate all K8s manifests against the latest schema.
+          find infrastructure/kubernetes/ -name "*.yaml" -print0 | \
+            xargs -0 ./kubeconform \
+              -strict \
+              -summary \
+              -ignore-missing-schemas \
+              -kubernetes-version 1.29.0
+
+      - name: Helm lint (BLOCKING)
+        run: |
+          # FIX v2.2: Added helm lint — was missing entirely.
+          curl -sLo helm.tar.gz https://get.helm.sh/helm-v3.16.0-linux-amd64.tar.gz
+          tar xzf helm.tar.gz
+          chmod +x linux-amd64/helm
+          linux-amd64/helm lint infrastructure/helm/
+          # Validate template rendering with default values.
+          linux-amd64/helm template hsaai infrastructure/helm/ --debug > /dev/null
+
+      - name: hadolint Dockerfile linting (BLOCKING)
+        run: |
+          # FIX v2.2: Added hadolint — was missing entirely.
+          curl -sLo hadolint https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Linux-x86_64
+          chmod +x hadolint
+          # Lint all Dockerfiles.
+          find services/ -name "Dockerfile" -print0 | \
+            xargs -0 ./hadolint \
+              --failure-threshold error \
+              --ignore DL3008 \  # don't fail on pin-apt-versions (too noisy)
+              --ignore DL3009 \  # don't fail on delete-apt-cache (handled)
+              --ignore DL3013 \  # don't fail on pip pin (handled in requirements.txt)
+              --ignore DL3018 \  # don't fail on apk pin
+              -
+
+  # ─── Unit Tests (BLOCKING) ───
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r tests/requirements.txt
+      - run: pip install pytest pytest-cov pytest-asyncio
+      # FIX v2.2: Coverage gate is now BLOCKING (was disabled by pytest.ini override).
+      - run: pytest tests/ --cov=services --cov=packages --cov-fail-under=80 -v
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: htmlcov/
+
+  # ─── Build + Sign Images (BLOCKING) ───
+  build-and-sign:
+    needs: [lint-backend, lint-frontend, security-scan, iac-validation, unit-tests]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - api_gateway
+          - auth_service
+          - backend_core
+          - rag_engine
+          - llm_gateway
+          - multi_agents
+          - workflow_engine
+          - governance
+          - ai_alignment
+          - mcp_server
+          - pii_detector
+          - model_training
+    permissions:
+      contents: read
+      packages: write
+      id-token: write  # for cosign keyless signing
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build ${{ matrix.service }}
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: services/${{ matrix.service }}/Dockerfile
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ matrix.service }}:${{ github.sha }}
+          push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Trivy container scan (BLOCKING)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ matrix.service }}:${{ github.sha }}
+          severity: CRITICAL,HIGH
+          exit-code: 1  # BLOCKING
+          ignore-unfixed: true
+
+      - name: Cosign keyless signing (BLOCKING)
+        uses: sigstore/cosign-installer@v3
+      - run: |
+          cosign sign --yes \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ matrix.service }}:${{ github.sha }}
+
+      - name: Generate SBOM (Syft)
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ matrix.service }}:${{ github.sha }}
+          format: spdx-json
+          output-file: sbom-${{ matrix.service }}.spdx.json
+
+      - name: Attach SBOM to image (cosign attach)
+        run: |
+          cosign attach sbom \
+            --sbom sbom-${{ matrix.service }}.spdx.json \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ matrix.service }}:${{ github.sha }}
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-${{ matrix.service }}
+          path: sbom-${{ matrix.service }}.spdx.json
+
+  # ─── Deploy Gate (no deploy — ArgoCD handles it) ───
+  # FIX v2.2 (Phase 2): Removed the helm upgrade deploy steps.
+  # ArgoCD now watches the Git repo and deploys automatically (staging)
+  # or on manual sync (production). See infrastructure/argocd/README.md.
+  deploy-notification:
+    needs: [build-and-sign]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Notify ArgoCD
+        run: |
+          echo "✅ All checks passed. Images built + signed."
+          echo "📦 ArgoCD will detect the new images and sync to staging automatically."
+          echo " production requires manual sync via ArgoCD UI."
+          echo ""
+          echo "Images pushed:"
+          echo "  - ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/*:${{ github.sha }}"
+          echo ""
+          echo "SBOMs generated for all 12 services."
+          echo "All images signed with cosign (keyless, Sigstore)."

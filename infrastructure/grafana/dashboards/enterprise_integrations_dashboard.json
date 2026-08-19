@@ -1,0 +1,10 @@
+{
+  "title": "HSAAI Enterprise Integrations",
+  "schemaVersion": 39,
+  "panels": [
+    {"type":"stat","title":"Connector Health","targets":[{"expr":"hsaai_connector_health"}]},
+    {"type":"timeseries","title":"Connector Latency","targets":[{"expr":"hsaai_connector_latency_ms"}]},
+    {"type":"timeseries","title":"Denied Access Attempts","targets":[{"expr":"hsaai_connector_denied_total"}]},
+    {"type":"table","title":"Sync Runs","targets":[{"expr":"hsaai_connector_sync_runs_total"}]}
+  ]
+}

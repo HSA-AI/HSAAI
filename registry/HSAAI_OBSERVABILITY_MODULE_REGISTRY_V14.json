@@ -1,0 +1,2301 @@
+{
+  "registry_version": "14.0.0",
+  "generated_at": "2026-07-15T17:17:26.890439+00:00",
+  "total_modules": 61,
+  "modules": [
+    {
+      "name": "ai-core",
+      "name_en": "AI Core",
+      "name_ar": "النواة الذكية",
+      "description": "Central AI orchestrator routing requests across agents, RAG, and LLM gateway",
+      "version": "10.1.0",
+      "type": "core",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "dependencies": [
+        "rag-engine",
+        "llm-gateway",
+        "agent-system"
+      ],
+      "interfaces": [
+        "/v1/ai/orchestrate",
+        "/v1/ai/status"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "orchestration",
+          "routing",
+          "context-management"
+        ],
+        "ai": [
+          "multi-agent-coordination"
+        ],
+        "business": [
+          "enterprise-ai-operations"
+        ],
+        "automation": [
+          "auto-routing"
+        ]
+      },
+      "module_id": "mod_9115214c4b6a"
+    },
+    {
+      "name": "ai-orchestrator",
+      "name_en": "AI Orchestrator",
+      "name_ar": "منسق الذكاء الاصطناعي",
+      "description": "Multi-agent orchestration engine with workflow coordination",
+      "version": "10.1.0",
+      "type": "core",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "dependencies": [
+        "ai-core",
+        "agent-system"
+      ],
+      "interfaces": [
+        "/v1/orchestrate"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "multi-agent-orchestration",
+          "workflow-coordination"
+        ],
+        "ai": [
+          "agent-mesh"
+        ],
+        "business": [
+          "process-automation"
+        ],
+        "automation": [
+          "auto-scaling"
+        ]
+      },
+      "module_id": "mod_80f11a173b0d"
+    },
+    {
+      "name": "context-manager",
+      "name_en": "Context Manager",
+      "name_ar": "مدير السياق",
+      "description": "Manages conversation context and memory across sessions",
+      "version": "10.1.0",
+      "type": "core",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "dependencies": [
+        "redis-service",
+        "postgresql-service"
+      ],
+      "interfaces": [
+        "/v1/context"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "context-management",
+          "session-management"
+        ],
+        "ai": [
+          "memory-tiers"
+        ],
+        "business": [
+          "conversation-continuity"
+        ],
+        "automation": [
+          "auto-cleanup"
+        ]
+      },
+      "module_id": "mod_e190fa78d6be"
+    },
+    {
+      "name": "prompt-engine",
+      "name_en": "Prompt Engine",
+      "name_ar": "محرك الأوامر",
+      "description": "Prompt template management with versioning and safety checks",
+      "version": "10.1.0",
+      "type": "core",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "dependencies": [
+        "prompt-firewall",
+        "llm-gateway"
+      ],
+      "interfaces": [
+        "/v1/prompts"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "prompt-management",
+          "template-versioning"
+        ],
+        "ai": [
+          "prompt-optimization"
+        ],
+        "business": [
+          "prompt-governance"
+        ],
+        "automation": [
+          "auto-testing"
+        ]
+      },
+      "module_id": "mod_19015cd11854"
+    },
+    {
+      "name": "model-router",
+      "name_en": "Model Router",
+      "name_ar": "موجه النماذج",
+      "description": "Routes requests to optimal LLM based on task, latency, cost, language",
+      "version": "10.1.0",
+      "type": "core",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "dependencies": [
+        "llm-gateway"
+      ],
+      "interfaces": [
+        "/v1/route"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "model-routing",
+          "load-balancing"
+        ],
+        "ai": [
+          "cost-optimization"
+        ],
+        "business": [
+          "latency-optimization"
+        ],
+        "automation": [
+          "auto-failover"
+        ]
+      },
+      "module_id": "mod_cd5fa2c00cb4"
+    },
+    {
+      "name": "rag-engine",
+      "name_en": "RAG Engine",
+      "name_ar": "محرك RAG",
+      "description": "Retrieval-Augmented Generation with hybrid semantic+keyword search and reranking",
+      "version": "10.1.0",
+      "type": "ai-platform",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "dependencies": [
+        "qdrant-service",
+        "postgresql-service"
+      ],
+      "interfaces": [
+        "/v1/search",
+        "/v1/ingest"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "hybrid-search",
+          "reranking",
+          "citation-generation"
+        ],
+        "ai": [
+          "rag",
+          "embedding-generation"
+        ],
+        "business": [
+          "knowledge-retrieval"
+        ],
+        "automation": [
+          "auto-indexing"
+        ]
+      },
+      "module_id": "mod_433e7d5c1743"
+    },
+    {
+      "name": "document-intelligence",
+      "name_en": "Document Intelligence",
+      "name_ar": "ذكاء المستندات",
+      "description": "Document processing pipeline with OCR, chunking, and entity extraction",
+      "version": "10.1.0",
+      "type": "ai-platform",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "dependencies": [
+        "rag-engine",
+        "minio-service"
+      ],
+      "interfaces": [
+        "/v1/documents/process"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "ocr",
+          "chunking",
+          "entity-extraction"
+        ],
+        "ai": [
+          "document-understanding"
+        ],
+        "business": [
+          "document-lifecycle"
+        ],
+        "automation": [
+          "auto-classification"
+        ]
+      },
+      "module_id": "mod_c111019e34e3"
+    },
+    {
+      "name": "agent-system",
+      "name_en": "AI Agents",
+      "name_ar": "وكلاء الذكاء الاصطناعي",
+      "description": "Multi-agent runtime with 21 department-specific AI agents",
+      "version": "10.1.0",
+      "type": "ai-platform",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "dependencies": [
+        "ai-core",
+        "llm-gateway",
+        "rag-engine"
+      ],
+      "interfaces": [
+        "/v1/agents",
+        "/v1/agents/{id}/invoke"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "agent-runtime",
+          "tool-calling"
+        ],
+        "ai": [
+          "multi-agent-mesh",
+          "mcp-protocol"
+        ],
+        "business": [
+          "department-automation"
+        ],
+        "automation": [
+          "auto-escalation"
+        ]
+      },
+      "module_id": "mod_bb726b138934"
+    },
+    {
+      "name": "llm-gateway",
+      "name_en": "LLM Gateway",
+      "name_ar": "بوابة النماذج اللغوية",
+      "description": "Unified LLM gateway with vLLM primary and OpenAI fallback",
+      "version": "10.1.0",
+      "type": "ai-platform",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "dependencies": [
+        "model-router"
+      ],
+      "interfaces": [
+        "/v1/complete",
+        "/v1/chat",
+        "/v1/embed"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "llm-serving",
+          "token-tracking"
+        ],
+        "ai": [
+          "local-models",
+          "cloud-fallback"
+        ],
+        "business": [
+          "cost-tracking"
+        ],
+        "automation": [
+          "auto-scaling"
+        ]
+      },
+      "module_id": "mod_6125bbdd43ce"
+    },
+    {
+      "name": "authentication-service",
+      "name_en": "Authentication Service",
+      "name_ar": "خدمة المصادقة",
+      "description": "Keycloak OIDC integration with JWT verification and MFA",
+      "version": "10.1.0",
+      "type": "security",
+      "status": "production",
+      "owner": "Security Team",
+      "dependencies": [
+        "keycloak",
+        "redis-service"
+      ],
+      "interfaces": [
+        "/v1/auth/login",
+        "/v1/auth/verify",
+        "/v1/auth/refresh"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "restricted",
+      "capabilities": {
+        "core": [
+          "authentication",
+          "jwt-verification"
+        ],
+        "ai": [],
+        "business": [
+          "sso",
+          "mfa"
+        ],
+        "automation": [
+          "token-refresh"
+        ]
+      },
+      "module_id": "mod_822cc65f2e17"
+    },
+    {
+      "name": "authorization-service",
+      "name_en": "Authorization Service",
+      "name_ar": "خدمة الصلاحيات",
+      "description": "RBAC + ABAC authorization with OPA policy engine",
+      "version": "10.1.0",
+      "type": "security",
+      "status": "production",
+      "owner": "Security Team",
+      "dependencies": [
+        "opa",
+        "authentication-service"
+      ],
+      "interfaces": [
+        "/v1/authz/check"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "restricted",
+      "capabilities": {
+        "core": [
+          "rbac",
+          "abac",
+          "policy-enforcement"
+        ],
+        "ai": [],
+        "business": [
+          "access-control"
+        ],
+        "automation": [
+          "policy-sync"
+        ]
+      },
+      "module_id": "mod_be3ea9a72ebb"
+    },
+    {
+      "name": "audit-service",
+      "name_en": "Audit Service",
+      "name_ar": "خدمة التدقيق",
+      "description": "Immutable HMAC-signed audit logging with 7-year retention",
+      "version": "10.1.0",
+      "type": "security",
+      "status": "production",
+      "owner": "Security Team",
+      "dependencies": [
+        "postgresql-service",
+        "minio-service"
+      ],
+      "interfaces": [
+        "/v1/audit",
+        "/v1/audit/search"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "restricted",
+      "capabilities": {
+        "core": [
+          "audit-logging",
+          "tamper-detection"
+        ],
+        "ai": [],
+        "business": [
+          "compliance",
+          "forensics"
+        ],
+        "automation": [
+          "auto-archival"
+        ]
+      },
+      "module_id": "mod_e52d2f2f2bf5"
+    },
+    {
+      "name": "policy-engine",
+      "name_en": "Policy Engine",
+      "name_ar": "محرك السياسات",
+      "description": "OPA-based policy engine for ABAC and compliance rules",
+      "version": "10.1.0",
+      "type": "security",
+      "status": "production",
+      "owner": "Security Team",
+      "dependencies": [
+        "opa"
+      ],
+      "interfaces": [
+        "/v1/policies",
+        "/v1/policies/evaluate"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "restricted",
+      "capabilities": {
+        "core": [
+          "policy-management",
+          "policy-evaluation"
+        ],
+        "ai": [],
+        "business": [
+          "governance"
+        ],
+        "automation": [
+          "policy-versioning"
+        ]
+      },
+      "module_id": "mod_86ed50f58484"
+    },
+    {
+      "name": "api-gateway",
+      "name_en": "API Gateway",
+      "name_ar": "بوابة API",
+      "description": "Central API gateway with rate limiting, WAF, and routing",
+      "version": "10.1.0",
+      "type": "infrastructure",
+      "status": "production",
+      "owner": "Platform Team",
+      "dependencies": [
+        "authentication-service",
+        "authorization-service"
+      ],
+      "interfaces": [
+        "/api/{service}/{path}"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "routing",
+          "rate-limiting",
+          "waf"
+        ],
+        "ai": [],
+        "business": [
+          "api-management"
+        ],
+        "automation": [
+          "auto-scaling"
+        ]
+      },
+      "module_id": "mod_a26327a39155"
+    },
+    {
+      "name": "workflow-engine",
+      "name_en": "Workflow Engine",
+      "name_ar": "محرك سير العمل",
+      "description": "Approval workflow engine with multi-step processes",
+      "version": "10.1.0",
+      "type": "infrastructure",
+      "status": "production",
+      "owner": "Platform Team",
+      "dependencies": [
+        "postgresql-service",
+        "kafka-service"
+      ],
+      "interfaces": [
+        "/v1/workflows"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "workflow-execution",
+          "approval-routing"
+        ],
+        "ai": [],
+        "business": [
+          "process-automation"
+        ],
+        "automation": [
+          "auto-escalation"
+        ]
+      },
+      "module_id": "mod_6dea744d93d3"
+    },
+    {
+      "name": "monitoring-service",
+      "name_en": "Monitoring Service",
+      "name_ar": "خدمة المراقبة",
+      "description": "Health monitoring, metrics collection, and alerting",
+      "version": "10.1.0",
+      "type": "infrastructure",
+      "status": "production",
+      "owner": "Platform Team",
+      "dependencies": [
+        "prometheus",
+        "grafana",
+        "loki"
+      ],
+      "interfaces": [
+        "/health/live",
+        "/health/ready",
+        "/health/details",
+        "/metrics"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "health-monitoring",
+          "metrics-collection"
+        ],
+        "ai": [],
+        "business": [
+          "observability"
+        ],
+        "automation": [
+          "auto-alerting"
+        ]
+      },
+      "module_id": "mod_083fb6d547ec"
+    },
+    {
+      "name": "configuration-service",
+      "name_en": "Configuration Service",
+      "name_ar": "خدمة التكوين",
+      "description": "Centralized configuration management with Vault integration",
+      "version": "10.1.0",
+      "type": "infrastructure",
+      "status": "production",
+      "owner": "Platform Team",
+      "dependencies": [
+        "vault"
+      ],
+      "interfaces": [
+        "/v1/config"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "restricted",
+      "capabilities": {
+        "core": [
+          "config-management",
+          "secret-management"
+        ],
+        "ai": [],
+        "business": [
+          "configuration-governance"
+        ],
+        "automation": [
+          "auto-reload"
+        ]
+      },
+      "module_id": "mod_1fb074433cb8"
+    },
+    {
+      "name": "qdrant-service",
+      "name_en": "Qdrant Service",
+      "name_ar": "خدمة Qdrant",
+      "description": "Vector database with tenant isolation and secure operations",
+      "version": "10.1.0",
+      "type": "data-layer",
+      "status": "production",
+      "owner": "Data Team",
+      "dependencies": [],
+      "interfaces": [
+        "/collections",
+        "/points"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "restricted",
+      "capabilities": {
+        "core": [
+          "vector-storage",
+          "similarity-search"
+        ],
+        "ai": [
+          "embedding-storage"
+        ],
+        "business": [
+          "knowledge-base"
+        ],
+        "automation": [
+          "auto-indexing"
+        ]
+      },
+      "module_id": "mod_d6d1e8a1dfe7"
+    },
+    {
+      "name": "postgresql-service",
+      "name_en": "PostgreSQL Service",
+      "name_ar": "خدمة PostgreSQL",
+      "description": "Primary relational database with HA via Patroni",
+      "version": "10.1.0",
+      "type": "data-layer",
+      "status": "production",
+      "owner": "Data Team",
+      "dependencies": [],
+      "interfaces": [],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "restricted",
+      "capabilities": {
+        "core": [
+          "relational-storage",
+          "transactions"
+        ],
+        "ai": [],
+        "business": [
+          "data-persistence"
+        ],
+        "automation": [
+          "auto-failover"
+        ]
+      },
+      "module_id": "mod_b45e5974c6a5"
+    },
+    {
+      "name": "redis-service",
+      "name_en": "Redis Service",
+      "name_ar": "خدمة Redis",
+      "description": "In-memory cache and session store with Sentinel HA",
+      "version": "10.1.0",
+      "type": "data-layer",
+      "status": "production",
+      "owner": "Data Team",
+      "dependencies": [],
+      "interfaces": [],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "caching",
+          "session-storage"
+        ],
+        "ai": [],
+        "business": [
+          "performance-optimization"
+        ],
+        "automation": [
+          "auto-eviction"
+        ]
+      },
+      "module_id": "mod_4029a5b49189"
+    },
+    {
+      "name": "executive-agent",
+      "name_en": "Executive Agent",
+      "name_ar": "الوكيل التنفيذي",
+      "description": "Strategic decision support for C-suite executives",
+      "version": "11.1.0",
+      "type": "ai-agent",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "department": "Executive Office",
+      "dependencies": [
+        "ai-core",
+        "rag-engine",
+        "llm-gateway"
+      ],
+      "interfaces": [
+        "/v1/agents/executive-agent/invoke"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "restricted",
+      "capabilities": {
+        "core": [
+          "strategic-planning",
+          "executive-reporting",
+          "decision-support"
+        ],
+        "ai": [
+          "Support executive leadership in strategic decision-making"
+        ],
+        "automation": [
+          "rag_search",
+          "knowledge_graph_query",
+          "power_bi_query",
+          "executive_dashboard"
+        ],
+        "enterprise": [
+          "multi-tenant",
+          "audit-logged"
+        ]
+      },
+      "rag_enabled": true,
+      "agent_enabled": true,
+      "model_tier": "premium",
+      "rag_collections": [
+        "corporate",
+        "enterprise-reports"
+      ],
+      "required_permissions": [
+        "executive:read",
+        "executive:write"
+      ],
+      "module_id": "mod_db29a6cd8bf5"
+    },
+    {
+      "name": "finance-agent",
+      "name_en": "Finance Agent",
+      "name_ar": "الوكيل المالي",
+      "description": "Financial analysis, reporting, and forecasting",
+      "version": "11.1.0",
+      "type": "ai-agent",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "department": "Finance",
+      "dependencies": [
+        "ai-core",
+        "rag-engine",
+        "llm-gateway"
+      ],
+      "interfaces": [
+        "/v1/agents/finance-agent/invoke"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "confidential",
+      "capabilities": {
+        "core": [
+          "financial-analysis",
+          "budgeting",
+          "forecasting"
+        ],
+        "ai": [
+          "Analyze financial data, prepare reports, support financial decisions"
+        ],
+        "automation": [
+          "rag_search",
+          "sap_query",
+          "oracle_erp_query",
+          "power_bi_query",
+          "sql_query"
+        ],
+        "enterprise": [
+          "multi-tenant",
+          "audit-logged"
+        ]
+      },
+      "rag_enabled": true,
+      "agent_enabled": true,
+      "model_tier": "premium",
+      "rag_collections": [
+        "finance",
+        "corporate"
+      ],
+      "required_permissions": [
+        "knowledge:read",
+        "analytics:read",
+        "reports:read"
+      ],
+      "module_id": "mod_a216ae9e7e0e"
+    },
+    {
+      "name": "hr-agent",
+      "name_en": "HR Agent",
+      "name_ar": "وكيل الموارد البشرية",
+      "description": "HR policy guidance and employee support",
+      "version": "11.1.0",
+      "type": "ai-agent",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "department": "Human Resources",
+      "dependencies": [
+        "ai-core",
+        "rag-engine",
+        "llm-gateway"
+      ],
+      "interfaces": [
+        "/v1/agents/hr-agent/invoke"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "confidential",
+      "capabilities": {
+        "core": [
+          "hr-policy",
+          "employee-support",
+          "leave-management"
+        ],
+        "ai": [
+          "Support all HR processes from hiring to retirement"
+        ],
+        "automation": [
+          "rag_search",
+          "oracle_hcm_query",
+          "active_directory_query"
+        ],
+        "enterprise": [
+          "multi-tenant",
+          "audit-logged"
+        ]
+      },
+      "rag_enabled": true,
+      "agent_enabled": true,
+      "model_tier": "standard",
+      "rag_collections": [
+        "hr",
+        "corporate"
+      ],
+      "required_permissions": [
+        "knowledge:read"
+      ],
+      "module_id": "mod_e55fb889f3d5"
+    },
+    {
+      "name": "accounting-agent",
+      "name_en": "Accounting Agent",
+      "name_ar": "وكيل المحاسبة",
+      "description": "Journal entries, reconciliations, financial statements",
+      "version": "11.1.0",
+      "type": "ai-agent",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "department": "Accounting",
+      "dependencies": [
+        "ai-core",
+        "rag-engine",
+        "llm-gateway"
+      ],
+      "interfaces": [
+        "/v1/agents/accounting-agent/invoke"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "confidential",
+      "capabilities": {
+        "core": [
+          "accounting",
+          "ifrs",
+          "reconciliation"
+        ],
+        "ai": [
+          "Post journal entries, reconciliations, prepare financial statements"
+        ],
+        "automation": [
+          "rag_search",
+          "sap_query",
+          "sql_query"
+        ],
+        "enterprise": [
+          "multi-tenant",
+          "audit-logged"
+        ]
+      },
+      "rag_enabled": true,
+      "agent_enabled": true,
+      "model_tier": "standard",
+      "rag_collections": [
+        "finance"
+      ],
+      "required_permissions": [
+        "knowledge:read"
+      ],
+      "module_id": "mod_a551cbdd8d7b"
+    },
+    {
+      "name": "treasury-agent",
+      "name_en": "Treasury Agent",
+      "name_ar": "وكيل الخزانة",
+      "description": "Liquidity monitoring and FX risk management",
+      "version": "11.1.0",
+      "type": "ai-agent",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "department": "Treasury",
+      "dependencies": [
+        "ai-core",
+        "rag-engine",
+        "llm-gateway"
+      ],
+      "interfaces": [
+        "/v1/agents/treasury-agent/invoke"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "restricted",
+      "capabilities": {
+        "core": [
+          "treasury",
+          "fx-management",
+          "cash-flow"
+        ],
+        "ai": [
+          "Monitor liquidity, analyze FX risk, optimize cost of funds"
+        ],
+        "automation": [
+          "rag_search",
+          "sap_query",
+          "sql_query"
+        ],
+        "enterprise": [
+          "multi-tenant",
+          "audit-logged"
+        ]
+      },
+      "rag_enabled": true,
+      "agent_enabled": true,
+      "model_tier": "standard",
+      "rag_collections": [
+        "finance"
+      ],
+      "required_permissions": [
+        "knowledge:read"
+      ],
+      "module_id": "mod_337d3cde6dc6"
+    },
+    {
+      "name": "procurement-agent",
+      "name_en": "Procurement Agent",
+      "name_ar": "وكيل المشتريات",
+      "description": "Supplier analysis and procurement cycle support",
+      "version": "11.1.0",
+      "type": "ai-agent",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "department": "Procurement",
+      "dependencies": [
+        "ai-core",
+        "rag-engine",
+        "llm-gateway"
+      ],
+      "interfaces": [
+        "/v1/agents/procurement-agent/invoke"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "procurement",
+          "supplier-management",
+          "negotiation"
+        ],
+        "ai": [
+          "Analyze suppliers, compare RFQs, support procurement cycle"
+        ],
+        "automation": [
+          "rag_search",
+          "sap_query",
+          "oracle_erp_query"
+        ],
+        "enterprise": [
+          "multi-tenant",
+          "audit-logged"
+        ]
+      },
+      "rag_enabled": true,
+      "agent_enabled": true,
+      "model_tier": "standard",
+      "rag_collections": [
+        "corporate"
+      ],
+      "required_permissions": [
+        "knowledge:read"
+      ],
+      "module_id": "mod_35a2711f4031"
+    },
+    {
+      "name": "supply-chain-agent",
+      "name_en": "Supply Chain Agent",
+      "name_ar": "وكيل سلسلة الإمداد",
+      "description": "Demand planning and inventory optimization",
+      "version": "11.1.0",
+      "type": "ai-agent",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "department": "Supply Chain",
+      "dependencies": [
+        "ai-core",
+        "rag-engine",
+        "llm-gateway"
+      ],
+      "interfaces": [
+        "/v1/agents/supply-chain-agent/invoke"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "supply-chain",
+          "demand-planning",
+          "inventory"
+        ],
+        "ai": [
+          "Demand planning, inventory optimization, supply chain forecasting"
+        ],
+        "automation": [
+          "rag_search",
+          "sap_query",
+          "wms_query",
+          "kafka_consume"
+        ],
+        "enterprise": [
+          "multi-tenant",
+          "audit-logged"
+        ]
+      },
+      "rag_enabled": true,
+      "agent_enabled": true,
+      "model_tier": "premium",
+      "rag_collections": [
+        "corporate"
+      ],
+      "required_permissions": [
+        "knowledge:read",
+        "analytics:read"
+      ],
+      "module_id": "mod_d1fc38d41bf0"
+    },
+    {
+      "name": "manufacturing-agent",
+      "name_en": "Manufacturing Agent",
+      "name_ar": "وكيل التصنيع",
+      "description": "OEE analysis and production optimization",
+      "version": "11.1.0",
+      "type": "ai-agent",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "department": "Manufacturing",
+      "dependencies": [
+        "ai-core",
+        "rag-engine",
+        "llm-gateway"
+      ],
+      "interfaces": [
+        "/v1/agents/manufacturing-agent/invoke"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "manufacturing",
+          "oee",
+          "predictive-maintenance"
+        ],
+        "ai": [
+          "Optimize manufacturing operations, analyze OEE, predict failures"
+        ],
+        "automation": [
+          "rag_search",
+          "mes_query",
+          "kafka_consume"
+        ],
+        "enterprise": [
+          "multi-tenant",
+          "audit-logged"
+        ]
+      },
+      "rag_enabled": true,
+      "agent_enabled": true,
+      "model_tier": "standard",
+      "rag_collections": [
+        "corporate"
+      ],
+      "required_permissions": [
+        "knowledge:read"
+      ],
+      "module_id": "mod_732afefff6ee"
+    },
+    {
+      "name": "warehouse-agent",
+      "name_en": "Warehouse Agent",
+      "name_ar": "وكيل المستودعات",
+      "description": "Inventory management and storage optimization",
+      "version": "11.1.0",
+      "type": "ai-agent",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "department": "Warehouses",
+      "dependencies": [
+        "ai-core",
+        "rag-engine",
+        "llm-gateway"
+      ],
+      "interfaces": [
+        "/v1/agents/warehouse-agent/invoke"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "warehouse",
+          "inventory",
+          "wms"
+        ],
+        "ai": [
+          "Manage inventory, optimize storage, track warehouse operations"
+        ],
+        "automation": [
+          "rag_search",
+          "wms_query",
+          "redis_query"
+        ],
+        "enterprise": [
+          "multi-tenant",
+          "audit-logged"
+        ]
+      },
+      "rag_enabled": true,
+      "agent_enabled": true,
+      "model_tier": "standard",
+      "rag_collections": [
+        "corporate"
+      ],
+      "required_permissions": [
+        "knowledge:read"
+      ],
+      "module_id": "mod_b50875ac920a"
+    },
+    {
+      "name": "logistics-agent",
+      "name_en": "Logistics Agent",
+      "name_ar": "وكيل الخدمات اللوجستية",
+      "description": "Transport planning and fleet optimization",
+      "version": "11.1.0",
+      "type": "ai-agent",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "department": "Logistics",
+      "dependencies": [
+        "ai-core",
+        "rag-engine",
+        "llm-gateway"
+      ],
+      "interfaces": [
+        "/v1/agents/logistics-agent/invoke"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "logistics",
+          "fleet-management",
+          "route-optimization"
+        ],
+        "ai": [
+          "Transport planning, shipment tracking, fleet efficiency optimization"
+        ],
+        "automation": [
+          "rag_search",
+          "wms_query",
+          "kafka_consume"
+        ],
+        "enterprise": [
+          "multi-tenant",
+          "audit-logged"
+        ]
+      },
+      "rag_enabled": true,
+      "agent_enabled": true,
+      "model_tier": "standard",
+      "rag_collections": [
+        "corporate"
+      ],
+      "required_permissions": [
+        "knowledge:read"
+      ],
+      "module_id": "mod_052cd9b2bcec"
+    },
+    {
+      "name": "sales-agent",
+      "name_en": "Sales Agent",
+      "name_ar": "وكيل المبيعات",
+      "description": "Sales opportunity analysis and revenue forecasting",
+      "version": "11.1.0",
+      "type": "ai-agent",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "department": "Sales",
+      "dependencies": [
+        "ai-core",
+        "rag-engine",
+        "llm-gateway"
+      ],
+      "interfaces": [
+        "/v1/agents/sales-agent/invoke"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "confidential",
+      "capabilities": {
+        "core": [
+          "sales",
+          "forecasting",
+          "crm"
+        ],
+        "ai": [
+          "Analyze sales opportunities, forecast revenue, support sales team"
+        ],
+        "automation": [
+          "rag_search",
+          "crm_query",
+          "power_bi_query"
+        ],
+        "enterprise": [
+          "multi-tenant",
+          "audit-logged"
+        ]
+      },
+      "rag_enabled": true,
+      "agent_enabled": true,
+      "model_tier": "standard",
+      "rag_collections": [
+        "corporate"
+      ],
+      "required_permissions": [
+        "knowledge:read"
+      ],
+      "module_id": "mod_4f30d1dbc8c4"
+    },
+    {
+      "name": "marketing-agent",
+      "name_en": "Marketing Agent",
+      "name_ar": "وكيل التسويق",
+      "description": "Campaign analysis and content generation",
+      "version": "11.1.0",
+      "type": "ai-agent",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "department": "Marketing",
+      "dependencies": [
+        "ai-core",
+        "rag-engine",
+        "llm-gateway"
+      ],
+      "interfaces": [
+        "/v1/agents/marketing-agent/invoke"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "marketing",
+          "content-creation",
+          "analytics"
+        ],
+        "ai": [
+          "Analyze marketing campaigns, generate content, measure performance"
+        ],
+        "automation": [
+          "rag_search",
+          "crm_query",
+          "power_bi_query"
+        ],
+        "enterprise": [
+          "multi-tenant",
+          "audit-logged"
+        ]
+      },
+      "rag_enabled": true,
+      "agent_enabled": true,
+      "model_tier": "standard",
+      "rag_collections": [
+        "corporate"
+      ],
+      "required_permissions": [
+        "knowledge:read"
+      ],
+      "module_id": "mod_e88ca8ebde0e"
+    },
+    {
+      "name": "legal-agent",
+      "name_en": "Legal Agent",
+      "name_ar": "الوكيل القانوني",
+      "description": "Contract review and legal counsel",
+      "version": "11.1.0",
+      "type": "ai-agent",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "department": "Legal",
+      "dependencies": [
+        "ai-core",
+        "rag-engine",
+        "llm-gateway"
+      ],
+      "interfaces": [
+        "/v1/agents/legal-agent/invoke"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "restricted",
+      "capabilities": {
+        "core": [
+          "legal",
+          "contract-review",
+          "compliance"
+        ],
+        "ai": [
+          "Review contracts, provide legal counsel, manage disputes"
+        ],
+        "automation": [
+          "rag_search",
+          "knowledge_graph_query",
+          "sharepoint_query"
+        ],
+        "enterprise": [
+          "multi-tenant",
+          "audit-logged"
+        ]
+      },
+      "rag_enabled": true,
+      "agent_enabled": true,
+      "model_tier": "premium",
+      "rag_collections": [
+        "corporate"
+      ],
+      "required_permissions": [
+        "knowledge:read",
+        "knowledge:review"
+      ],
+      "module_id": "mod_f5f3526fcbd4"
+    },
+    {
+      "name": "audit-agent",
+      "name_en": "Audit Agent",
+      "name_ar": "وكيل التدقيق",
+      "description": "Audit support with anomaly detection",
+      "version": "11.1.0",
+      "type": "ai-agent",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "department": "Internal Audit",
+      "dependencies": [
+        "ai-core",
+        "rag-engine",
+        "llm-gateway"
+      ],
+      "interfaces": [
+        "/v1/agents/audit-agent/invoke"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "restricted",
+      "capabilities": {
+        "core": [
+          "audit",
+          "anomaly-detection",
+          "data-analysis"
+        ],
+        "ai": [
+          "Support internal audit with data analysis and anomaly detection"
+        ],
+        "automation": [
+          "rag_search",
+          "sql_query",
+          "power_bi_query"
+        ],
+        "enterprise": [
+          "multi-tenant",
+          "audit-logged"
+        ]
+      },
+      "rag_enabled": true,
+      "agent_enabled": true,
+      "model_tier": "premium",
+      "rag_collections": [
+        "corporate"
+      ],
+      "required_permissions": [
+        "knowledge:read",
+        "audit:read"
+      ],
+      "module_id": "mod_5c250ba486f5"
+    },
+    {
+      "name": "compliance-agent",
+      "name_en": "Compliance Agent",
+      "name_ar": "وكيل الامتثال",
+      "description": "Regulatory compliance monitoring and risk management",
+      "version": "11.1.0",
+      "type": "ai-agent",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "department": "Compliance",
+      "dependencies": [
+        "ai-core",
+        "rag-engine",
+        "llm-gateway"
+      ],
+      "interfaces": [
+        "/v1/agents/compliance-agent/invoke"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "restricted",
+      "capabilities": {
+        "core": [
+          "compliance",
+          "risk-management",
+          "regulatory"
+        ],
+        "ai": [
+          "Monitor regulatory and policy compliance, manage enterprise risks"
+        ],
+        "automation": [
+          "rag_search",
+          "knowledge_graph_query",
+          "sharepoint_query"
+        ],
+        "enterprise": [
+          "multi-tenant",
+          "audit-logged"
+        ]
+      },
+      "rag_enabled": true,
+      "agent_enabled": true,
+      "model_tier": "standard",
+      "rag_collections": [
+        "corporate"
+      ],
+      "required_permissions": [
+        "knowledge:read"
+      ],
+      "module_id": "mod_15082d4ffce4"
+    },
+    {
+      "name": "cybersecurity-agent",
+      "name_en": "Cybersecurity Agent",
+      "name_ar": "وكيل الأمن السيبراني",
+      "description": "Threat analysis and incident investigation",
+      "version": "11.1.0",
+      "type": "ai-agent",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "department": "Cybersecurity",
+      "dependencies": [
+        "ai-core",
+        "rag-engine",
+        "llm-gateway"
+      ],
+      "interfaces": [
+        "/v1/agents/cybersecurity-agent/invoke"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "restricted",
+      "capabilities": {
+        "core": [
+          "cybersecurity",
+          "threat-analysis",
+          "incident-response"
+        ],
+        "ai": [
+          "Analyze threats, investigate incidents, monitor security posture"
+        ],
+        "automation": [
+          "rag_search",
+          "siem_query",
+          "vault_query"
+        ],
+        "enterprise": [
+          "multi-tenant",
+          "audit-logged"
+        ]
+      },
+      "rag_enabled": true,
+      "agent_enabled": true,
+      "model_tier": "premium",
+      "rag_collections": [
+        "corporate"
+      ],
+      "required_permissions": [
+        "knowledge:read",
+        "audit:read"
+      ],
+      "module_id": "mod_8d00676b9808"
+    },
+    {
+      "name": "quality-agent",
+      "name_en": "Quality Agent",
+      "name_ar": "وكيل الجودة",
+      "description": "Quality data analysis and continuous improvement",
+      "version": "11.1.0",
+      "type": "ai-agent",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "department": "Quality Assurance",
+      "dependencies": [
+        "ai-core",
+        "rag-engine",
+        "llm-gateway"
+      ],
+      "interfaces": [
+        "/v1/agents/quality-agent/invoke"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "quality",
+          "defect-analysis",
+          "iso-standards"
+        ],
+        "ai": [
+          "Analyze quality data, track defects, support continuous quality improvement"
+        ],
+        "automation": [
+          "rag_search",
+          "mes_query",
+          "power_bi_query"
+        ],
+        "enterprise": [
+          "multi-tenant",
+          "audit-logged"
+        ]
+      },
+      "rag_enabled": true,
+      "agent_enabled": true,
+      "model_tier": "standard",
+      "rag_collections": [
+        "corporate"
+      ],
+      "required_permissions": [
+        "knowledge:read"
+      ],
+      "module_id": "mod_06d7e524acb1"
+    },
+    {
+      "name": "research-agent",
+      "name_en": "Research Agent",
+      "name_ar": "وكيل البحث والتطوير",
+      "description": "Research analysis and new product development support",
+      "version": "11.1.0",
+      "type": "ai-agent",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "department": "Research & Development",
+      "dependencies": [
+        "ai-core",
+        "rag-engine",
+        "llm-gateway"
+      ],
+      "interfaces": [
+        "/v1/agents/research-agent/invoke"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "confidential",
+      "capabilities": {
+        "core": [
+          "research",
+          "trend-analysis",
+          "product-development"
+        ],
+        "ai": [
+          "Analyze research, explore trends, support new product development"
+        ],
+        "automation": [
+          "rag_search",
+          "knowledge_graph_query",
+          "sharepoint_query"
+        ],
+        "enterprise": [
+          "multi-tenant",
+          "audit-logged"
+        ]
+      },
+      "rag_enabled": true,
+      "agent_enabled": true,
+      "model_tier": "premium",
+      "rag_collections": [
+        "corporate"
+      ],
+      "required_permissions": [
+        "knowledge:read"
+      ],
+      "module_id": "mod_f867bba41059"
+    },
+    {
+      "name": "customer-service-agent",
+      "name_en": "Customer Service Agent",
+      "name_ar": "وكيل خدمة العملاء",
+      "description": "Customer inquiry handling and issue resolution",
+      "version": "11.1.0",
+      "type": "ai-agent",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "department": "Customer Service",
+      "dependencies": [
+        "ai-core",
+        "rag-engine",
+        "llm-gateway"
+      ],
+      "interfaces": [
+        "/v1/agents/customer-service-agent/invoke"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "customer-service",
+          "communication",
+          "problem-solving"
+        ],
+        "ai": [
+          "Respond to customer inquiries, resolve issues, improve customer satisfaction"
+        ],
+        "automation": [
+          "rag_search",
+          "crm_query",
+          "teams_notify"
+        ],
+        "enterprise": [
+          "multi-tenant",
+          "audit-logged"
+        ]
+      },
+      "rag_enabled": true,
+      "agent_enabled": true,
+      "model_tier": "standard",
+      "rag_collections": [
+        "corporate"
+      ],
+      "required_permissions": [
+        "knowledge:read"
+      ],
+      "module_id": "mod_a6f15d48fe16"
+    },
+    {
+      "name": "executive-assistant",
+      "name_en": "Executive Assistant",
+      "name_ar": "المساعد التنفيذي",
+      "description": "Scheduling, briefings, and task follow-up for executives",
+      "version": "11.1.0",
+      "type": "ai-agent",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "department": "CEO Office",
+      "dependencies": [
+        "ai-core",
+        "rag-engine",
+        "llm-gateway"
+      ],
+      "interfaces": [
+        "/v1/agents/executive-assistant/invoke"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "confidential",
+      "capabilities": {
+        "core": [
+          "scheduling",
+          "briefing",
+          "task-management"
+        ],
+        "ai": [
+          "Assist leadership with scheduling, briefings, and task follow-up"
+        ],
+        "automation": [
+          "rag_search",
+          "m365_calendar",
+          "m365_email",
+          "teams_notify"
+        ],
+        "enterprise": [
+          "multi-tenant",
+          "audit-logged"
+        ]
+      },
+      "rag_enabled": true,
+      "agent_enabled": true,
+      "model_tier": "standard",
+      "rag_collections": [
+        "corporate"
+      ],
+      "required_permissions": [
+        "knowledge:read",
+        "executive:read"
+      ],
+      "module_id": "mod_2fa6610b20c2"
+    },
+    {
+      "name": "knowledge-assistant",
+      "name_en": "Knowledge Assistant",
+      "name_ar": "مساعد المعرفة",
+      "description": "Knowledge base management and enterprise knowledge documentation",
+      "version": "11.1.0",
+      "type": "ai-agent",
+      "status": "production",
+      "owner": "AI Platform Team",
+      "department": "Data Office",
+      "dependencies": [
+        "ai-core",
+        "rag-engine",
+        "llm-gateway"
+      ],
+      "interfaces": [
+        "/v1/agents/knowledge-assistant/invoke"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": {
+        "core": [
+          "knowledge-management",
+          "rag",
+          "documentation"
+        ],
+        "ai": [
+          "Manage knowledge base, answer questions, document enterprise knowledge"
+        ],
+        "automation": [
+          "rag_search",
+          "knowledge_graph_query",
+          "vector_search"
+        ],
+        "enterprise": [
+          "multi-tenant",
+          "audit-logged"
+        ]
+      },
+      "rag_enabled": true,
+      "agent_enabled": true,
+      "model_tier": "premium",
+      "rag_collections": [
+        "corporate",
+        "hr",
+        "finance"
+      ],
+      "required_permissions": [
+        "knowledge:read",
+        "knowledge:admin"
+      ],
+      "module_id": "mod_95ed9374b301"
+    },
+    {
+      "name": "ai-evaluation-service",
+      "name_en": "AI Evaluation Service",
+      "name_ar": "خدمة تقييم الذكاء الاصطناعي",
+      "description": "AI quality evaluation, bias detection, fairness metrics, NIST AI RMF alignment",
+      "version": "12.0.0",
+      "type": "ai-governance",
+      "status": "production",
+      "owner": "AI Governance Team",
+      "dependencies": [
+        "rag-engine",
+        "agent-system",
+        "llm-gateway"
+      ],
+      "interfaces": [
+        "/v1/evals",
+        "/v1/gates",
+        "/v1/bias"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "restricted",
+      "capabilities": [
+        "quality-eval",
+        "bias-detection",
+        "fairness-metrics",
+        "regression-detection"
+      ],
+      "evaluation_enabled": true,
+      "responsible_ai": true,
+      "module_id": "mod_d13936ff7165"
+    },
+    {
+      "name": "bias-detection-engine",
+      "name_en": "Bias Detection Engine",
+      "name_ar": "محرك كشف التحيز",
+      "description": "Detects dataset, output, and performance bias across protected attributes",
+      "version": "12.0.0",
+      "type": "ai-governance",
+      "status": "production",
+      "owner": "AI Governance Team",
+      "dependencies": [
+        "ai-evaluation-service"
+      ],
+      "interfaces": [
+        "/v1/bias/analyze"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "restricted",
+      "capabilities": [
+        "dataset-bias",
+        "output-bias",
+        "performance-disparity"
+      ],
+      "evaluation_enabled": true,
+      "responsible_ai": true,
+      "module_id": "mod_1a1ef417a997"
+    },
+    {
+      "name": "fairness-analyzer",
+      "name_en": "Fairness Analyzer",
+      "name_ar": "محلل العدالة",
+      "description": "Fairness metrics calculator (demographic parity, equal opportunity, equalized odds)",
+      "version": "12.0.0",
+      "type": "ai-governance",
+      "status": "production",
+      "owner": "AI Governance Team",
+      "dependencies": [
+        "bias-detection-engine"
+      ],
+      "interfaces": [
+        "/v1/fairness/calculate"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "restricted",
+      "capabilities": [
+        "demographic-parity",
+        "equal-opportunity",
+        "equalized-odds",
+        "disparate-impact"
+      ],
+      "evaluation_enabled": true,
+      "responsible_ai": true,
+      "module_id": "mod_617e62ae15b4"
+    },
+    {
+      "name": "model-risk-monitor",
+      "name_en": "Model Risk Monitor",
+      "name_ar": "مراقب مخاطر النماذج",
+      "description": "Continuous monitoring of AI model risks and regression detection",
+      "version": "12.0.0",
+      "type": "ai-governance",
+      "status": "production",
+      "owner": "AI Governance Team",
+      "dependencies": [
+        "ai-evaluation-service",
+        "model-registry"
+      ],
+      "interfaces": [
+        "/v1/risks"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "restricted",
+      "capabilities": [
+        "risk-monitoring",
+        "regression-detection",
+        "alerting"
+      ],
+      "evaluation_enabled": true,
+      "responsible_ai": true,
+      "module_id": "mod_813f9ae754d2"
+    },
+    {
+      "name": "responsible-ai-dashboard",
+      "name_en": "Responsible AI Dashboard",
+      "name_ar": "لوحة الذكاء الاصطناعي المسؤول",
+      "description": "Dashboard for responsible AI metrics, bias reports, and fairness scores",
+      "version": "12.0.0",
+      "type": "ai-governance",
+      "status": "production",
+      "owner": "AI Governance Team",
+      "dependencies": [
+        "ai-evaluation-service",
+        "bias-detection-engine",
+        "fairness-analyzer"
+      ],
+      "interfaces": [
+        "/v1/dashboard"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "capabilities": [
+        "dashboard",
+        "reporting",
+        "visualization"
+      ],
+      "evaluation_enabled": true,
+      "responsible_ai": true,
+      "module_id": "mod_65315cce41d9"
+    },
+    {
+      "name": "evaluation-workflow-engine",
+      "name_en": "Evaluation Workflow Engine",
+      "name_ar": "محرك سير عمل التقييم",
+      "description": "Manages evaluation workflows, approval gates, and deployment decisions",
+      "version": "12.0.0",
+      "type": "ai-governance",
+      "status": "production",
+      "owner": "AI Governance Team",
+      "dependencies": [
+        "ai-evaluation-service",
+        "workflow-engine"
+      ],
+      "interfaces": [
+        "/v1/eval-workflows"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "restricted",
+      "capabilities": [
+        "workflow-management",
+        "gate-enforcement",
+        "approval-routing"
+      ],
+      "evaluation_enabled": true,
+      "responsible_ai": true,
+      "module_id": "mod_36db958088f1"
+    },
+    {
+      "name": "abac-policy-engine",
+      "name_en": "ABAC Policy Engine",
+      "name_ar": "محرك سياسات ABAC",
+      "description": "Attribute-Based Access Control engine with dynamic policy evaluation",
+      "version": "13.0.0",
+      "type": "governance",
+      "status": "production",
+      "owner": "Governance Team",
+      "dependencies": [
+        "opa"
+      ],
+      "interfaces": [
+        "/v1/abac/evaluate"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "restricted",
+      "governance_enabled": true,
+      "policy_engine": true,
+      "module_id": "mod_a422a08fad42"
+    },
+    {
+      "name": "policy-decision-point",
+      "name_en": "Policy Decision Point",
+      "name_ar": "نقطة قرار السياسات",
+      "description": "Centralized PDP for authorization decisions",
+      "version": "13.0.0",
+      "type": "governance",
+      "status": "production",
+      "owner": "Governance Team",
+      "dependencies": [
+        "abac-policy-engine"
+      ],
+      "interfaces": [
+        "/v1/pdp/decide"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "restricted",
+      "governance_enabled": true,
+      "policy_engine": true,
+      "module_id": "mod_4692619954c3"
+    },
+    {
+      "name": "policy-administration-service",
+      "name_en": "Policy Administration Service",
+      "name_ar": "خدمة إدارة السياسات",
+      "description": "Policy lifecycle management (create, review, approve, deploy, retire)",
+      "version": "13.0.0",
+      "type": "governance",
+      "status": "production",
+      "owner": "Governance Team",
+      "dependencies": [
+        "abac-policy-engine"
+      ],
+      "interfaces": [
+        "/v1/policies"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "restricted",
+      "governance_enabled": true,
+      "policy_engine": true,
+      "module_id": "mod_70fc7ffde650"
+    },
+    {
+      "name": "policy-audit-service",
+      "name_en": "Policy Audit Service",
+      "name_ar": "خدمة تدقيق السياسات",
+      "description": "Audit trail for all policy decisions and changes",
+      "version": "13.0.0",
+      "type": "governance",
+      "status": "production",
+      "owner": "Governance Team",
+      "dependencies": [
+        "audit-service"
+      ],
+      "interfaces": [
+        "/v1/policy-audit"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "restricted",
+      "governance_enabled": true,
+      "policy_engine": true,
+      "module_id": "mod_6798c2934e85"
+    },
+    {
+      "name": "responsible-ai-monitor",
+      "name_en": "Responsible AI Monitor",
+      "name_ar": "مراقب الذكاء الاصطناعي المسؤول",
+      "description": "Continuous Responsible AI monitoring with threshold alerts",
+      "version": "13.0.0",
+      "type": "governance",
+      "status": "production",
+      "owner": "AI Governance Team",
+      "dependencies": [
+        "ai-evaluation-service"
+      ],
+      "interfaces": [
+        "/v1/rai/metrics"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "governance_enabled": true,
+      "policy_engine": false,
+      "module_id": "mod_127532d5068f"
+    },
+    {
+      "name": "bias-detection-scheduler",
+      "name_en": "Bias Detection Scheduler",
+      "name_ar": "جدول كشف التحيز",
+      "description": "Daily automated bias evaluation scheduler",
+      "version": "13.0.0",
+      "type": "governance",
+      "status": "production",
+      "owner": "AI Governance Team",
+      "dependencies": [
+        "bias-detection-engine"
+      ],
+      "interfaces": [
+        "/v1/bias/schedule"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "governance_enabled": true,
+      "policy_engine": false,
+      "module_id": "mod_e1f74416923e"
+    },
+    {
+      "name": "compliance-reporting-service",
+      "name_en": "Compliance Reporting Service",
+      "name_ar": "خدمة التقارير التنظيمية",
+      "description": "Automated compliance report generation for ISO 27001, NIST AI RMF, SOC 2",
+      "version": "13.0.0",
+      "type": "governance",
+      "status": "production",
+      "owner": "Compliance Team",
+      "dependencies": [
+        "audit-service"
+      ],
+      "interfaces": [
+        "/v1/compliance/reports"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "restricted",
+      "governance_enabled": true,
+      "policy_engine": false,
+      "module_id": "mod_e27b6a181266"
+    },
+    {
+      "name": "observability-control-plane",
+      "name_en": "Observability Control Plane",
+      "name_ar": "مستوى التحكم بالمراقبة",
+      "description": "Central observability platform with health monitoring, alerting, and SLO tracking",
+      "version": "14.0.0",
+      "type": "observability",
+      "status": "production",
+      "owner": "SRE Team",
+      "dependencies": [
+        "prometheus",
+        "grafana",
+        "loki"
+      ],
+      "interfaces": [
+        "/health/live",
+        "/health/ready",
+        "/metrics"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "observability_enabled": true,
+      "analytics_enabled": true,
+      "auto_remediation_enabled": false,
+      "module_id": "mod_0b5e6b30365c"
+    },
+    {
+      "name": "predictive-analytics-engine",
+      "name_en": "Predictive Analytics Engine",
+      "name_ar": "محرك التحليلات التنبؤية",
+      "description": "Capacity prediction, failure prediction, and AI performance prediction",
+      "version": "14.0.0",
+      "type": "observability",
+      "status": "production",
+      "owner": "SRE Team",
+      "dependencies": [
+        "observability-control-plane"
+      ],
+      "interfaces": [
+        "/v1/predict/capacity",
+        "/v1/predict/failure"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "observability_enabled": true,
+      "analytics_enabled": true,
+      "auto_remediation_enabled": false,
+      "module_id": "mod_b2e7a92b092b"
+    },
+    {
+      "name": "anomaly-detection-service",
+      "name_en": "Anomaly Detection Service",
+      "name_ar": "خدمة كشف الشذوذ",
+      "description": "Real-time anomaly detection using z-score and statistical methods",
+      "version": "14.0.0",
+      "type": "observability",
+      "status": "production",
+      "owner": "SRE Team",
+      "dependencies": [
+        "observability-control-plane"
+      ],
+      "interfaces": [
+        "/v1/anomalies"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "observability_enabled": true,
+      "analytics_enabled": true,
+      "auto_remediation_enabled": false,
+      "module_id": "mod_68198c6c35da"
+    },
+    {
+      "name": "auto-remediation-engine",
+      "name_en": "Auto-Remediation Engine",
+      "name_ar": "محرك الإصلاح التلقائي",
+      "description": "Automated remediation with safety controls, rate limiting, and loop prevention",
+      "version": "14.0.0",
+      "type": "observability",
+      "status": "production",
+      "owner": "SRE Team",
+      "dependencies": [
+        "anomaly-detection-service",
+        "predictive-analytics-engine"
+      ],
+      "interfaces": [
+        "/v1/remediate"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "restricted",
+      "observability_enabled": true,
+      "analytics_enabled": true,
+      "auto_remediation_enabled": true,
+      "module_id": "mod_0985cd0da447"
+    },
+    {
+      "name": "intelligent-alert-manager",
+      "name_en": "Intelligent Alert Manager",
+      "name_ar": "مدير التنبيهات الذكي",
+      "description": "AI-powered alert routing with deduplication, correlation, and escalation",
+      "version": "14.0.0",
+      "type": "observability",
+      "status": "production",
+      "owner": "SRE Team",
+      "dependencies": [
+        "observability-control-plane"
+      ],
+      "interfaces": [
+        "/v1/alerts"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "observability_enabled": true,
+      "analytics_enabled": true,
+      "auto_remediation_enabled": false,
+      "module_id": "mod_8523ebae021b"
+    },
+    {
+      "name": "ai-operations-dashboard",
+      "name_en": "AI Operations Dashboard",
+      "name_ar": "لوحة عمليات الذكاء الاصطناعي",
+      "description": "Unified dashboard for AI operations, health, and performance",
+      "version": "14.0.0",
+      "type": "observability",
+      "status": "production",
+      "owner": "SRE Team",
+      "dependencies": [
+        "observability-control-plane",
+        "intelligent-alert-manager"
+      ],
+      "interfaces": [
+        "/dashboard"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "observability_enabled": true,
+      "analytics_enabled": true,
+      "auto_remediation_enabled": false,
+      "module_id": "mod_98ddbd0b96d2"
+    },
+    {
+      "name": "metrics-intelligence-service",
+      "name_en": "Metrics Intelligence Service",
+      "name_ar": "خدمة ذكاء المقاييس",
+      "description": "AI-powered metrics analysis for trend detection and insight generation",
+      "version": "14.0.0",
+      "type": "observability",
+      "status": "production",
+      "owner": "SRE Team",
+      "dependencies": [
+        "observability-control-plane",
+        "predictive-analytics-engine"
+      ],
+      "interfaces": [
+        "/v1/metrics/intelligence"
+      ],
+      "health_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "security_level": "internal",
+      "observability_enabled": true,
+      "analytics_enabled": true,
+      "auto_remediation_enabled": false,
+      "module_id": "mod_33d075523fd9"
+    }
+  ]
+}

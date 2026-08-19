@@ -1,0 +1,11 @@
+{
+  "schema": "hsaai.compliance.standard.v1",
+  "standard": "yemen-regulations",
+  "name": "Yemeni Regulations",
+  "description": "Yemeni commercial, labor, and tax regulations.",
+  "owner": "GC",
+  "status": "Compliant",
+  "mapping": "Regulatory register",
+  "last_assessment": "2026-06-01",
+  "next_assessment": "2026-12-01"
+}

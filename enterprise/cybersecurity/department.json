@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.department.v1",
+  "id": "DEPT-SEC",
+  "name_ar": "الأمن السيبراني",
+  "name_en": "Cybersecurity",
+  "directory": "cybersecurity",
+  "head_role": "Group CISO",
+  "reports_to": "CEO",
+  "mission_ar": "حماية أصول المجموعة المعلوماتية من التهديدات السيبرانية",
+  "mission_en": "Protect Group information assets from cyber threats",
+  "agent_ref": "AGENT-CYBERSECURITY",
+  "integrations": [
+    "active-directory",
+    "azure-ad",
+    "siem",
+    "vault"
+  ],
+  "kpis": [
+    "MTTD (Minutes)",
+    "MTTR (Minutes)",
+    "Vulnerability Remediation SLA %",
+    "Phishing Click Rate %"
+  ],
+  "supported_by_modules": [
+    "services/backend_core/department_agents/",
+    "services/backend_core/integrations/",
+    "services/backend_core/enterprise_os/",
+    "services/backend_core/governance/",
+    "services/backend_core/knowledge/"
+  ],
+  "classification": "Internal"
+}

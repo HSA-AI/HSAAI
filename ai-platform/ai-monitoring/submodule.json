@@ -1,0 +1,26 @@
+{
+  "schema": "hsaai.ai-platform.submodule.v1",
+  "name": "ai-monitoring",
+  "name_en": "AI Monitoring",
+  "name_ar": "مراقبة الذكاء الاصطناعي",
+  "description": "Real-time monitoring, alerting, and SLO tracking for AI services.",
+  "components": [
+    "Health Monitor",
+    "Alert Manager",
+    "SLO Tracker",
+    "Anomaly Detector"
+  ],
+  "capabilities": [
+    "Real-time health",
+    "Alerting",
+    "SLO tracking",
+    "Anomaly detection"
+  ],
+  "kpis": [
+    "Uptime > 99.9%",
+    "MTTD < 5min",
+    "MTTR < 30min"
+  ],
+  "runtime_ref": "infrastructure/prometheus/ + infrastructure/grafana/",
+  "backward_compatible": true
+}

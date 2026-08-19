@@ -1,0 +1,28 @@
+# Tool registry — Warehouse Agent
+apiVersion: hsaaiv2/v1
+kind: AgentTools
+metadata:
+  name: warehouse-agent-tools
+spec:
+  agentId: AGENT-WAREHOUSE
+  tools:
+    - id: rag_search
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: wms_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: redis_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: create_transfer_order
+      enabled: true
+      audit: true
+      human_approval: true
+  defaultTimeout: 30s
+  retryPolicy:
+    maxRetries: 2
+    backoff: exponential

@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.security.module.v1",
+  "name": "siem-integration",
+  "name_full": "SIEM Integration",
+  "description": "SIEM integration for centralized security event correlation.",
+  "implementation_ref": "services/backend_core/security/siem_sink.py",
+  "status": "production",
+  "backward_compatible": true
+}

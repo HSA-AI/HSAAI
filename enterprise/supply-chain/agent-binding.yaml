@@ -1,0 +1,25 @@
+# Agent binding for Supply Chain department
+apiVersion: hsaaiv2/v1
+kind: DepartmentAgentBinding
+metadata:
+  name: supply-chain-agent-binding
+  labels:
+    department: DEPT-SCM
+    department-name: "Supply Chain"
+spec:
+  departmentId: DEPT-SCM
+  departmentName: Supply Chain
+  agentId: AGENT-SUPPLY-CHAIN
+  agentRef: ../../department-agents/supply-chain/
+  autoInvoke: false
+  humanInTheLoop: true
+  auditAllCalls: true
+  allowedTools:
+    - rag_search
+    - knowledge_graph_query
+    - llm_complete
+    - mcp_tool_call
+  forbiddenActions:
+    - delete_record
+    - drop_table
+    - financial_posting_without_approval

@@ -1,0 +1,32 @@
+# Tool registry — Treasury Agent
+apiVersion: hsaaiv2/v1
+kind: AgentTools
+metadata:
+  name: treasury-agent-tools
+spec:
+  agentId: AGENT-TREASURY
+  tools:
+    - id: rag_search
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: sap_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: sql_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: fx_rate_lookup
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: approve_payment
+      enabled: true
+      audit: true
+      human_approval: true
+  defaultTimeout: 30s
+  retryPolicy:
+    maxRetries: 2
+    backoff: exponential

@@ -1,0 +1,28 @@
+# Tool registry — Customer Service Agent
+apiVersion: hsaaiv2/v1
+kind: AgentTools
+metadata:
+  name: customer-service-agent-tools
+spec:
+  agentId: AGENT-CUSTOMER-SERVICE
+  tools:
+    - id: rag_search
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: crm_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: teams_notify
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: create_ticket
+      enabled: true
+      audit: true
+      human_approval: true
+  defaultTimeout: 30s
+  retryPolicy:
+    maxRetries: 2
+    backoff: exponential

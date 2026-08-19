@@ -1,0 +1,31 @@
+{
+  "schema": "hsaai.enterprise.department.v1",
+  "id": "DEPT-TRE",
+  "name_ar": "إدارة الخزانة",
+  "name_en": "Treasury",
+  "directory": "treasury",
+  "head_role": "Treasurer",
+  "reports_to": "CFO",
+  "mission_ar": "إدارة السيولة، العمليات الصرف، ومخاطر العملات والفوائد",
+  "mission_en": "Manage liquidity, cash operations, FX and interest rate risk",
+  "agent_ref": "AGENT-TREASURY",
+  "integrations": [
+    "sap",
+    "oracle-erp",
+    "sql-server"
+  ],
+  "kpis": [
+    "Cash Buffer Days",
+    "FX Exposure Coverage %",
+    "Cost of Funds",
+    "Days Cash on Hand"
+  ],
+  "supported_by_modules": [
+    "services/backend_core/department_agents/",
+    "services/backend_core/integrations/",
+    "services/backend_core/enterprise_os/",
+    "services/backend_core/governance/",
+    "services/backend_core/knowledge/"
+  ],
+  "classification": "Internal"
+}

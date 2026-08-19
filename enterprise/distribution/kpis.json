@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.kpis.v1",
+  "department_id": "DEPT-DIST",
+  "department": "Distribution",
+  "kpis": [
+    {
+      "id": "KPI-DEPT-DIST-01",
+      "name": "Distribution Coverage %",
+      "frequency": "monthly",
+      "source_integration": "wms"
+    },
+    {
+      "id": "KPI-DEPT-DIST-02",
+      "name": "Order Fulfillment Cycle Time",
+      "frequency": "monthly",
+      "source_integration": "crm"
+    },
+    {
+      "id": "KPI-DEPT-DIST-03",
+      "name": "Channel Margin %",
+      "frequency": "monthly",
+      "source_integration": "sap"
+    },
+    {
+      "id": "KPI-DEPT-DIST-04",
+      "name": "Stock-Out Rate %",
+      "frequency": "monthly",
+      "source_integration": "kafka"
+    }
+  ],
+  "dashboard_ref": "../../monitoring/dashboards/dept-dist.json"
+}

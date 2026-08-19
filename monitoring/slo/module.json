@@ -1,0 +1,9 @@
+{
+  "schema": "hsaai.monitoring.module.v1",
+  "name": "slo",
+  "name_full": "Service Level Objectives",
+  "description": "SLO definitions, error budgets, and burn-rate alerts.",
+  "implementation_ref": "infrastructure/slo/",
+  "status": "production",
+  "backward_compatible": true
+}

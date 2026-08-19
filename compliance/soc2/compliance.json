@@ -1,0 +1,11 @@
+{
+  "schema": "hsaai.compliance.standard.v1",
+  "standard": "soc2",
+  "name": "SOC 2 Type II",
+  "description": "Security, Availability, Processing Integrity, Confidentiality, Privacy.",
+  "owner": "CISO",
+  "status": "Certified 2025",
+  "mapping": "Trust services criteria mapping",
+  "last_assessment": "2026-06-01",
+  "next_assessment": "2026-12-01"
+}

@@ -1,0 +1,32 @@
+# Tool registry — Procurement Agent
+apiVersion: hsaaiv2/v1
+kind: AgentTools
+metadata:
+  name: procurement-agent-tools
+spec:
+  agentId: AGENT-PROCUREMENT
+  tools:
+    - id: rag_search
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: sap_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: oracle_erp_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: create_po
+      enabled: true
+      audit: true
+      human_approval: true
+    - id: approve_po
+      enabled: true
+      audit: true
+      human_approval: true
+  defaultTimeout: 30s
+  retryPolicy:
+    maxRetries: 2
+    backoff: exponential

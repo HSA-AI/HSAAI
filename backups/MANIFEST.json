@@ -1,0 +1,31 @@
+{
+  "schema": "hsaai.backups.manifest.v1",
+  "module": "backups",
+  "version": "7.0.0",
+  "total_submodules": 9,
+  "rpo_target_minutes": 15,
+  "rto_target_hours": 4,
+  "retention": {
+    "daily": "30d",
+    "weekly": "12w",
+    "monthly": "36m",
+    "annual": "7y"
+  },
+  "replication_regions": [
+    "Aden (primary)",
+    "Riyadh (DR)",
+    "Dubai (DR)"
+  ],
+  "restore_testing": {
+    "monthly": "automated",
+    "quarterly": "full DR",
+    "annual": "business参与"
+  },
+  "backward_compatible_with": [
+    "scripts/backup_postgres.sh",
+    "scripts/backup_qdrant.sh",
+    "scripts/backup_walg.sh",
+    "scripts/dr/",
+    "runbooks/"
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "schema": "hsaai.department-agent.v1",
+  "agent_id": "AGENT-LOGISTICS",
+  "name_ar": "وكيل الخدمات اللوجستية",
+  "name_en": "Logistics Agent",
+  "directory": "logistics-agent",
+  "department_ref": "DEPT-LOG",
+  "role_ar": "تخطيط النقل، تتبع الشحنات، وتحسين كفاءة الأسطول",
+  "role_en": "Transport planning, shipment tracking, fleet efficiency optimization",
+  "model_tier": "standard",
+  "languages": [
+    "ar",
+    "en"
+  ],
+  "tools": [
+    "rag_search",
+    "tms_query",
+    "kafka_consume",
+    "create_shipment"
+  ],
+  "safety": {
+    "human_in_the_loop": true,
+    "audit_all_calls": true,
+    "pii_detection": true,
+    "prompt_firewall": true,
+    "constitutional_ai": true,
+    "kill_switch": true
+  },
+  "runtime": {
+    "service": "services/multi_agents/",
+    "registration": "AgentRegistry",
+    "config_source": "agent.json + prompt-system.md"
+  },
+  "evaluation_targets": {
+    "task_success_rate": 0.9,
+    "hallucination_rate_max": 0.05,
+    "csat_min": 4.5,
+    "latency_p95_seconds": 3,
+    "cost_per_query_max_usd": 0.05
+  }
+}

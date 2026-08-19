@@ -1,0 +1,4 @@
+import { AppShell } from "@/components/layout/app-shell";
+import { Card } from "@/components/ui/card";
+const items=["Financial Decisions","Procurement Approval","Legal Recommendations","Policy Changes","User Access Changes","Knowledge Publication"];
+export default function EnterpriseGovernanceCenterPage(){return <AppShell><main className="space-y-6"><section><p className="text-sm font-bold text-hsa-yellow">Human-in-the-Loop Governance</p><h1 className="text-3xl font-black">Governance Center</h1><p className="mt-2 max-w-4xl text-slate-500">أي إجراء حساس ينتقل من AI Recommendation إلى Human Review ثم Approval/Rejection قبل التنفيذ.</p></section><section className="grid gap-4 lg:grid-cols-3">{items.map(i=><Card key={i}><h2 className="font-bold">{i}</h2><p className="mt-2 text-sm text-slate-500">Multi-level approval · RBAC approvers · audit trail</p></Card>)}</section></main></AppShell>}

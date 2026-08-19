@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.kpis.v1",
+  "department_id": "DEPT-RISK",
+  "department": "Risk Management",
+  "kpis": [
+    {
+      "id": "KPI-DEPT-RISK-01",
+      "name": "Risk Register Coverage %",
+      "frequency": "monthly",
+      "source_integration": "power-bi"
+    },
+    {
+      "id": "KPI-DEPT-RISK-02",
+      "name": "Key Risk Mitigation %",
+      "frequency": "monthly",
+      "source_integration": "sharepoint"
+    },
+    {
+      "id": "KPI-DEPT-RISK-03",
+      "name": "Incident Frequency",
+      "frequency": "monthly",
+      "source_integration": "kafka"
+    },
+    {
+      "id": "KPI-DEPT-RISK-04",
+      "name": "Risk-Adjusted Return",
+      "frequency": "monthly",
+      "source_integration": "kafka"
+    }
+  ],
+  "dashboard_ref": "../../monitoring/dashboards/dept-risk.json"
+}

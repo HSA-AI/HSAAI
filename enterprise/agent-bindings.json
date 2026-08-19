@@ -1,0 +1,163 @@
+{
+  "schema": "hsaai.enterprise.agent-bindings.v1",
+  "total_departments": 26,
+  "total_agents_referenced": 22,
+  "bindings": [
+    {
+      "department_id": "DEPT-EXEC",
+      "department": "Executive Office",
+      "agent_id": "AGENT-EXEC",
+      "agent_path": "../../department-agents/exec/"
+    },
+    {
+      "department_id": "DEPT-CEO",
+      "department": "CEO Office",
+      "agent_id": "AGENT-EXEC-ASSISTANT",
+      "agent_path": "../../department-agents/exec-assistant/"
+    },
+    {
+      "department_id": "DEPT-FIN",
+      "department": "Finance",
+      "agent_id": "AGENT-FINANCE",
+      "agent_path": "../../department-agents/finance/"
+    },
+    {
+      "department_id": "DEPT-ACC",
+      "department": "Accounting",
+      "agent_id": "AGENT-ACCOUNTING",
+      "agent_path": "../../department-agents/accounting/"
+    },
+    {
+      "department_id": "DEPT-TRE",
+      "department": "Treasury",
+      "agent_id": "AGENT-TREASURY",
+      "agent_path": "../../department-agents/treasury/"
+    },
+    {
+      "department_id": "DEPT-PROC",
+      "department": "Procurement",
+      "agent_id": "AGENT-PROCUREMENT",
+      "agent_path": "../../department-agents/procurement/"
+    },
+    {
+      "department_id": "DEPT-SCM",
+      "department": "Supply Chain",
+      "agent_id": "AGENT-SUPPLY-CHAIN",
+      "agent_path": "../../department-agents/supply-chain/"
+    },
+    {
+      "department_id": "DEPT-MFG",
+      "department": "Manufacturing",
+      "agent_id": "AGENT-MANUFACTURING",
+      "agent_path": "../../department-agents/manufacturing/"
+    },
+    {
+      "department_id": "DEPT-PROD",
+      "department": "Production",
+      "agent_id": "AGENT-MANUFACTURING",
+      "agent_path": "../../department-agents/manufacturing/"
+    },
+    {
+      "department_id": "DEPT-WRH",
+      "department": "Warehouses",
+      "agent_id": "AGENT-WAREHOUSE",
+      "agent_path": "../../department-agents/warehouse/"
+    },
+    {
+      "department_id": "DEPT-LOG",
+      "department": "Logistics",
+      "agent_id": "AGENT-LOGISTICS",
+      "agent_path": "../../department-agents/logistics/"
+    },
+    {
+      "department_id": "DEPT-DIST",
+      "department": "Distribution",
+      "agent_id": "AGENT-SUPPLY-CHAIN",
+      "agent_path": "../../department-agents/supply-chain/"
+    },
+    {
+      "department_id": "DEPT-SALES",
+      "department": "Sales",
+      "agent_id": "AGENT-SALES",
+      "agent_path": "../../department-agents/sales/"
+    },
+    {
+      "department_id": "DEPT-MKT",
+      "department": "Marketing",
+      "agent_id": "AGENT-MARKETING",
+      "agent_path": "../../department-agents/marketing/"
+    },
+    {
+      "department_id": "DEPT-HR",
+      "department": "Human Resources",
+      "agent_id": "AGENT-HR",
+      "agent_path": "../../department-agents/hr/"
+    },
+    {
+      "department_id": "DEPT-LEG",
+      "department": "Legal",
+      "agent_id": "AGENT-LEGAL",
+      "agent_path": "../../department-agents/legal/"
+    },
+    {
+      "department_id": "DEPT-AUD",
+      "department": "Internal Audit",
+      "agent_id": "AGENT-AUDIT",
+      "agent_path": "../../department-agents/audit/"
+    },
+    {
+      "department_id": "DEPT-COMP",
+      "department": "Compliance",
+      "agent_id": "AGENT-COMPLIANCE",
+      "agent_path": "../../department-agents/compliance/"
+    },
+    {
+      "department_id": "DEPT-RISK",
+      "department": "Risk Management",
+      "agent_id": "AGENT-COMPLIANCE",
+      "agent_path": "../../department-agents/compliance/"
+    },
+    {
+      "department_id": "DEPT-IT",
+      "department": "IT",
+      "agent_id": "AGENT-IT",
+      "agent_path": "../../department-agents/it/"
+    },
+    {
+      "department_id": "DEPT-SEC",
+      "department": "Cybersecurity",
+      "agent_id": "AGENT-CYBERSECURITY",
+      "agent_path": "../../department-agents/cybersecurity/"
+    },
+    {
+      "department_id": "DEPT-DATA",
+      "department": "Data Office",
+      "agent_id": "AGENT-KNOWLEDGE",
+      "agent_path": "../../department-agents/knowledge/"
+    },
+    {
+      "department_id": "DEPT-INN",
+      "department": "Innovation",
+      "agent_id": "AGENT-EXEC-ASSISTANT",
+      "agent_path": "../../department-agents/exec-assistant/"
+    },
+    {
+      "department_id": "DEPT-CSVC",
+      "department": "Customer Service",
+      "agent_id": "AGENT-CUSTOMER-SERVICE",
+      "agent_path": "../../department-agents/customer-service/"
+    },
+    {
+      "department_id": "DEPT-QA",
+      "department": "Quality Assurance",
+      "agent_id": "AGENT-QUALITY",
+      "agent_path": "../../department-agents/quality/"
+    },
+    {
+      "department_id": "DEPT-RND",
+      "department": "Research & Development",
+      "agent_id": "AGENT-RESEARCH",
+      "agent_path": "../../department-agents/research/"
+    }
+  ]
+}

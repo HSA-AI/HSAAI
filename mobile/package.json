@@ -1,0 +1,50 @@
+{
+  "name": "hsaai-mobile",
+  "version": "4.0.0",
+  "description": "Hayel Saeed Anam Artificial Intelligence — Mobile App",
+  "main": "index.ts",
+  "scripts": {
+    "start": "expo start --dev-client",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "build:android": "cd android && ./gradlew assembleRelease",
+    "build:apk": "cd android && ./gradlew assembleRelease && cp app/build/outputs/apk/release/app-release.apk ../HSAAI-Mobile.apk",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@expo/vector-icons": "^14.0.2",
+    "@react-native-async-storage/async-storage": "1.23.1",
+    "@react-native-community/netinfo": "11.3.1",
+    "@react-navigation/bottom-tabs": "^6.6.0",
+    "@react-navigation/native": "^6.1.17",
+    "@react-navigation/native-stack": "^6.9.26",
+    "axios": "^1.7.2",
+    "expo": "~51.0.0",
+    "expo-local-authentication": "~14.0.0",
+    "expo-localization": "~15.0.0",
+    "expo-notifications": "~0.28.0",
+    "expo-secure-store": "~13.0.1",
+    "expo-splash-screen": "~0.27.4",
+    "expo-status-bar": "~1.12.1",
+    "i18next": "^23.16.5",
+    "react": "18.2.0",
+    "react-i18next": "^15.1.1",
+    "react-native": "0.74.1",
+    "react-native-keychain": "^8.2.0",
+    "react-native-safe-area-context": "4.10.1",
+    "react-native-screens": "3.31.1",
+    "react-native-sqlite-storage": "^6.0.1",
+    "react-native-vector-icons": "^10.1.0",
+    "react-query": "^3.39.3",
+    "zustand": "^4.5.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.0",
+    "@types/react": "~18.2.45",
+    "@types/react-native-vector-icons": "^6.4.18",
+    "@types/react-native-sqlite-storage": "^6.0.5",
+    "typescript": "~5.3.3",
+    "babel-plugin-module-resolver": "^5.0.2"
+  },
+  "private": true
+}

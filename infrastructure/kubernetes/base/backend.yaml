@@ -1,0 +1,96 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+data:
+  KEYCLOAK_ISSUER: "http://keycloak:8080/realms/hsaai"
+  AUTH_SERVICE_URL: "http://auth_service:8010"
+  RAG_ENGINE_URL: "http://rag_engine:8030"
+  LLM_GATEWAY_URL: "http://llm_gateway:8090"
+  REQUIRE_QDRANT: "true"
+  FIELD_ENCRYPTION_ENABLED: "true"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  labels:
+    app: hsaai-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hsaai-backend
+  template:
+    metadata:
+      labels:
+        app: hsaai-backend
+        # FIX FIX-MEDIUM-QUALITY (Issue 10): required by Istio + network policies.
+        app.kubernetes.io/part-of: hsaai
+    spec:
+      serviceAccountName: hsaai-backend
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: backend
+          image: hsaai/backend:latest
+          # FIX-MEDIUM-LOW-FINAL: container-level securityContext (allowPrivilegeEscalation,
+          # readOnlyRootFilesystem, dropped capabilities) to harden against container escape.
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: backend-config
+            - secretRef:
+                name: backend-secrets
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          # readOnlyRootFilesystem requires writable /tmp for Python temp files.
+          volumeMounts:
+            - { name: tmp, mountPath: /tmp }
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: hsaai-backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+spec:
+  selector:
+    app: hsaai-backend
+  ports:
+    - port: 8000
+      targetPort: 8000
+  internalTrafficPolicy: Local

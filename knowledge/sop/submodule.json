@@ -1,0 +1,51 @@
+{
+  "schema": "hsaai.knowledge.submodule.v1",
+  "name": "sop",
+  "name_en": "Standard Operating Procedures",
+  "name_ar": "إجراءات التشغيل القياسية",
+  "document_count_approx": 350,
+  "source_systems": "SharePoint + Knowledge Hub",
+  "retention_policy": "Permanent",
+  "storage": {
+    "metadata": "PostgreSQL",
+    "vectors": "Qdrant",
+    "graph": "Neo4j",
+    "files": "MinIO"
+  },
+  "search": {
+    "engine": "services/rag_engine/",
+    "modes": [
+      "semantic",
+      "keyword",
+      "hybrid",
+      "graph"
+    ]
+  },
+  "indexing": {
+    "chunking": "semantic (512 tokens, 64 overlap)",
+    "embedding_model": "sentence-transformers/paraphrase-multilingual-mpnet-base-v2",
+    "refresh_cadence": "24h"
+  },
+  "access_control": {
+    "rbac": true,
+    "abac": true,
+    "classifications": [
+      "Public",
+      "Internal",
+      "Confidential",
+      "Restricted"
+    ],
+    "clearance_enforced": true
+  },
+  "quality_slas": {
+    "freshness_hours": 24,
+    "coverage_pct": 95,
+    "accuracy_pct": 99,
+    "completeness_pct": 98
+  },
+  "backward_compatible_with": [
+    "services/backend_core/knowledge/",
+    "services/rag_engine/",
+    "services/backend_core/knowledge_graph/"
+  ]
+}

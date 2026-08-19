@@ -1,0 +1,26 @@
+{
+  "schema": "hsaai.ai-platform.submodule.v1",
+  "name": "ai-security",
+  "name_en": "AI Security",
+  "name_ar": "أمن الذكاء الاصطناعي",
+  "description": "Model security, adversarial defense, and Data Loss Prevention.",
+  "components": [
+    "Adversarial Detector",
+    "DLP Scanner",
+    "Model Signer",
+    "Tamper Check"
+  ],
+  "capabilities": [
+    "Adversarial input detection",
+    "DLP scanning",
+    "Model signing",
+    "Tamper detection"
+  ],
+  "kpis": [
+    "Adversarial block rate > 95%",
+    "DLP coverage = 100%",
+    "Model tamper = 0"
+  ],
+  "runtime_ref": "services/backend_core/security/",
+  "backward_compatible": true
+}

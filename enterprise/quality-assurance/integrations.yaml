@@ -1,0 +1,21 @@
+# Integrations used by Quality Assurance department
+apiVersion: hsaaiv2/v1
+kind: DepartmentIntegrations
+metadata:
+  name: quality-assurance-integrations
+spec:
+  departmentId: DEPT-QA
+  integrations:
+  - id: mes
+  - id: sap
+  - id: power-bi
+  - id: sharepoint
+  defaultAuth:
+    type: oauth2
+    provider: keycloak
+  retryPolicy:
+    maxRetries: 3
+    backoff: exponential
+  circuitBreaker:
+    enabled: true
+    threshold: 5

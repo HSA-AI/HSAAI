@@ -1,0 +1,814 @@
+# HSAAI Fixed — Production Deployment Stack
+# ====================================================
+# This docker-compose deploys the full HSAAI v2.0 stack:
+#   - vLLM (LLM serving with continuous batching)
+#   - PostgreSQL with row-level security (multi-tenancy)
+#   - Qdrant (vector database for RAG + memory)
+#   - Neo4j (knowledge graph)
+#   - Redis (cache + token budgets + safety state)
+#   - Kafka (event bus)
+#   - OpenTelemetry Collector + Tempo + Grafana + Loki (observability)
+#   - Keycloak (authentication)
+#   - Vault (secrets)
+#   - OPA (policy)
+#
+# Usage:
+#   docker-compose up -d
+#
+# Requirements:
+#   - Docker 24+ with Compose v2
+#   - 32GB+ RAM (64GB recommended)
+#   - 1x GPU (A100/H100) for vLLM (or set VLLM_ENABLED=false for dev)
+
+version: "3.9"
+
+services:
+  # ─── LLM Serving ──────────────────────────────────────────
+  llm-gateway:
+    build: ./services/llm_gateway
+    ports: ["8090:8090"]
+    environment:
+      - HSAAI_MODEL_NAME=${HSAAI_MODEL_NAME:-Qwen/Qwen2.5-7B-Instruct}
+      - HSAAI_QUANTIZATION=awq
+      - HSAAI_VLLM_ENABLED=${VLLM_ENABLED:-false}
+      - HSAAI_GPU_MEM_UTIL=0.90
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - CACHE_REDIS_URL=redis://redis:6379/1
+      - BUDGET_REDIS_URL=redis://redis:6379/2
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+    depends_on: [redis, otel-collector]
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8090/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+  # ─── Databases ────────────────────────────────────────────
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: hsaai
+      POSTGRES_USER: ${POSTGRES_USER:-hsaai}
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports: ["5432:5432"]
+    command: >
+      postgres
+      -c shared_preload_libraries=pgaudit
+      -c log_statement=all
+      -c max_connections=200
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-hsaai} -d hsaai"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  qdrant:
+    # FIX-MEDIUM-LOW-FINAL: pinned :latest to a specific version for reproducibility.
+    image: qdrant/qdrant:v1.12.1
+    ports: ["6333:6333", "6334:6334"]
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__GRPC_PORT=6334
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:6333/healthz || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    restart: unless-stopped
+
+  neo4j:
+    image: neo4j:5
+    ports: ["7474:7474", "7687:7687"]
+    environment:
+      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD}
+      - NEO4J_PLUGINS=["apoc"]
+    volumes:
+      - neo4j_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:7474 || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+    command: redis-server --maxmemory 4gb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+  # ─── Event Bus ────────────────────────────────────────────
+  kafka:
+    # FIX-MEDIUM-LOW-FINAL: pinned :latest to a specific version for reproducibility.
+    image: confluentinc/cp-kafka:7.7.1
+    ports: ["9092:9092"]
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      CLUSTER_ID: hsaai-kafka-cluster
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list >/dev/null 2>&1 || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  # ─── Observability ───
+  otel-collector:
+    # FIX-MEDIUM-LOW-FINAL: pinned :latest to a specific version for reproducibility.
+    image: otel/opentelemetry-collector-contrib:0.110.0
+    ports: ["4317:4317", "4318:4318"]
+    volumes:
+      - ./infrastructure/otel/collector-config.yaml:/etc/otelcol/config.yaml
+    command: ["--config=/etc/otelcol/config.yaml"]
+    depends_on: [tempo, loki]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:13133/ || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 15s
+
+  tempo:
+    # FIX-MEDIUM-LOW-FINAL: pinned :latest to a specific version for reproducibility.
+    image: grafana/tempo:2.6.0
+    ports: ["3200:3200", "14250:14250"]
+    volumes:
+      - tempo_data:/var/tempo
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:3200/ready || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+
+  loki:
+    # FIX-MEDIUM-LOW-FINAL: pinned :latest to a specific version for reproducibility.
+    image: grafana/loki:3.3.2
+    ports: ["3100:3100"]
+    volumes:
+      - loki_data:/loki
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:3100/ready || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+
+  grafana:
+    # FIX-MEDIUM-LOW-FINAL: pinned :latest to a specific version for reproducibility.
+    # FIX v5.1: Moved from 3000:3000 to 3001:3000 to avoid port conflict with frontend.
+    image: grafana/grafana:11.3.0
+    ports: ["3001:3000"]
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infrastructure/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./infrastructure/grafana/datasources:/etc/grafana/provisioning/datasources
+    depends_on: [tempo, loki, prometheus]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+
+  prometheus:
+    # FIX-MEDIUM-LOW-FINAL: pinned :latest to a specific version for reproducibility.
+    image: prom/prometheus:v2.55.1
+    ports: ["9090:9090"]
+    volumes:
+      - ./infrastructure/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:9090/-/healthy || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 15s
+
+  # ─── Thanos: Long-Term Metrics Storage (Phase 3 — Scale) ───
+  # FIX v2.3 (Phase 3): Prometheus alone retains only 15 days of metrics.
+  # Thanos extends this to 12+ months by uploading blocks to object storage
+  # (MinIO) and providing a global query layer across all Prometheus instances.
+  # This enables long-term capacity planning + trend analysis + compliance audits.
+  thanos-sidecar:
+    image: thanosio/thanos:v0.37.0
+    container_name: hsaai-thanos-sidecar
+    command:
+      - sidecar
+      - --tsdb.path=/prometheus
+      - --prometheus.url=http://prometheus:9090
+      - --objstore.config-file=/etc/thanos/objstore.yml
+      - --http-address=0.0.0.0:10902
+      - --grpc-address=0.0.0.0:10901
+    volumes:
+      - prometheus_data:/prometheus:ro
+      - ./infrastructure/thanos/objstore.yml:/etc/thanos/objstore.yml:ro
+    depends_on:
+      - prometheus
+      - minio
+    ports: ["10902:10902"]
+    restart: unless-stopped
+
+  thanos-store:
+    image: thanosio/thanos:v0.37.0
+    container_name: hsaai-thanos-store
+    command:
+      - store
+      - --data-dir=/data
+      - --objstore.config-file=/etc/thanos/objstore.yml
+      - --http-address=0.0.0.0:10902
+      - --grpc-address=0.0.0.0:10901
+    volumes:
+      - thanos_store_data:/data
+      - ./infrastructure/thanos/objstore.yml:/etc/thanos/objstore.yml:ro
+    depends_on:
+      - minio
+    ports: ["10912:10902"]
+    restart: unless-stopped
+
+  thanos-query:
+    image: thanosio/thanos:v0.37.0
+    container_name: hsaai-thanos-query
+    command:
+      - query
+      - --http-address=0.0.0.0:10902
+      - --grpc-address=0.0.0.0:10901
+      - --store=thanos-sidecar:10901
+      - --store=thanos-store:10901
+      - --query.replica-label=prometheus_replica
+    depends_on:
+      - thanos-sidecar
+      - thanos-store
+    ports: ["10922:10902"]
+    restart: unless-stopped
+
+  thanos-compactor:
+    image: thanosio/thanos:v0.37.0
+    container_name: hsaai-thanos-compactor
+    command:
+      - compact
+      - --data-dir=/data
+      - --objstore.config-file=/etc/thanos/objstore.yml
+      - --http-address=0.0.0.0:10902
+      - --retention.resolution-raw=365d
+      - --retention.resolution-5m=730d
+      - --retention.resolution-1h=1825d
+    volumes:
+      - thanos_compactor_data:/data
+      - ./infrastructure/thanos/objstore.yml:/etc/thanos/objstore.yml:ro
+    depends_on:
+      - minio
+    restart: unless-stopped
+
+  thanos-ruler:
+    image: thanosio/thanos:v0.37.0
+    container_name: hsaai-thanos-ruler
+    command:
+      - rule
+      - --data-dir=/data
+      - --eval-interval=30s
+      - --rule-file=/etc/thanos/rules/*.yml
+      - --alertmanagers.url=http://alertmanager:9093
+      - --query=thanos-query:10902
+      - --http-address=0.0.0.0:10902
+      - --grpc-address=0.0.0.0:10901
+    volumes:
+      - thanos_ruler_data:/data
+      - ./infrastructure/thanos/rules:/etc/thanos/rules:ro
+    depends_on:
+      - thanos-query
+    restart: unless-stopped
+
+  # ─── MLflow (Model Registry + Experiment Tracking) — Phase 2 ───
+  # FIX v2.2 (Phase 2): Replaces the file-based JSON model registry with MLflow.
+  # Provides: experiment tracking, model versioning, stage transitions, artifact
+  # storage in MinIO, REST API + UI.
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.18.0
+    container_name: hsaai-mlflow
+    ports:
+      - "5000:5000"
+    environment:
+      # Backend store: PostgreSQL for metadata (experiments, runs, metrics).
+      MLFLOW_BACKEND_STORE_URI: "postgresql://hsaai:${POSTGRES_PASSWORD:?Required}@postgres:5432/mlflow"
+      # Artifact store: MinIO (S3-compatible) for model artifacts.
+      MLFLOW_DEFAULT_ARTIFACT_ROOT: s3://hsaai-models/
+      AWS_S3_ENDPOINT: http://minio:9000
+      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-hsaai_minio_admin}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:?Required}
+      AWS_REGION: us-east-1
+      MLFLOW_S3_IGNORE_TLS: "true"
+    command: >
+      mlflow server
+      --host 0.0.0.0
+      --port 5000
+      --backend-store-uri "postgresql://hsaai:${POSTGRES_PASSWORD:?Required}@postgres:5432/mlflow"
+      --default-artifact-root s3://hsaai-models/
+      --serve-artifacts
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+  # ─── Object Storage (MinIO) — Phase 2 Modernize ──────────
+  # FIX v2.2 (Phase 2): Replaces local-disk document storage (/data/local_uploads)
+  # with S3-compatible object storage. Documents now survive pod reschedules,
+  # support lifecycle management, versioning, and horizontal scaling.
+  minio:
+    image: minio/minio:RELEASE.2024-10-13T13-34-11Z
+    container_name: hsaai-minio
+    ports:
+      - "9000:9000"   # S3 API
+      - "9001:9001"   # Web Console
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-hsaai_minio_admin}
+      MINIO_ROOT_PASSWORD: "${MINIO_ROOT_PASSWORD:?Required set MINIO_ROOT_PASSWORD env var}"
+      MINIO_BROWSER: "on"
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  # MinIO initialization: creates the buckets on first boot.
+  minio-init:
+    image: minio/mc:RELEASE.2024-10-02T08-27-28Z
+    container_name: hsaai-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        set -e
+        mc alias set hsaai http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD"
+        mc mb --ignore-existing hsaai/hsaai-documents
+        mc mb --ignore-existing hsaai/hsaai-models
+        mc mb --ignore-existing hsaai/hsaai-backups
+        mc mb --ignore-existing hsaai/hsaai-audit-logs
+        mc mb --ignore-existing hsaai/hsaai-thanos
+        # Lifecycle: move objects to GLACIER after 90 days, expire after 365 days.
+        mc ilm add --expire-days 365 hsaai/hsaai-documents || true
+        mc ilm add --transition-days 90 --transition-tier GLACIER hsaai/hsaai-documents || true
+        echo "MinIO buckets created: hsaai-documents, hsaai-models, hsaai-backups, hsaai-audit-logs"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-hsaai_minio_admin}
+      MINIO_ROOT_PASSWORD: "${MINIO_ROOT_PASSWORD:?Required set MINIO_ROOT_PASSWORD env var}"
+    restart: "no"
+
+  # ─── Identity & Security ──────────────────────────────────
+  keycloak:
+    # FIX I-07: pinned version + production start command (was :latest + start-dev)
+    image: quay.io/keycloak/keycloak:25.0.6
+    ports: ["8080:8080"]
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USER:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: "${KEYCLOAK_ADMIN_PASSWORD:?Required}"
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: ${POSTGRES_USER:-hsaai}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD:?Required}
+      KC_HEALTH_ENABLED: "true"
+      KC_METRICS_ENABLED: "true"
+    # FIX I-07: production start (not start-dev)
+    command:
+      - start
+      - --optimized
+      - --hostname=${DOMAIN_NAME:-hsaai.local}
+      - --proxy-headers=xforwarded
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+      - ./infrastructure/keycloak/hsaai-realm.json:/opt/keycloak/data/import/hsaai-realm.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/realms/master/.well-known/openid-configuration || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+  vault:
+    # FIX I-06: pinned version + explicit server command (was :latest + no command → dev mode)
+    image: hashicorp/vault:1.16.0
+    ports: ["8200:8200"]
+    cap_add: ["IPC_LOCK"]
+    # FIX I-06: explicit server command — default entrypoint runs dev mode without this
+    command: server
+    volumes:
+      - ./infrastructure/vault/vault.hcl:/vault/config/vault.hcl:ro
+      - vault_data:/vault/data
+      - vault_audit:/vault/audit
+    environment:
+      VAULT_LOCAL_CONFIG: "ui = true\ndisable_mlock = false"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "vault", "status"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  opa:
+    # FIX-MEDIUM-LOW-FINAL: pinned :latest to a specific version for reproducibility.
+    image: openpolicyagent/opa:0.68.0-static
+    ports: ["8181:8181"]
+    command: run --server /policies
+    volumes:
+      - ./infrastructure/opa/policies:/policies
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8181/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ─── HSAAI Services ───────────────────────────────────────
+  api-gateway:
+    # FIX B-15: Build from project root so Dockerfile can COPY both
+    # services/api_gateway/requirements.txt and packages/common/requirements.txt
+    # (the latter is referenced via `-r ../../packages/common/requirements.txt`).
+    build:
+      context: .
+      dockerfile: services/api_gateway/Dockerfile
+    ports: ["8000:8000"]
+    environment:
+      - LLM_GATEWAY_URL=http://llm-gateway:8090
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+    depends_on: [llm-gateway, auth-service, rag-service]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  auth-service:
+    build: ./services/auth_service
+    environment:
+      - KEYCLOAK_URL=http://keycloak:8080
+      - DATABASE_URL=postgresql://postgres:5432/hsaai
+    depends_on: [keycloak, postgres]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8010/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  rag-service:
+    build: ./services/rag_engine
+    environment:
+      - QDRANT_URL=http://qdrant:6333
+      - LLM_GATEWAY_URL=http://llm-gateway:8090
+      - NEO4J_URL=bolt://neo4j:7687
+    depends_on: [qdrant, neo4j, llm-gateway]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8030/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  agent-runtime:
+    # FIX B-15: Build from project root so Dockerfile can COPY both
+    # services/multi_agents/requirements.txt and packages/common/requirements.txt
+    # (the latter is referenced via `-r ../../packages/common/requirements.txt`).
+    build:
+      context: .
+      dockerfile: services/multi_agents/Dockerfile
+    environment:
+      - LLM_GATEWAY_URL=http://llm-gateway:8090
+      - RAG_ENGINE_URL=http://rag-service:8030  # FIX v5.0 (P0): Fixed env var name + port (was RAG_SERVICE_URL:8001)
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - REDIS_URL=redis://redis:6379/0
+    depends_on: [llm-gateway, rag-service, kafka]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8040/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  alignment-service:
+    build: ./services/ai_alignment
+    environment:
+      - LLM_GATEWAY_URL=http://llm-gateway:8090
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SAFETY_REDIS_URL=redis://redis:6379/3
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+    depends_on: [llm-gateway, redis]
+    ports: ["8005:8005"]
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8005/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  governance-service:
+    build: ./services/governance
+    environment:
+      - AUDIT_REDIS_URL=redis://redis:6379/4
+      - GOVERNANCE_REDIS_URL=redis://redis:6379/5
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+    depends_on: [redis]
+    ports: ["8011:8011"]
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8011/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  # FIX v2.1 (P0): backend-core was referenced by api-gateway (BACKEND_URL=http://backend:8000)
+  # but never defined in docker-compose. The deployed stack was broken. Now added.
+  backend-core:
+    build:
+      context: .  # project root so Dockerfile can COPY packages/common
+      dockerfile: services/backend_core/Dockerfile
+    environment:
+      - DATABASE_URL=postgresql+psycopg://hsaai:${POSTGRES_PASSWORD:?Required}@postgres:5432/hsaai
+      - REDIS_URL=redis://redis:6379/0
+      - QDRANT_URL=http://qdrant:6333
+      - LLM_GATEWAY_URL=http://llm-gateway:8090
+      - RAG_ENGINE_URL=http://rag-service:8030
+      - AUTH_SERVICE_URL=http://auth-service:8010
+      - KEYCLOAK_ISSUER=${KEYCLOAK_URL:-http://keycloak:8080}/realms/hsaai
+      - CORS_ALLOW_ORIGINS=${CORS_ALLOW_ORIGINS:-http://localhost:3000,http://localhost:8080}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - AUTH_REQUIRED=true
+      - ALLOW_DEV_RBAC=false
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      qdrant:
+        condition: service_started
+    ports: ["8001:8000"]  # FIX v5.0 (P0): Changed from 8000:8000 to avoid port conflict with api-gateway
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
+
+  # FIX v2.1 (P0): workflow-engine was missing from docker-compose.
+  workflow-engine:
+    build:
+      context: .
+      dockerfile: services/workflow_engine/Dockerfile
+    environment:
+      - BACKEND_CORE_URL=http://backend-core:8000
+      - RAG_ENGINE_URL=http://rag-service:8030
+      - LLM_GATEWAY_URL=http://llm-gateway:8090
+      - AUTH_SERVICE_URL=http://auth-service:8010
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+    depends_on: [backend-core]
+    ports: ["8070:8070"]
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8070/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  # FIX v2.1 (P0): mcp-server was missing from docker-compose.
+  mcp-server:
+    build:
+      context: .
+      dockerfile: services/mcp_server/Dockerfile
+    environment:
+      - RAG_ENGINE_URL=http://rag-service:8030
+      - LLM_GATEWAY_URL=http://llm-gateway:8090
+      - MULTI_AGENTS_URL=http://agent-runtime:8096
+      - WORKFLOW_ENGINE_URL=http://workflow-engine:8070
+      - AUTH_SERVICE_URL=http://auth-service:8010
+    depends_on: [backend-core, workflow-engine]
+    ports: ["8094:8094"]
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8094/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  # FIX v2.1 (P0): pii-detector was missing from docker-compose.
+  pii-detector:
+    build:
+      context: .
+      dockerfile: services/pii_detector/Dockerfile
+    environment:
+      - AUTH_SERVICE_URL=http://auth-service:8010
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+    ports: ["8092:8092"]
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8092/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  # FIX v2.1 (P0): model-training was missing from docker-compose.
+  model-training:
+    build:
+      context: .
+      dockerfile: services/model_training/Dockerfile
+    environment:
+      - DATABASE_URL=postgresql+psycopg://hsaai:${POSTGRES_PASSWORD:?Required}@postgres:5432/hsaai
+      - REDIS_URL=redis://redis:6379/7
+      - AUTH_SERVICE_URL=http://auth-service:8010
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - MODEL_TRAINING_USE_ALEMBIC=true
+      # FIX v2.2 (Phase 2): MLflow integration for model registry.
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - MLFLOW_S3_ENDPOINT=http://minio:9000
+      - AWS_ACCESS_KEY_ID=${MINIO_ROOT_USER:-hsaai_minio_admin}
+      - AWS_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD:?Required}
+      - AWS_REGION=us-east-1
+      # MinIO object storage for model artifacts.
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-hsaai_minio_admin}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:?Required}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      mlflow:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    ports: ["8091:8090"]  # FIX v5.0 (P0): Changed from 8090:8090 to avoid port conflict with llm-gateway
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8090/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
+
+  # ─── Frontend (Next.js 16 — Arabic-first RTL) ─────────────
+  # FIX v5.1 (P0): Frontend service was missing from docker-compose.
+  # The deploy script referenced `docker compose up -d frontend` but
+  # no such service was defined. This blocked the entire deployment.
+  frontend:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    ports: ["3000:3000"]
+    environment:
+      - NODE_ENV=production
+      - NEXTAUTH_URL=http://${DOMAIN_NAME:-localhost}:3000
+      - NEXT_PUBLIC_KEYCLOAK_URL=http://${DOMAIN_NAME:-localhost}:8080
+      - NEXT_PUBLIC_KEYCLOAK_REALM=hsaai
+      - NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=hsaai-web
+      - NEXT_PUBLIC_API_URL=http://${DOMAIN_NAME:-localhost}:8000
+      - NEXT_PUBLIC_GRAPHQL_URL=http://${DOMAIN_NAME:-localhost}:8095/graphql
+      - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
+      - JWT_SECRET=${JWT_SECRET:-change-me}
+      - PORT=3000
+    depends_on:
+      - api-gateway
+      - backend-core
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  # ─── Voice AI Service (Whisper + Piper TTS) ───────────────
+  # FIX v6.0: Added Voice AI service for speech-to-text and text-to-speech.
+  # Uses Whisper for ASR (Arabic + English) and Piper for TTS.
+  voice-ai:
+    build:
+      context: ./services/voice_ai
+      dockerfile: Dockerfile
+    ports: ["8096:8096"]
+    environment:
+      - WHISPER_MODEL=${WHISPER_MODEL:-base}
+      - WHISPER_LANGUAGE=ar
+      - PIPER_VOICE=ar_JO-kareem-medium
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - AUTH_SERVICE_URL=http://auth-service:8010
+    depends_on:
+      - otel-collector
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8096/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+  # ─── BFF (Backend for Frontend — GraphQL Gateway) ─────────
+  # FIX v6.0: Added BFF service as a GraphQL aggregation layer
+  # between the Next.js frontend and the microservices backend.
+  bff:
+    build:
+      context: ./services/bff
+      dockerfile: Dockerfile
+    ports: ["8095:8095"]
+    environment:
+      - BACKEND_CORE_URL=http://backend-core:8000
+      - RAG_SERVICE_URL=http://rag-service:8030
+      - AGENT_RUNTIME_URL=http://agent-runtime:8040
+      - WORKFLOW_ENGINE_URL=http://workflow-engine:8070
+      - GOVERNANCE_SERVICE_URL=http://governance-service:8011
+      - AUTH_SERVICE_URL=http://auth-service:8010
+      - LLM_GATEWAY_URL=http://llm-gateway:8090
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - CORS_ALLOW_ORIGINS=${CORS_ALLOW_ORIGINS:-http://localhost:3000}
+    depends_on:
+      - backend-core
+      - rag-service
+      - agent-runtime
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8095/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  qdrant_data:
+  neo4j_data:
+  redis_data:
+  kafka_data:
+  tempo_data:
+  loki_data:
+  grafana_data:
+  prometheus_data:
+  keycloak_data:
+  minio_data:  # Phase 2: object storage
+  thanos_store_data:  # Phase 3: long-term metrics
+  thanos_compactor_data:
+  thanos_ruler_data:

@@ -1,0 +1,27 @@
+{
+  "schema": "hsaai.ai-platform.submodule.v1",
+  "name": "ai-governance",
+  "name_en": "AI Governance",
+  "name_ar": "حوكمة الذكاء الاصطناعي",
+  "description": "Policies, approvals, and audit trails for all AI usage.",
+  "components": [
+    "Policy Engine (OPA)",
+    "Approval Workflow",
+    "Decision Logger",
+    "Audit Trail"
+  ],
+  "capabilities": [
+    "Policy enforcement",
+    "Approval workflows",
+    "Decision logging",
+    "HMAC-signed audit",
+    "Explainability"
+  ],
+  "kpis": [
+    "Policy compliance > 99%",
+    "Approval time < 1 day",
+    "Audit trail complete = 100%"
+  ],
+  "runtime_ref": "services/governance/",
+  "backward_compatible": true
+}

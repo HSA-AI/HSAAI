@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.department.v1",
+  "id": "DEPT-EXEC",
+  "name_ar": "مكتب التنفيذيين",
+  "name_en": "Executive Office",
+  "directory": "executive-office",
+  "head_role": "Group CEO",
+  "reports_to": "BOARD",
+  "mission_ar": "توفير القيادة الاستراتيجية للمجموعة وتنفيذ قرارات مجلس الإدارة",
+  "mission_en": "Provide strategic leadership and execute Board decisions",
+  "agent_ref": "AGENT-EXEC",
+  "integrations": [
+    "power-bi",
+    "m365",
+    "exchange",
+    "sharepoint"
+  ],
+  "kpis": [
+    "Strategic Plan Achievement %",
+    "Board Resolution Execution Time",
+    "Group Revenue Growth %",
+    "ROIC"
+  ],
+  "supported_by_modules": [
+    "services/backend_core/department_agents/",
+    "services/backend_core/integrations/",
+    "services/backend_core/enterprise_os/",
+    "services/backend_core/governance/",
+    "services/backend_core/knowledge/"
+  ],
+  "classification": "Internal"
+}

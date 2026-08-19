@@ -1,0 +1,108 @@
+{
+  "schema": "hsaai.knowledge.manifest.v1",
+  "module": "knowledge",
+  "version": "7.0.0",
+  "generated_at": "2026-07-13",
+  "total_submodules": 17,
+  "total_documents_approx": 11023050,
+  "submodules": [
+    {
+      "directory": "enterprise-policies",
+      "name_en": "Enterprise Policies",
+      "documents_approx": 24
+    },
+    {
+      "directory": "sop",
+      "name_en": "Standard Operating Procedures",
+      "documents_approx": 350
+    },
+    {
+      "directory": "corporate-procedures",
+      "name_en": "Corporate Procedures",
+      "documents_approx": 180
+    },
+    {
+      "directory": "manuals",
+      "name_en": "Operations Manuals",
+      "documents_approx": 95
+    },
+    {
+      "directory": "iso-documents",
+      "name_en": "ISO Documents",
+      "documents_approx": 60
+    },
+    {
+      "directory": "contracts",
+      "name_en": "Contracts Repository",
+      "documents_approx": 5000
+    },
+    {
+      "directory": "regulations",
+      "name_en": "Regulations Library",
+      "documents_approx": 220
+    },
+    {
+      "directory": "enterprise-reports",
+      "name_en": "Enterprise Reports",
+      "documents_approx": 1200
+    },
+    {
+      "directory": "factories",
+      "name_en": "Factory Knowledge",
+      "documents_approx": 40
+    },
+    {
+      "directory": "products",
+      "name_en": "Product Catalog Knowledge",
+      "documents_approx": 1500
+    },
+    {
+      "directory": "suppliers",
+      "name_en": "Supplier Knowledge",
+      "documents_approx": 800
+    },
+    {
+      "directory": "customers",
+      "name_en": "Customer Knowledge",
+      "documents_approx": 12000
+    },
+    {
+      "directory": "product-catalog",
+      "name_en": "Product Catalog",
+      "documents_approx": 1500
+    },
+    {
+      "directory": "datasets",
+      "name_en": "Enterprise Datasets",
+      "documents_approx": 80
+    },
+    {
+      "directory": "knowledge-graph",
+      "name_en": "Knowledge Graph Data",
+      "documents_approx": 1000000
+    },
+    {
+      "directory": "vector-store",
+      "name_en": "Vector Store Index",
+      "documents_approx": 10000000
+    },
+    {
+      "directory": "enterprise-ontology",
+      "name_en": "Enterprise Ontology",
+      "documents_approx": 1
+    }
+  ],
+  "search_engine": "services/rag_engine/ (hybrid: semantic + keyword + graph)",
+  "vector_store": "Qdrant cluster (10M+ vectors)",
+  "graph_store": "Neo4j (1M+ triples)",
+  "embedding_model": "sentence-transformers/paraphrase-multilingual-mpnet-base-v2",
+  "reranker": "BGE-reranker-large",
+  "backward_compatible_with": [
+    "services/backend_core/knowledge/",
+    "services/rag_engine/",
+    "services/backend_core/knowledge_graph/",
+    "services/backend_core/enterprise_search/"
+  ],
+  "owner": "Chief Data Officer",
+  "classification": "Internal"
+}

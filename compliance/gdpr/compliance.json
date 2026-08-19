@@ -1,0 +1,11 @@
+{
+  "schema": "hsaai.compliance.standard.v1",
+  "standard": "gdpr",
+  "name": "GDPR (EU Operations)",
+  "description": "General Data Protection Regulation for EU data subjects.",
+  "owner": "DPO",
+  "status": "Compliant",
+  "mapping": "GDPR articles mapping",
+  "last_assessment": "2026-06-01",
+  "next_assessment": "2026-12-01"
+}

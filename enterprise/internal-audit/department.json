@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.enterprise.department.v1",
+  "id": "DEPT-AUD",
+  "name_ar": "التدقيق الداخلي",
+  "name_en": "Internal Audit",
+  "directory": "internal-audit",
+  "head_role": "Chief Audit Officer",
+  "reports_to": "AUDIT-COMMITTEE",
+  "mission_ar": "تقديم تأكيدات مستقلة لفريق التدقيق والمجلس على فعالية الضوابط والمخاطر",
+  "mission_en": "Provide independent assurance to Audit Committee and Board on controls and risks",
+  "agent_ref": "AGENT-AUDIT",
+  "integrations": [
+    "power-bi",
+    "sharepoint",
+    "m365",
+    "sql-server"
+  ],
+  "kpis": [
+    "Audit Plan Completion %",
+    "Findings Closure Rate %",
+    "Repeat Findings %",
+    "Audit Cycle Time"
+  ],
+  "supported_by_modules": [
+    "services/backend_core/department_agents/",
+    "services/backend_core/integrations/",
+    "services/backend_core/enterprise_os/",
+    "services/backend_core/governance/",
+    "services/backend_core/knowledge/"
+  ],
+  "classification": "Internal"
+}

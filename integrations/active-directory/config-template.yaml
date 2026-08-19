@@ -1,0 +1,44 @@
+# Configuration template for Active Directory
+apiVersion: hsaaiv2/v1
+kind: IntegrationConfig
+metadata:
+  name: active-directory-config
+  labels:
+    integration: INT-AD
+    category: identity
+    vendor: Microsoft
+spec:
+  enabled: true
+  endpoint: "${INT-AD_ENDPOINT}"
+  credentials:
+    source: vault
+    path: "secret/hsaai/integrations/active-directory"
+  auth:
+    type: kerberos
+    clientId: "${INT-AD_CLIENT_ID}"
+    clientSecret: "vault:active-directory/client-secret"
+    tenant: "${INT-AD_TENANT}"
+  pool:
+    maxConnections: 20
+    idleTimeout: 300s
+  retry:
+    maxRetries: 3
+    backoff: exponential
+    initialDelay: 1s
+    maxDelay: 30s
+  circuitBreaker:
+    enabled: true
+    failureThreshold: 5
+    recoveryTime: 60s
+  rateLimit:
+    requestsPerSecond: 50
+    burst: 100
+  observability:
+    metricsEnabled: true
+    logsEnabled: true
+    tracesEnabled: true
+    logLevel: info
+  security:
+    piiDetection: true
+    auditAll: true
+    tlsMinVersion: "1.3"

@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llm-gateway
+  namespace: hsaai
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: llm-gateway }
+  template:
+    metadata:
+      labels:
+        app: llm-gateway
+        # FIX FIX-MEDIUM-QUALITY (Issue 10): required by Istio + network policies.
+        app.kubernetes.io/part-of: hsaai
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+        - name: llm-gateway
+          image: hsaai/llm-gateway:10.1.0-internal
+          # FIX-MEDIUM-LOW-FINAL: container-level securityContext (allowPrivilegeEscalation,
+          # readOnlyRootFilesystem, dropped capabilities) to harden against container escape.
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - containerPort: 8090
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8090
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8090
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          env:
+            - name: INTERNAL_ONLY_MODE
+              value: "true"
+            - name: ALLOW_EXTERNAL_APIS
+              value: "false"
+            - name: LOCAL_LLM_BASE_URL
+              value: http://local-llm:11434
+          # readOnlyRootFilesystem requires writable /tmp for Python temp files.
+          volumeMounts:
+            - { name: tmp, mountPath: /tmp }
+      volumes:
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: llm-gateway
+  namespace: hsaai
+spec:
+  selector: { app: llm-gateway }
+  ports:
+    - port: 8090
+      targetPort: 8090

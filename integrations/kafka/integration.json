@@ -1,0 +1,33 @@
+{
+  "schema": "hsaai.integration.v1",
+  "integration_id": "INT-KAFKA",
+  "name": "Apache Kafka",
+  "directory": "kafka",
+  "category": "messaging",
+  "category_name": "Messaging & Streaming",
+  "vendor": "Confluent",
+  "protocol": "Kafka Protocol",
+  "authentication": "SASL + mTLS",
+  "status": "production",
+  "connector_ref": "packages/common/connectors/kafka/",
+  "departments": [
+    "DEPT-IT",
+    "DEPT-SCM",
+    "DEPT-MFG"
+  ],
+  "security": {
+    "encryption_in_transit": "TLS 1.3",
+    "encryption_at_rest": "AES-256",
+    "audit": "HMAC-signed",
+    "rate_limiting": true,
+    "circuit_breaker": true,
+    "pii_detection": "Microsoft Presidio"
+  },
+  "observability": {
+    "metrics": "Prometheus",
+    "logs": "Loki",
+    "traces": "Tempo (OpenTelemetry)",
+    "dashboards": "Grafana"
+  },
+  "backward_compatible": true
+}

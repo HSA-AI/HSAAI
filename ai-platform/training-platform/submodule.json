@@ -1,0 +1,28 @@
+{
+  "schema": "hsaai.ai-platform.submodule.v1",
+  "name": "training-platform",
+  "name_en": "Training Platform",
+  "name_ar": "منصة التدريب",
+  "description": "Fine-tuning platform supporting LoRA, QLoRA, full fine-tuning, and distributed training.",
+  "components": [
+    "LoRA Trainer",
+    "QLoRA Trainer",
+    "Distributed Trainer",
+    "Dataset Manager",
+    "Eval Runner"
+  ],
+  "capabilities": [
+    "LoRA fine-tuning",
+    "QLoRA fine-tuning",
+    "Full fine-tuning",
+    "Distributed training (multi-GPU)",
+    "Auto-eval"
+  ],
+  "kpis": [
+    "Training success rate > 95%",
+    "Avg training time < 24h",
+    "Eval improvement > 10%"
+  ],
+  "runtime_ref": "services/model_training/",
+  "backward_compatible": true
+}

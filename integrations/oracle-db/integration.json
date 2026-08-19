@@ -1,0 +1,31 @@
+{
+  "schema": "hsaai.integration.v1",
+  "integration_id": "INT-ORACLE-DB",
+  "name": "Oracle Database",
+  "directory": "oracle-db",
+  "category": "database",
+  "category_name": "Databases",
+  "vendor": "Oracle",
+  "protocol": "SQL*Net",
+  "authentication": "DB Auth + AD",
+  "status": "production",
+  "connector_ref": "packages/common/connectors/oracle_db/",
+  "departments": [
+    "DEPT-IT"
+  ],
+  "security": {
+    "encryption_in_transit": "TLS 1.3",
+    "encryption_at_rest": "AES-256",
+    "audit": "HMAC-signed",
+    "rate_limiting": true,
+    "circuit_breaker": true,
+    "pii_detection": "Microsoft Presidio"
+  },
+  "observability": {
+    "metrics": "Prometheus",
+    "logs": "Loki",
+    "traces": "Tempo (OpenTelemetry)",
+    "dashboards": "Grafana"
+  },
+  "backward_compatible": true
+}

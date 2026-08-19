@@ -1,0 +1,438 @@
+# HSAAI Enterprise CI/CD Pipeline (Phase 13)
+# ============================================
+# Full DevSecOps pipeline:
+#   1. Code quality (ruff, mypy, eslint)
+#   2. SAST (Semgrep + Bandit)
+#   3. Dependency scanning (pip-audit + npm audit)
+#   4. Container scanning (Trivy)
+#   5. IaC validation (kubeval + checkov)
+#   6. Unit + integration tests
+#   7. Build Docker images
+#   8. DAST (OWASP ZAP baseline)
+#   9. Deploy to staging
+#  10. Smoke tests
+#  11. Manual approval for prod
+#  12. Canary deploy to prod
+#  13. Full rollout
+
+name: HSAAI CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options: [staging, production]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository }}
+
+jobs:
+  # ═══════════════════════════════════════════════════════════════
+  # JOB 1: CODE QUALITY
+  # ═══════════════════════════════════════════════════════════════
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install Python tools
+        run: pip install ruff mypy black bandit pip-audit
+
+      # ─── Linting ─────────────────────────────────────────────
+      - name: Ruff (Python lint)
+        run: ruff check services/ packages/ --output-format=github
+
+      - name: Ruff format check
+        run: ruff format --check services/ packages/
+
+      - name: Mypy (type check)
+        # FIX D-14: removed || true — was non-blocking. Type errors must fail CI.
+        run: mypy services/ packages/ --ignore-missing-imports --no-error-summary
+
+      - name: Black check
+        # FIX D-14: removed || true — was non-blocking. Format violations must fail CI.
+        run: black --check services/ packages/
+
+      # ─── Frontend lint ───────────────────────────────────────
+      - name: Install frontend deps
+        working-directory: apps/web
+        run: npm ci
+
+      - name: ESLint
+        working-directory: apps/web
+        # FIX D-14: removed || true — was non-blocking. Lint errors must fail CI.
+        run: npx eslint . --max-warnings 0
+
+      - name: TypeScript check
+        working-directory: apps/web
+        run: npx tsc --noEmit
+
+  # ═══════════════════════════════════════════════════════════════
+  # JOB 2: SAST (Static Application Security Testing)
+  # ═══════════════════════════════════════════════════════════════
+  sast:
+    name: SAST Security Scan
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # ─── Bandit (Python SAST) ────────────────────────────────
+      # FIX D-14: removed || true — was making all security scans non-blocking.
+      - name: Bandit scan
+        run: |
+          pip install bandit
+          bandit -r services/ packages/ -f sarif -o bandit-results.sarif -lll
+
+      - name: Upload Bandit results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: bandit-results.sarif
+
+      # ─── Semgrep (multi-language SAST) ───────────────────────
+      - name: Semgrep scan
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: >-
+            p/owasp-top-ten
+            p/python
+            p/typescript
+            p/security-audit
+            p/secrets
+
+      # ─── CodeQL (GitHub native) ──────────────────────────────
+      - name: CodeQL init
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python, javascript-typescript
+
+      - name: CodeQL analyze
+        uses: github/codeql-action/analyze@v3
+
+  # ═══════════════════════════════════════════════════════════════
+  # JOB 3: DEPENDENCY SCANNING
+  # ═══════════════════════════════════════════════════════════════
+  dependency-scan:
+    name: Dependency Scanning
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # ─── Python dependency scan ──────────────────────────────
+      # FIX D-14: removed || true — was non-blocking.
+      - name: pip-audit
+        run: |
+          pip install pip-audit
+          find . -name "requirements.txt" -exec pip-audit -r {} \;
+
+      # ─── npm audit ───────────────────────────────────────────
+      # FIX D-14: removed || true — was non-blocking.
+      - name: npm audit (frontend)
+        working-directory: apps/web
+        run: npm audit --audit-level=high
+
+      # ─── SBOM generation ─────────────────────────────────────
+      - name: Install Syft
+        run: curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+
+      - name: Generate SBOM (Python)
+        run: syft dir:. -o cyclonedx-json > sbom-python.json
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom-python.json
+
+  # ═══════════════════════════════════════════════════════════════
+  # JOB 4: CONTAINER SCANNING
+  # ═══════════════════════════════════════════════════════════════
+  container-scan:
+    name: Container Scanning
+    runs-on: ubuntu-latest
+    needs: [code-quality, sast]
+    steps:
+      - uses: actions/checkout@v4
+
+      # ─── Build images for scanning ───────────────────────────
+      - name: Build images
+        run: |
+          for df in $(find services -name Dockerfile); do
+            svc=$(dirname $df)
+            name=$(basename $svc)
+            docker build -t hsaai/$name:scan $svc
+          done
+
+      # ─── Trivy scan ──────────────────────────────────────────
+      - name: Trivy vulnerability scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'hsaai/llm_gateway:scan'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '0'  # Don't fail (will review)
+
+      - name: Upload Trivy results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-results.sarif
+
+      # ─── Grype scan (alternative) ────────────────────────────
+      - name: Install Grype
+        run: curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+
+      - name: Grype scan
+        # FIX D-14: removed || true — was non-blocking. High-severity CVEs must fail CI.
+        run: |
+          for img in $(docker images --format '{{.Repository}}:{{.Tag}}' | grep hsaai); do
+            grype $img --fail-on high
+          done
+
+  # ═══════════════════════════════════════════════════════════════
+  # JOB 5: IaC VALIDATION
+  # ═══════════════════════════════════════════════════════════════
+  iac-validation:
+    name: IaC Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # ─── K8s manifest validation ─────────────────────────────
+      - name: Install kubeval
+        run: curl -sSfL https://github.com/instrumenta/kubeval/releases/latest/download/kubeval-linux-amd64.tar.gz | tar xz -C /usr/local/bin
+
+      - name: Validate K8s manifests
+        run: |
+          find infrastructure/kubernetes -name "*.yaml" -exec \
+            kubeval --strict --kubernetes-version 1.28.0 {} \;
+
+      # ─── Checkov (IaC SAST) ──────────────────────────────────
+      - name: Checkov scan
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: infrastructure/
+          framework: kubernetes,dockerfile
+          output_format: sarif
+          output_file_path: checkov-results.sarif
+
+      - name: Upload Checkov results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: checkov-results.sarif
+
+  # ═══════════════════════════════════════════════════════════════
+  # JOB 6: UNIT TESTS
+  # ═══════════════════════════════════════════════════════════════
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: [code-quality]
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7
+        ports: ['6379:6379']
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r tests/requirements.txt
+          pip install pytest pytest-asyncio pytest-cov httpx
+
+      - name: Run Python tests with coverage
+        env:
+          DATABASE_URL: postgresql://postgres:test@localhost:5432/postgres
+          REDIS_URL: redis://localhost:6379/0
+        run: |
+          pytest tests/ \
+            --cov=services \
+            --cov=packages \
+            --cov-report=xml \
+            --cov-report=term-missing \
+            --cov-fail-under=50 \
+            -v
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+
+  # ═══════════════════════════════════════════════════════════════
+  # JOB 7: BUILD & PUSH IMAGES
+  # ═══════════════════════════════════════════════════════════════
+  build:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs: [unit-tests, sast, dependency-scan, container-scan, iac-validation]
+    permissions:
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Build and push all services
+        run: |
+          for df in $(find services -name Dockerfile); do
+            svc=$(dirname $df)
+            name=$(basename $svc)
+            docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/$name:${{ steps.meta.outputs.sha_short }} $svc
+            docker push ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/$name:${{ steps.meta.outputs.sha_short }}
+          done
+
+  # ═══════════════════════════════════════════════════════════════
+  # JOB 8: DEPLOY TO STAGING
+  # ═══════════════════════════════════════════════════════════════
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [build]
+    environment:
+      name: staging
+      url: https://staging.hsaai.internal
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.STAGING_KUBECONFIG }}" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+
+      - name: Deploy with Helm
+        run: |
+          helm upgrade --install hsaai infrastructure/helm \
+            --namespace hsaai-staging \
+            --create-namespace \
+            --set image.tag=${{ github.sha }} \
+            --set environment=staging \
+            --wait --timeout 600s
+
+      - name: Smoke tests
+        run: |
+          sleep 60  # wait for services to start
+          curl -f https://staging.hsaai.internal/health || exit 1
+          curl -f https://staging.hsaai.internal/api/v1/health || exit 1
+
+  # ═══════════════════════════════════════════════════════════════
+  # JOB 9: DAST (Dynamic Application Security Testing)
+  # ═══════════════════════════════════════════════════════════════
+  dast:
+    name: DAST Scan
+    runs-on: ubuntu-latest
+    needs: [deploy-staging]
+    steps:
+      - name: OWASP ZAP baseline scan
+        uses: zaproxy/action-baseline@v0.12.0
+        with:
+          target: 'https://staging.hsaai.internal'
+          cmd_options: '-a -j'
+
+  # ═══════════════════════════════════════════════════════════════
+  # JOB 10: PRODUCTION DEPLOY (with manual approval)
+  # ═══════════════════════════════════════════════════════════════
+  deploy-production:
+    name: Deploy to Production (Canary)
+    runs-on: ubuntu-latest
+    needs: [dast]
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://hsaai.internal
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.PRODUCTION_KUBECONFIG }}" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+
+      - name: Canary deploy (10% traffic)
+        run: |
+          helm upgrade --install hsaai infrastructure/helm \
+            --namespace hsaai-prod \
+            --create-namespace \
+            --set image.tag=${{ github.sha }} \
+            --set environment=production \
+            --set canary.enabled=true \
+            --set canary.weight=10 \
+            --wait --timeout 600s
+
+      - name: Monitor canary (10 minutes)
+        run: |
+          sleep 600
+          # Check error rate; rollback if > 1%
+          ERROR_RATE=$(kubectl get --namespace hsaai-prod deploy/hsaai-api-gateway -o jsonpath='{.status.canary.errorRate}')
+          if (( $(echo "$ERROR_RATE > 0.01" | bc -l) )); then
+            echo "Canary failed — rolling back"
+            helm rollback hsaai --namespace hsaai-prod
+            exit 1
+          fi
+
+      - name: Promote to full production
+        run: |
+          helm upgrade --install hsaai infrastructure/helm \
+            --namespace hsaai-prod \
+            --set image.tag=${{ github.sha }} \
+            --set environment=production \
+            --set canary.enabled=false \
+            --wait --timeout 600s

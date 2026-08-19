@@ -1,0 +1,28 @@
+# Tool registry — Research Agent
+apiVersion: hsaaiv2/v1
+kind: AgentTools
+metadata:
+  name: research-agent-tools
+spec:
+  agentId: AGENT-RESEARCH
+  tools:
+    - id: rag_search
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: knowledge_graph_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: sharepoint_query
+      enabled: true
+      audit: true
+      human_approval: false
+    - id: generate_research_brief
+      enabled: true
+      audit: true
+      human_approval: false
+  defaultTimeout: 30s
+  retryPolicy:
+    maxRetries: 2
+    backoff: exponential

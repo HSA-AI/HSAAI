@@ -1,0 +1,27 @@
+{
+  "schema": "hsaai.ai-platform.submodule.v1",
+  "name": "rag-engine",
+  "name_en": "RAG Engine",
+  "name_ar": "محرك RAG",
+  "description": "Retrieval-Augmented Generation with hybrid semantic + keyword search, reranking, and citation.",
+  "components": [
+    "Hybrid Retriever",
+    "Reranker (Cohere/BGE)",
+    "Citation Generator",
+    "Chunking Pipeline"
+  ],
+  "capabilities": [
+    "Semantic search (Qdrant)",
+    "Keyword search (PostgreSQL FTS)",
+    "Hybrid fusion",
+    "Reranking",
+    "Citation"
+  ],
+  "kpis": [
+    "Recall@5 > 90%",
+    "Precision@5 > 85%",
+    "RAG latency P95 < 500ms"
+  ],
+  "runtime_ref": "services/rag_engine/",
+  "backward_compatible": true
+}

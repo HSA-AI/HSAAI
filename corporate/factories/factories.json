@@ -1,0 +1,186 @@
+{
+  "schema": "hsaai.corporate.factories.v1",
+  "count": 20,
+  "factories": [
+    {
+      "id": "FAC-ADN-001",
+      "name": "Aden Edible Oils Plant",
+      "city": "Aden",
+      "country": "Yemen",
+      "segment": "Edible Oils",
+      "commissioned_year": 1990,
+      "employees": 800
+    },
+    {
+      "id": "FAC-ADN-002",
+      "name": "Aden Sugar Refinery",
+      "city": "Aden",
+      "country": "Yemen",
+      "segment": "Sugar",
+      "commissioned_year": 1985,
+      "employees": 1200
+    },
+    {
+      "id": "FAC-ADN-003",
+      "name": "Aden Flour Mill",
+      "city": "Aden",
+      "country": "Yemen",
+      "segment": "Flour",
+      "commissioned_year": 1978,
+      "employees": 600
+    },
+    {
+      "id": "FAC-HOD-001",
+      "name": "Hodeidah Dairy Plant",
+      "city": "Al Hodeidah",
+      "country": "Yemen",
+      "segment": "Dairy",
+      "commissioned_year": 1998,
+      "employees": 400
+    },
+    {
+      "id": "FAC-HOD-002",
+      "name": "Hodeidah Juice Plant",
+      "city": "Al Hodeidah",
+      "country": "Yemen",
+      "segment": "Juice",
+      "commissioned_year": 2002,
+      "employees": 350
+    },
+    {
+      "id": "FAC-MUK-001",
+      "name": "Mukalla Water Bottling",
+      "city": "Mukalla",
+      "country": "Yemen",
+      "segment": "Water",
+      "commissioned_year": 2005,
+      "employees": 250
+    },
+    {
+      "id": "FAC-HOD-003",
+      "name": "Hodeidah Detergents Plant",
+      "city": "Al Hodeidah",
+      "country": "Yemen",
+      "segment": "Home Care",
+      "commissioned_year": 1995,
+      "employees": 500
+    },
+    {
+      "id": "FAC-SAN-001",
+      "name": "Sana'a Cosmetics Plant",
+      "city": "Sana'a",
+      "country": "Yemen",
+      "segment": "Personal Care",
+      "commissioned_year": 2010,
+      "employees": 300
+    },
+    {
+      "id": "FAC-JED-001",
+      "name": "Jeddah Flexible Packaging",
+      "city": "Jeddah",
+      "country": "Saudi Arabia",
+      "segment": "Packaging",
+      "commissioned_year": 2008,
+      "employees": 600
+    },
+    {
+      "id": "FAC-JED-002",
+      "name": "Jeddah Rigid Plastics",
+      "city": "Jeddah",
+      "country": "Saudi Arabia",
+      "segment": "Plastics",
+      "commissioned_year": 2012,
+      "employees": 450
+    },
+    {
+      "id": "FAC-DXB-001",
+      "name": "Dubai Cosmetics Plant",
+      "city": "Dubai",
+      "country": "UAE",
+      "segment": "Personal Care",
+      "commissioned_year": 2014,
+      "employees": 280
+    },
+    {
+      "id": "FAC-ADD-001",
+      "name": "Addis Agribusiness Farm",
+      "city": "Addis Ababa",
+      "country": "Ethiopia",
+      "segment": "Agriculture",
+      "commissioned_year": 2016,
+      "employees": 1500
+    },
+    {
+      "id": "FAC-ADN-004",
+      "name": "Aden Feed Mill",
+      "city": "Aden",
+      "country": "Yemen",
+      "segment": "Feed",
+      "commissioned_year": 2003,
+      "employees": 350
+    },
+    {
+      "id": "FAC-MUK-002",
+      "name": "Mukalla Maritime Yard",
+      "city": "Mukalla",
+      "country": "Yemen",
+      "segment": "Maritime",
+      "commissioned_year": 2000,
+      "employees": 200
+    },
+    {
+      "id": "FAC-ADN-005",
+      "name": "Aden Power Plant",
+      "city": "Aden",
+      "country": "Yemen",
+      "segment": "Energy",
+      "commissioned_year": 2018,
+      "employees": 120
+    },
+    {
+      "id": "FAC-ADN-006",
+      "name": "Aden Water Desalination",
+      "city": "Aden",
+      "country": "Yemen",
+      "segment": "Desalination",
+      "commissioned_year": 2019,
+      "employees": 90
+    },
+    {
+      "id": "FAC-MUM-001",
+      "name": "Mumbai Trading Hub",
+      "city": "Mumbai",
+      "country": "India",
+      "segment": "Trading",
+      "commissioned_year": 2011,
+      "employees": 150
+    },
+    {
+      "id": "FAC-RTM-001",
+      "name": "Rotterdam Trading Hub",
+      "city": "Rotterdam",
+      "country": "Netherlands",
+      "segment": "Trading",
+      "commissioned_year": 2013,
+      "employees": 100
+    },
+    {
+      "id": "FAC-HOD-004",
+      "name": "Hodeidah Plastics Plant",
+      "city": "Al Hodeidah",
+      "country": "Yemen",
+      "segment": "Plastics",
+      "commissioned_year": 2006,
+      "employees": 380
+    },
+    {
+      "id": "FAC-HOD-005",
+      "name": "Hodeidah Sugar Packing",
+      "city": "Al Hodeidah",
+      "country": "Yemen",
+      "segment": "Sugar",
+      "commissioned_year": 2007,
+      "employees": 220
+    }
+  ]
+}

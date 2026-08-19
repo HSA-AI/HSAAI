@@ -1,0 +1,34 @@
+{
+  "schema": "hsaai.enterprise.department.v1",
+  "id": "DEPT-DATA",
+  "name_ar": "مكتب البيانات",
+  "name_en": "Data Office",
+  "directory": "data-office",
+  "head_role": "Chief Data Officer",
+  "reports_to": "CEO",
+  "mission_ar": "إدارة حوكمة وجودة وامتلاك البيانات عبر المجموعة",
+  "mission_en": "Manage data governance, quality, and ownership across the Group",
+  "agent_ref": "AGENT-KNOWLEDGE",
+  "integrations": [
+    "sql-server",
+    "postgresql",
+    "mongodb",
+    "redis",
+    "kafka",
+    "power-bi"
+  ],
+  "kpis": [
+    "Data Quality Score",
+    "Master Data Accuracy %",
+    "Data Catalog Coverage %",
+    "Data Issue Resolution Time"
+  ],
+  "supported_by_modules": [
+    "services/backend_core/department_agents/",
+    "services/backend_core/integrations/",
+    "services/backend_core/enterprise_os/",
+    "services/backend_core/governance/",
+    "services/backend_core/knowledge/"
+  ],
+  "classification": "Internal"
+}

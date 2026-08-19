@@ -1,0 +1,4 @@
+import { AppShell } from "@/components/layout/app-shell";
+import { Card } from "@/components/ui/card";
+const metrics=["Model Usage","Token Usage","Agent Performance","Workflow Performance","API Usage","Latency","Errors","User Activity","Knowledge Usage"];
+export default function ObservabilityCenterPage(){return <AppShell><main className="space-y-6"><section><p className="text-sm font-bold text-hsa-yellow">Observability Platform</p><h1 className="text-3xl font-black">Observability Center</h1><p className="mt-2 max-w-4xl text-slate-500">لوحات متابعة تنفيذية وتشغيلية للنماذج والوكلاء ومسارات العمل والبنية التحتية.</p></section><section className="grid gap-4 lg:grid-cols-3">{metrics.map(m=><Card key={m}><h2 className="text-sm font-bold text-slate-500">{m}</h2><p className="mt-3 text-3xl font-black">Ready</p><p className="mt-2 text-xs text-slate-500">Prometheus / Grafana / OpenTelemetry compatible</p></Card>)}</section></main></AppShell>}

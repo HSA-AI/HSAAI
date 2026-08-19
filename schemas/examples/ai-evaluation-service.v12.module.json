@@ -1,0 +1,373 @@
+{
+  "schema": "hsaai.module.specification.v3.0",
+  "module_id": "ai-evaluation-service",
+  "name": "AI Evaluation Service",
+  "name_en": "AI Evaluation Service",
+  "name_ar": "خدمة تقييم الذكاء الاصطناعي",
+  "version": "12.0.0",
+  "description": "Enterprise AI evaluation platform for LLMs, agents, RAG pipelines, MCP tools, and workflows — providing quality scoring, hallucination detection, regression detection, and deployment gate enforcement across the HSAAI AI lifecycle",
+  "category": "ai-governance",
+  "criticality": "critical",
+  "status": "production",
+  "lifecycle_stage": "production",
+  "module_analysis": {
+    "function": "Continuous AI quality evaluation and governance gate enforcement",
+    "role_in_platform": "Validates AI system quality before deployment and monitors quality in production",
+    "criticality_level": "critical — blocks deployment of underperforming AI systems",
+    "connected_services": ["model-registry", "rag-engine", "agent-system", "llm-gateway", "workflow-engine"],
+    "data_lifecycle": "ingests eval datasets → executes test queries → computes metrics → stores results → triggers gates",
+    "blast_radius_if_down": "high — unvalidated AI systems could deploy to production"
+  },
+  "components": [
+    {
+      "id": "evaluation-engine",
+      "name": "Evaluation Engine",
+      "description": "Executes evaluation suites against AI targets (LLMs, agents, RAG)",
+      "responsibility": ["Run eval suites", "Collect results", "Compute metrics"],
+      "inputs": ["eval_dataset", "target_endpoint", "eval_config"],
+      "outputs": ["eval_results", "metrics", "scores"],
+      "dependencies": ["llm-gateway", "rag-engine", "agent-system"],
+      "failure_behavior": "fail-fast — abort eval if target unreachable; log partial results"
+    },
+    {
+      "id": "hallucination-detector",
+      "name": "Hallucination Detector",
+      "description": "Detects AI hallucinations via source-grounding verification",
+      "responsibility": ["Verify citations", "Detect ungrounded claims", "Score faithfulness"],
+      "inputs": ["ai_response", "source_documents"],
+      "outputs": ["hallucination_score", "ungrounded_claims"],
+      "dependencies": ["rag-engine"],
+      "failure_behavior": "degrade — if RAG unavailable, flag as 'manual review required'"
+    },
+    {
+      "id": "regression-detector",
+      "name": "Regression Detector",
+      "description": "Compares current eval results against baseline to detect regressions",
+      "responsibility": ["Compare to baseline", "Detect degradation", "Trigger alerts"],
+      "inputs": ["current_metrics", "baseline_metrics"],
+      "outputs": ["regression_report", "regression_severity"],
+      "dependencies": ["model-registry"],
+      "failure_behavior": "block — if regression > 10%, block deployment"
+    },
+    {
+      "id": "quality-gate-enforcer",
+      "name": "Quality Gate Enforcer",
+      "description": "Enforces deployment gates based on evaluation results",
+      "responsibility": ["Check gate criteria", "Approve/reject deployment", "Log decision"],
+      "inputs": ["eval_results", "gate_config"],
+      "outputs": ["gate_decision", "approval_record"],
+      "dependencies": ["model-registry", "audit-service"],
+      "failure_behavior": "deny — default to deny if eval incomplete"
+    }
+  ],
+  "capabilities": {
+    "core": [
+      "model-evaluation",
+      "hallucination-detection",
+      "quality-scoring",
+      "regression-detection",
+      "continuous-evaluation",
+      "deployment-gate-enforcement"
+    ],
+    "ai": [
+      "automated-eval-generation",
+      "bias-detection",
+      "faithfulness-scoring",
+      "relevance-scoring"
+    ],
+    "automation": [
+      "scheduled-evals",
+      "auto-regression-alerts",
+      "auto-deployment-blocking"
+    ],
+    "enterprise": [
+      "multi-tenant-isolation",
+      "audit-logging",
+      "compliance-ready",
+      "governance-integration"
+    ]
+  },
+  "ai_evaluation_governance": {
+    "evaluation_targets": [
+      "llm-models",
+      "ai-agents",
+      "rag-pipelines",
+      "mcp-tools",
+      "workflows"
+    ],
+    "evaluation_metrics": [
+      {"name": "accuracy", "target": "> 90%", "frequency": "monthly"},
+      {"name": "task_success_rate", "target": "> 90%", "frequency": "monthly"},
+      {"name": "faithfulness", "target": "> 95%", "frequency": "monthly"},
+      {"name": "hallucination_rate", "target": "< 5%", "frequency": "monthly"},
+      {"name": "latency_p95", "target": "< 2s", "frequency": "continuous"},
+      {"name": "cost_per_query", "target": "< $0.05", "frequency": "weekly"},
+      {"name": "user_satisfaction_csat", "target": "> 4.5/5", "frequency": "weekly"}
+    ],
+    "quality_gates": {
+      "deployment_approval": {
+        "required": true,
+        "approver": "Data Governance Council",
+        "min_eval_score": 0.85
+      },
+      "regression_blocking": {
+        "enabled": true,
+        "threshold": "10% degradation from baseline",
+        "action": "auto-block deployment"
+      },
+      "model_promotion_rules": {
+        "dev_to_staging": ["quality_gate_pass", "unit_tests_pass"],
+        "staging_to_production": ["quality_gate_pass", "regression_check_pass", "human_approval"]
+      }
+    },
+    "responsible_ai_controls": [
+      "bias-detection",
+      "fairness-checking",
+      "transparency-reporting",
+      "human-review-for-sensitive"
+    ]
+  },
+  "kpi_framework": [
+    {
+      "name": "Evaluation Coverage",
+      "target": "> 80% of AI systems",
+      "measurement": "Count of systems with active evals / total systems",
+      "data_source": "eval_registry",
+      "alert_threshold": "< 70%"
+    },
+    {
+      "name": "Hallucination Rate",
+      "target": "< 5%",
+      "measurement": "Sampled human review + automated detection",
+      "data_source": "hallucination_detector",
+      "alert_threshold": "> 10%"
+    },
+    {
+      "name": "Regression Detection Rate",
+      "target": "100% of deployments checked",
+      "measurement": "Deployments with regression check / total deployments",
+      "data_source": "deployment_logs",
+      "alert_threshold": "< 100%"
+    },
+    {
+      "name": "Evaluation Latency",
+      "target": "P95 < 30 minutes",
+      "measurement": "Time to complete eval suite",
+      "data_source": "eval_metrics",
+      "alert_threshold": "> 60 minutes"
+    }
+  ],
+  "sla_slo_error_budget": {
+    "sla": {
+      "availability": "99.9%",
+      "eval_completion_time": "< 30 minutes",
+      "gate_decision_time": "< 5 seconds"
+    },
+    "slo": {
+      "monthly_uptime": "99.9%",
+      "eval_success_rate": "> 99%",
+      "gate_accuracy": "100%"
+    },
+    "error_budget": {
+      "monthly_budget_minutes": 43,
+      "current_consumption": 5,
+      "remaining_budget_minutes": 38
+    }
+  },
+  "security_architecture": {
+    "authentication": {
+      "type": "OAuth2/OIDC",
+      "keycloak_support": true,
+      "token_validation": "RS256 + JWKS",
+      "mfa_required": true
+    },
+    "authorization": {
+      "rbac": true,
+      "abac": true,
+      "permissions": [
+        "evaluation:view",
+        "evaluation:run",
+        "evaluation:admin",
+        "gate:approve",
+        "gate:reject"
+      ],
+      "policy_engine": "OPA"
+    },
+    "security_controls": {
+      "audit_logging": true,
+      "encryption_at_rest": "AES-256",
+      "encryption_in_transit": "TLS 1.3",
+      "tenant_isolation": true,
+      "data_protection": true,
+      "access_monitoring": true,
+      "data_classification": true
+    }
+  },
+  "runtime_architecture": {
+    "runtime_ref": "services/ai_evaluation/main.py",
+    "service_entrypoint": "python -m ai_evaluation.main",
+    "execution_mode": "async",
+    "api_interfaces": [
+      {"endpoint": "/v1/evals", "method": "POST", "description": "Create evaluation"},
+      {"endpoint": "/v1/evals/{id}", "method": "GET", "description": "Get eval results"},
+      {"endpoint": "/v1/gates/{target}", "method": "GET", "description": "Check gate status"},
+      {"endpoint": "/v1/baselines", "method": "POST", "description": "Set baseline"}
+    ],
+    "health_check": {
+      "liveness": "/health/live",
+      "readiness": "/health/ready"
+    },
+    "async_support": true,
+    "scheduling_support": true,
+    "deployment_requirements": {
+      "cpu": "2000m",
+      "memory": "4Gi",
+      "replicas": 2,
+      "gpu_required": false
+    }
+  },
+  "data_architecture": {
+    "input_data_sources": [
+      "eval_datasets (MinIO)",
+      "model_registry (PostgreSQL)",
+      "ai_targets (HTTP APIs)"
+    ],
+    "output_data": [
+      "eval_results",
+      "metrics",
+      "gate_decisions",
+      "regression_reports"
+    ],
+    "storage": {
+      "type": "PostgreSQL + MinIO",
+      "requirements": "1TB for eval results, 500GB for datasets"
+    },
+    "event_consumers": [
+      "model.deployed",
+      "model.registered",
+      "agent.updated"
+    ],
+    "event_producers": [
+      "eval.completed",
+      "eval.failed",
+      "gate.approved",
+      "gate.rejected",
+      "regression.detected"
+    ],
+    "retention_policy": "Eval results retained 36 months; datasets retained permanently"
+  },
+  "observability": {
+    "metrics": [
+      "eval_duration_seconds",
+      "eval_total",
+      "eval_errors_total",
+      "hallucination_rate",
+      "regression_detected_total",
+      "gate_decisions_total",
+      "quality_score_distribution"
+    ],
+    "logs": [
+      "operational logs",
+      "security logs",
+      "audit events",
+      "gate decisions"
+    ],
+    "tracing": {
+      "opentelemetry": true,
+      "distributed_tracing": true,
+      "trace_sampling": "100% for errors, 10% for success"
+    },
+    "dashboards": [
+      "AI Quality Overview",
+      "Hallucination Trends",
+      "Regression Alerts",
+      "Gate Decision History"
+    ],
+    "alerting": [
+      "HighHallucinationRate",
+      "RegressionDetected",
+      "GateBlocked",
+      "EvalFailure"
+    ]
+  },
+  "dependencies": {
+    "internal": [
+      "ai-core",
+      "model-registry",
+      "knowledge-service",
+      "analytics-service",
+      "rag-engine",
+      "agent-system",
+      "llm-gateway",
+      "audit-service"
+    ],
+    "external": [
+      "huggingface-hub (eval datasets)"
+    ],
+    "databases": [
+      "PostgreSQL",
+      "MinIO"
+    ],
+    "message_brokers": [
+      "Kafka"
+    ],
+    "ai_infrastructure": [
+      "sentence-transformers (for semantic eval)",
+      "BGE-reranker (for relevance scoring)"
+    ]
+  },
+  "reliability_engineering": {
+    "retry_strategy": {
+      "max_retries": 3,
+      "backoff": "exponential",
+      "initial_delay_ms": 1000,
+      "max_delay_ms": 10000,
+      "retryable_errors": ["timeout", "connection_error", "503"]
+    },
+    "timeout_policy": {
+      "eval_execution": "30 minutes",
+      "api_call": "30 seconds",
+      "gate_decision": "5 seconds"
+    },
+    "circuit_breaker": {
+      "enabled": true,
+      "failure_threshold": 5,
+      "recovery_timeout": 60,
+      "half_open_success_threshold": 3
+    },
+    "failure_recovery": {
+      "auto_failover": true,
+      "graceful_degradation": "if eval service down, allow deployment with manual approval",
+      "data_recovery": "PostgreSQL PITR + MinIO replication"
+    },
+    "graceful_degradation": {
+      "rag_unavailable": "flag eval as 'manual review required'",
+      "llm_unavailable": "skip LLM eval, run RAG-only eval",
+      "audit_unavailable": "queue gate decisions, do not block deployment"
+    }
+  },
+  "enterprise_ai_lifecycle_integration": {
+    "lifecycle_stage": "evaluation",
+    "position": "between Training and Approval",
+    "flow": {
+      "data": "consumes eval datasets",
+      "training": "validates trained models",
+      "evaluation": "EXECUTES HERE — runs eval suites, computes metrics",
+      "approval": "provides gate decisions to approval workflow",
+      "deployment": "blocks deployment if gates fail",
+      "monitoring": "continuous eval in production",
+      "continuous_improvement": "regression detection feeds back to training"
+    },
+    "gates_enforced": [
+      "pre-staging: quality gate",
+      "pre-production: quality gate + regression check + human approval",
+      "post-deployment: continuous monitoring eval"
+    ]
+  },
+  "compatibility": {
+    "backward_compatible": true,
+    "api_version": "v1",
+    "migration_required": false,
+    "deprecated_features": []
+  }
+}

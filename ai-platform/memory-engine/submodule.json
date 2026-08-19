@@ -1,0 +1,26 @@
+{
+  "schema": "hsaai.ai-platform.submodule.v1",
+  "name": "memory-engine",
+  "name_en": "Memory Engine",
+  "name_ar": "محرك الذاكرة",
+  "description": "Multi-tier memory: short-term (session), working (active context), long-term (vector + graph).",
+  "components": [
+    "Short-term Memory (Redis)",
+    "Working Memory (in-process)",
+    "Long-term Memory (Qdrant + Neo4j)",
+    "Memory Manager"
+  ],
+  "capabilities": [
+    "Session-scoped memory",
+    "Cross-session user memory",
+    "Department-scoped memory",
+    "Memory consolidation"
+  ],
+  "kpis": [
+    "Memory recall accuracy > 90%",
+    "Recall latency < 100ms",
+    "Memory footprint < 1GB per user"
+  ],
+  "runtime_ref": "services/backend_core/memory/",
+  "backward_compatible": true
+}

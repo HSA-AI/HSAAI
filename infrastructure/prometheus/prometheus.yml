@@ -1,0 +1,87 @@
+# HSAAI Prometheus Configuration
+# =============================================================
+# Scrapes metrics from all HSAAI services and infrastructure.
+# Follows Chapter 10 (Deployment) + Chapter 09 (Analytics) wiring.
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: hsaai
+    replica: 0
+
+# Alertmanager (optional — configured via Thanos ruler in production)
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+      timeout: 10s
+
+# Scrape configurations for all HSAAI services
+scrape_configs:
+  # ─── Self-monitoring ───
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # ─── OpenTelemetry Collector ───
+  - job_name: 'otel-collector'
+    static_configs:
+      - targets: ['otel-collector:8888']
+
+  # ─── Infrastructure ───
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres:5432']
+    metrics_path: /metrics
+
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+
+  - job_name: 'qdrant'
+    static_configs:
+      - targets: ['qdrant:6333']
+
+  - job_name: 'kafka'
+    static_configs:
+      - targets: ['kafka:9092']
+
+  # ─── HSAAI Application Services ───
+  - job_name: 'hsaai-app-services'
+    static_configs:
+      - targets:
+          - 'api-gateway:8000'
+          - 'backend-core:8000'
+          - 'auth-service:8010'
+          - 'rag-service:8030'
+          - 'llm-gateway:8090'
+          - 'agent-runtime:8040'
+          - 'workflow-engine:8070'
+          - 'alignment-service:8005'
+          - 'governance-service:8011'
+          - 'pii-detector:8092'
+          - 'mcp-server:8094'
+          - 'model-training:8090'
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  # ─── Observability Stack ───
+  - job_name: 'grafana'
+    static_configs:
+      - targets: ['grafana:3000']
+
+  - job_name: 'loki'
+    static_configs:
+      - targets: ['loki:3100']
+
+  - job_name: 'tempo'
+    static_configs:
+      - targets: ['tempo:3200']
+
+  # ─── MinIO ───
+  - job_name: 'minio'
+    metrics_path: /minio/v2/metrics/cluster
+    static_configs:
+      - targets: ['minio:9000']

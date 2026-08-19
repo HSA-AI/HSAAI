@@ -1,0 +1,33 @@
+{
+  "schema": "hsaai.enterprise.department.v1",
+  "id": "DEPT-FIN",
+  "name_ar": "الإدارة المالية",
+  "name_en": "Finance",
+  "directory": "finance",
+  "head_role": "Group CFO",
+  "reports_to": "CEO",
+  "mission_ar": "إدارة الشؤون المالية للمجموعة، التخطيط المالي، والتحليل",
+  "mission_en": "Manage group financial affairs, planning, and analysis",
+  "agent_ref": "AGENT-FINANCE",
+  "integrations": [
+    "sap",
+    "oracle-erp",
+    "power-bi",
+    "sql-server",
+    "dynamics-365"
+  ],
+  "kpis": [
+    "Budget Variance %",
+    "Cash Flow Accuracy",
+    "Forecast Accuracy %",
+    "Cost of Capital"
+  ],
+  "supported_by_modules": [
+    "services/backend_core/department_agents/",
+    "services/backend_core/integrations/",
+    "services/backend_core/enterprise_os/",
+    "services/backend_core/governance/",
+    "services/backend_core/knowledge/"
+  ],
+  "classification": "Internal"
+}

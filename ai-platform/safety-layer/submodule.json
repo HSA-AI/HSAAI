@@ -1,0 +1,26 @@
+{
+  "schema": "hsaai.ai-platform.submodule.v1",
+  "name": "safety-layer",
+  "name_en": "Safety Layer",
+  "name_ar": "طبقة الأمان",
+  "description": "Constitutional AI checks, content moderation, and global kill switch.",
+  "components": [
+    "Constitutional Checker",
+    "Content Moderator",
+    "Kill Switch",
+    "Safety Logger"
+  ],
+  "capabilities": [
+    "Constitutional AI",
+    "Content moderation",
+    "Kill switch",
+    "Audit logging"
+  ],
+  "kpis": [
+    "Safety violations = 0",
+    "Kill switch response < 1s",
+    "Constitutional accuracy > 98%"
+  ],
+  "runtime_ref": "services/ai_alignment/",
+  "backward_compatible": true
+}

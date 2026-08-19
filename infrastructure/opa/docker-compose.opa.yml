@@ -1,0 +1,34 @@
+# HSAAI OPA + Bundles (v3.0)
+
+version: "3.8"
+
+services:
+  opa:
+    image: openpolicyagent/opa:0.68.0-static
+    container_name: hsaai-opa
+    command:
+      - "run"
+      - "--server"
+      - "--addr=0.0.0.0:8181"
+      - "--log-level=info"
+      - "--set=services.hsaaibundles.url=http://bundle-server:8080"
+      - "--set=bundles.hsaaibundles.service=hsaaibundles"
+      - "--set=bundles.hsaaibundles.resource=/bundles/hsaai.tar.gz"
+      - "--set=bundles.hsaaibundles.polling.min_delay_seconds=10"
+      - "--set=bundles.hsaaibundles.polling.max_delay_seconds=60"
+    ports:
+      - "8181:8181"
+    volumes:
+      - ./policies:/policies:ro
+    networks:
+      - hsaai-private
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8181/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  hsaai-private:
+    external: true
+    name: hsaai_private

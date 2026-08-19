@@ -1,0 +1,21 @@
+# Integrations used by Sales department
+apiVersion: hsaaiv2/v1
+kind: DepartmentIntegrations
+metadata:
+  name: sales-integrations
+spec:
+  departmentId: DEPT-SALES
+  integrations:
+  - id: crm
+  - id: sap
+  - id: power-bi
+  - id: dynamics-365
+  defaultAuth:
+    type: oauth2
+    provider: keycloak
+  retryPolicy:
+    maxRetries: 3
+    backoff: exponential
+  circuitBreaker:
+    enabled: true
+    threshold: 5

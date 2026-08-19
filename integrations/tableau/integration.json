@@ -1,0 +1,32 @@
+{
+  "schema": "hsaai.integration.v1",
+  "integration_id": "INT-TABLEAU",
+  "name": "Tableau",
+  "directory": "tableau",
+  "category": "bi",
+  "category_name": "Business Intelligence",
+  "vendor": "Salesforce",
+  "protocol": "REST + Hyper API",
+  "authentication": "Personal Access Token",
+  "status": "production",
+  "connector_ref": "packages/common/connectors/tableau/",
+  "departments": [
+    "DEPT-FIN",
+    "DEPT-MKT"
+  ],
+  "security": {
+    "encryption_in_transit": "TLS 1.3",
+    "encryption_at_rest": "AES-256",
+    "audit": "HMAC-signed",
+    "rate_limiting": true,
+    "circuit_breaker": true,
+    "pii_detection": "Microsoft Presidio"
+  },
+  "observability": {
+    "metrics": "Prometheus",
+    "logs": "Loki",
+    "traces": "Tempo (OpenTelemetry)",
+    "dashboards": "Grafana"
+  },
+  "backward_compatible": true
+}

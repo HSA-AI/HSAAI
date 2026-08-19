@@ -1,0 +1,256 @@
+{
+  "schema": "hsaai.observability.module.specification.v1.0",
+  "module_id": "ai-observability-control-plane",
+  "name": "AI Observability Control Plane",
+  "name_en": "AI Observability Control Plane",
+  "name_ar": "مستوى التحكم بمراقبة الذكاء الاصطناعي",
+  "version": "14.0.0",
+  "description": "Enterprise SRE Observability Control Plane providing AI-specific monitoring, SLO management, incident management, and reliability governance for the HSAAI platform — acts as the central nervous system for all AI operations, health monitoring, and incident response",
+  "category": "observability",
+  "criticality": "critical",
+  "status": "production",
+  "module_analysis": {
+    "role": "Reliability Control Plane for all AI services — monitors health, tracks SLOs, detects anomalies, and manages incidents",
+    "services_monitored": [
+      "ai-core", "rag-engine", "llm-gateway", "agent-system",
+      "ai-evaluation-service", "governance-control-plane",
+      "api-gateway", "workflow-engine"
+    ],
+    "criticality_level": "critical — failure means blind operations, no anomaly detection, no incident response",
+    "failure_impact": "critical — undetected AI failures, SLO breaches unnoticed, incidents escalate unmanaged",
+    "metrics_sources": [
+      "Application metrics (Prometheus)",
+      "Logs (Loki)",
+      "Distributed traces (Tempo)",
+      "AI-specific metrics (hallucination, bias, quality)",
+      "Security events (SIEM)",
+      "Infrastructure metrics (node, pod, container)"
+    ],
+    "module_type": "Operations Control Plane"
+  },
+  "observability_components": [
+    {
+      "id": "health-monitor",
+      "name": "Health Monitor",
+      "description": "Continuous health monitoring of all AI services and dependencies",
+      "responsibility": [
+        "Service health checks (liveness/readiness)",
+        "Dependency health tracking",
+        "Readiness monitoring for K8s",
+        "Health aggregation and reporting"
+      ],
+      "inputs": ["health_endpoints", "k8s_probes", "dependency_checks"],
+      "outputs": ["health_status", "degradation_alerts", "recovery_notifications"],
+      "dependencies": ["api-gateway", "kubernetes"],
+      "failure_behavior": "degrade — cached health status used if monitor unavailable"
+    },
+    {
+      "id": "alert-manager",
+      "name": "Alert Manager",
+      "description": "Centralized alert management with severity levels and escalation",
+      "responsibility": [
+        "Evaluate alert rules",
+        "Classify severity (SEV-1 to SEV-4)",
+        "Route to notification channels",
+        "Escalate on timeout",
+        "Suppress during maintenance"
+      ],
+      "inputs": ["prometheus_alerts", "log_anomalies", "slo_breaches"],
+      "outputs": ["alert_notifications", "escalation_events", "incident_triggers"],
+      "dependencies": ["prometheus", "alertmanager", "notification-service"],
+      "failure_behavior": "queue — alerts buffered if Alertmanager unavailable"
+    },
+    {
+      "id": "slo-tracker",
+      "name": "SLO Tracker",
+      "description": "SLA/SLO monitoring with error budget tracking",
+      "responsibility": [
+        "Track SLI metrics",
+        "Calculate SLO compliance",
+        "Track error budget consumption",
+        "Alert on budget burn rate"
+      ],
+      "inputs": ["sli_metrics", "slo_targets", "error_budgets"],
+      "outputs": ["slo_reports", "budget_status", "burn_rate_alerts"],
+      "dependencies": ["prometheus"],
+      "failure_behavior": "degrade — use cached SLO data"
+    },
+    {
+      "id": "anomaly-detector",
+      "name": "Anomaly Detector",
+      "description": "AI-based anomaly detection for performance and quality metrics",
+      "responsibility": [
+        "Detect performance anomalies",
+        "Detect quality degradation",
+        "Pattern recognition",
+        "Predictive alerting"
+      ],
+      "inputs": ["metric_streams", "historical_baselines"],
+      "outputs": ["anomaly_alerts", "anomaly_reports", "predictions"],
+      "dependencies": ["prometheus", "ml-models"],
+      "failure_behavior": "degrade — rule-based alerts used as fallback"
+    },
+    {
+      "id": "incident-manager",
+      "name": "Incident Manager",
+      "description": "AI incident detection, classification, and response coordination",
+      "responsibility": [
+        "Detect incidents from alerts",
+        "Classify severity",
+        "Coordinate response",
+        "Track root cause analysis",
+        "Generate postmortems"
+      ],
+      "inputs": ["alerts", "health_status", "slo_breaches"],
+      "outputs": ["incidents", "escalations", "postmortems"],
+      "dependencies": ["alert-manager", "notification-service"],
+      "failure_behavior": "manual — fallback to manual incident response"
+    }
+  ],
+  "ai_specific_monitoring": {
+    "model_metrics": {
+      "model_latency": "P50 < 1s, P95 < 2s, P99 < 5s",
+      "token_usage": "tokens_in + tokens_out per request",
+      "model_errors": "error rate < 1%",
+      "model_availability": "99.5% SLO"
+    },
+    "rag_metrics": {
+      "retrieval_latency": "P95 < 500ms",
+      "retrieval_accuracy": "recall@5 > 90%",
+      "context_quality": "relevance score > 0.8",
+      "vector_db_health": "Qdrant cluster status"
+    },
+    "agent_metrics": {
+      "agent_execution_time": "P95 < 3s",
+      "tool_failures": "failure rate < 5%",
+      "workflow_failures": "failure rate < 2%"
+    },
+    "quality_metrics": {
+      "hallucination_rate": "< 5%",
+      "user_feedback_csat": "> 4.5/5",
+      "evaluation_score": "> 85%",
+      "citation_accuracy": "> 99%"
+    }
+  },
+  "reliability_engineering": {
+    "sre_framework": {
+      "sla": {
+        "api_gateway": "99.9% availability",
+        "rag_engine": "99.9% + P95 < 500ms",
+        "llm_gateway": "99.5% + P95 < 2s"
+      },
+      "slo": {
+        "monthly_uptime": "99.9%",
+        "error_rate": "< 0.1%",
+        "latency_p95": "< 500ms"
+      },
+      "sli": [
+        "request_count",
+        "error_count",
+        "latency_histogram",
+        "availability_ratio"
+      ],
+      "error_budget": {
+        "monthly_budget_minutes": 43,
+        "burn_rate_alert": "2x normal = SEV-3, 10x = SEV-2"
+      }
+    },
+    "incident_management": {
+      "detection": "Automated from alerts + manual reporting",
+      "severity_classification": {
+        "SEV-1": "Production down, data loss — page on-call + management",
+        "SEV-2": "Service degraded — page on-call",
+        "SEV-3": "Non-critical issue — email on-call",
+        "SEV-4": "Informational — email ops team"
+      },
+      "escalation_policy": "5min → secondary → 10min → manager → 15min → engineering lead → 20min → CTO",
+      "root_cause_analysis": "Mandatory for SEV-1/2 within 48 hours"
+    },
+    "recovery": {
+      "auto_recovery": "Auto-restart failed pods, auto-scale on load",
+      "retry_strategy": "Exponential backoff (3 retries, 100ms-1s)",
+      "failover": "Multi-region (Aden → Riyadh → Dubai)",
+      "graceful_degradation": "RAG unavailable → cached results; LLM unavailable → fallback message"
+    }
+  },
+  "kpi_framework": [
+    {"metric_name": "Availability", "target": "99.9%", "measurement_method": "Uptime / total time", "data_source": "Prometheus", "alert_threshold": "< 99.5%"},
+    {"metric_name": "Latency P95", "target": "< 500ms", "measurement_method": "Histogram percentile", "data_source": "Prometheus", "alert_threshold": "> 1000ms"},
+    {"metric_name": "Error Rate", "target": "< 0.1%", "measurement_method": "Errors / total requests", "data_source": "Prometheus", "alert_threshold": "> 1%"},
+    {"metric_name": "MTTD", "target": "< 5 minutes", "measurement_method": "Time from issue to alert", "data_source": "incident_manager", "alert_threshold": "> 15 min"},
+    {"metric_name": "MTTR", "target": "< 30 minutes", "measurement_method": "Time from alert to resolution", "data_source": "incident_manager", "alert_threshold": "> 2 hours"},
+    {"metric_name": "Resource Utilization", "target": "CPU < 70%, Memory < 80%", "measurement_method": "Node/pod metrics", "data_source": "Prometheus", "alert_threshold": "> 90%"}
+  ],
+  "runtime_architecture": {
+    "runtime_ref": "services/monitoring/main.py",
+    "prometheus_integration": {
+      "scrape_interval": "15s",
+      "retention": "7 days hot + 12 months Thanos"
+    },
+    "grafana_integration": {
+      "dashboards": 11,
+      "alerting": true,
+      "sso": "Keycloak OIDC"
+    },
+    "alertmanager_integration": {
+      "routing": "severity-based",
+      "notification_channels": ["pagerduty", "slack", "email"]
+    },
+    "opentelemetry_support": {
+      "traces": "Tempo (30-day retention)",
+      "metrics": "Prometheus",
+      "logs": "Loki (90-day retention)"
+    },
+    "health_endpoints": ["/health/live", "/health/ready", "/health/details"],
+    "metrics_endpoint": "/metrics"
+  },
+  "security_monitoring": {
+    "security_events": true,
+    "failed_authentication_tracking": "Rate + pattern analysis",
+    "permission_violations": "RBAC/ABAC denial logging",
+    "audit_monitoring": "Real-time audit log analysis",
+    "threat_detection": "SIEM integration + behavioral analytics"
+  },
+  "data_architecture": {
+    "input": {
+      "application_metrics": "Prometheus scrape",
+      "logs": "Loki via Promtail",
+      "traces": "OpenTelemetry → Tempo",
+      "events": "Kafka stream"
+    },
+    "output": {
+      "dashboards": "Grafana (11 dashboards)",
+      "alerts": "Alertmanager → PagerDuty/Slack/Email",
+      "reports": "Daily/weekly/monthly SLO reports",
+      "incident_events": "Incident management system"
+    }
+  },
+  "observability_stack": {
+    "prometheus": {"role": "Metrics collection", "scrape_interval": "15s"},
+    "grafana": {"role": "Visualization", "dashboards": 11},
+    "alertmanager": {"role": "Alert routing", "channels": ["pagerduty", "slack", "email"]},
+    "opentelemetry": {"role": "Unified instrumentation", "collector": "OTLP"},
+    "loki": {"role": "Log aggregation", "retention": "90 days"},
+    "tempo": {"role": "Distributed tracing", "retention": "30 days"},
+    "thanos": {"role": "Long-term metrics storage", "retention": "12 months"},
+    "siem": {"role": "Security event correlation", "integration": "real-time"}
+  },
+  "dependencies": {
+    "internal": ["ai-core", "api-gateway", "ai-evaluation-service", "ai-governance-control-plane", "infrastructure-layer"],
+    "external": ["prometheus", "grafana", "alertmanager", "loki", "tempo", "pagerduty", "siem"],
+    "databases": ["Prometheus TSDB"],
+    "message_brokers": ["Kafka"]
+  },
+  "high_availability": {
+    "ha_deployment": "3 replicas across 3 nodes",
+    "backup_strategy": "Prometheus snapshot + Thanos replication",
+    "disaster_recovery": "Multi-region (Aden → Riyadh)",
+    "monitoring_redundancy": "Dual Prometheus + federation"
+  },
+  "compatibility": {
+    "backward_compatible": true,
+    "api_version": "v1",
+    "migration_required": false,
+    "deprecated_features": []
+  }
+}

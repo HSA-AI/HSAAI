@@ -1,0 +1,40 @@
+{
+  "schema": "hsaai.enterprise.department.v1",
+  "id": "DEPT-IT",
+  "name_ar": "إدارة تقنية المعلومات",
+  "name_en": "IT",
+  "directory": "it",
+  "head_role": "Group CIO",
+  "reports_to": "CEO",
+  "mission_ar": "تشغيل وتطوير البنية التحتية والتطبيقات لدعم جميع إدارات المجموعة",
+  "mission_en": "Operate and develop infrastructure and applications to support all Group departments",
+  "agent_ref": "AGENT-IT",
+  "integrations": [
+    "active-directory",
+    "azure-ad",
+    "m365",
+    "sharepoint",
+    "teams",
+    "exchange",
+    "sql-server",
+    "postgresql",
+    "mongodb",
+    "redis",
+    "kafka",
+    "rabbitmq"
+  ],
+  "kpis": [
+    "Uptime %",
+    "MTTR (Minutes)",
+    "Service Satisfaction %",
+    "Project On-Time %"
+  ],
+  "supported_by_modules": [
+    "services/backend_core/department_agents/",
+    "services/backend_core/integrations/",
+    "services/backend_core/enterprise_os/",
+    "services/backend_core/governance/",
+    "services/backend_core/knowledge/"
+  ],
+  "classification": "Internal"
+}
