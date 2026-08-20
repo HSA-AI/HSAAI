@@ -62,3 +62,25 @@ Object.defineProperty(window, "IntersectionObserver", {
   writable: true,
   value: MockIntersectionObserver,
 });
+// Ensure localStorage is available consistently in Vitest/jsdom.
+if (typeof window !== "undefined" && !window.localStorage) {
+  Object.defineProperty(window, "localStorage", {
+    value: {
+      getItem: vi.fn(() => null),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+      clear: vi.fn(),
+      key: vi.fn(() => null),
+      length: 0,
+    },
+    writable: true,
+  });
+}
+// Ensure localStorage is available consistently in Vitest/jsdom.
+if (typeof window !== "undefined") {
+  const storage = window.localStorage;
+
+  if (storage) {
+    storage.clear();
+  }
+}

@@ -1,7 +1,6 @@
 "use client";
 
-import { Card, CardHeader, CardTitle, CardDescription, CardBody, Badge, Button, PageHero, H2, H3, BodyLarge, BodySmall, Eyebrow } from "@/lib/design-system";
-import { BrandMark } from "@/components/branding/brand-mark";
+import { Card, CardHeader, CardBody, Badge, Button, PageHero, H2, H3, BodyLarge, BodySmall, Eyebrow } from "@/lib/design-system";
 
 const metrics = [
   { label: "متوسط زمن الاستجابة", value: "840ms", trend: "-12%", status: "success" as const },

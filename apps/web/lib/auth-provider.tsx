@@ -1,17 +1,25 @@
 /**
- * HSAAI Auth Provider — Full Keycloak OIDC Authorization Code Flow + PKCE
+ * HSAAI Auth Provider
  *
- * SECURITY:
- *   - Authorization Code Flow with PKCE (no implicit flow)
- *   - Tokens stored in httpOnly cookies (set by backend, not accessible via JS)
- *   - No localStorage/token exposure to JavaScript
- *   - Server-side session management via /v1/auth/me
- *   - Automatic token refresh before expiry
- *   - Proper logout with back-channel notification
+ * Security:
+ * - Authorization Code Flow with PKCE.
+ * - Tokens are handled by the backend using httpOnly cookies.
+ * - No access/refresh/id tokens are exposed to browser JavaScript.
+ * - Server-side session validation through /v1/auth/me.
+ * - Automatic refresh before the expected session expiry.
  */
+
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback, useRef, ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 
 export interface AuthUser {
   sub: string;
@@ -20,7 +28,7 @@ export interface AuthUser {
   workspace_id: string;
   email?: string;
   username?: string;
-  preferred_username?: string;  // FIX (runtime): referenced in app/chat/page.tsx
+  preferred_username?: string;
 }
 
 interface KeycloakConfig {
@@ -40,8 +48,8 @@ interface AuthContextType {
   user: AuthUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: () => void;                    // Redirects to Keycloak
-  loginWithPassword: (username: string, password: string) => Promise<void>;  // For non-browser clients
+  login: () => void;
+  loginWithPassword: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshToken: () => Promise<void>;
   config: KeycloakConfig | null;
@@ -58,179 +66,259 @@ const AuthContext = createContext<AuthContextType>({
   config: null,
 });
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
-// PKCE helpers
-function generateCodeVerifier(): string {
-  const array = new Uint8Array(64);
-  crypto.getRandomValues(array);
-  return base64URLEncode(array);
-}
+const REFRESH_DELAY_MS = 840 * 1000;
 
-async function generateCodeChallenge(verifier: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(verifier);
-  const digest = await crypto.subtle.digest("SHA-256", data);
-  return base64URLEncode(new Uint8Array(digest));
-}
-
-function base64URLEncode(buffer: Uint8Array): string {
-  return btoa(String.fromCharCode(...buffer))
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
-}
-
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [config, setConfig] = useState<KeycloakConfig | null>(null);
-  const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Load Keycloak OIDC config on mount
-  useEffect(() => {    loadConfig();
-    checkSession();
-    return () => {
-      if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
-    };
+  const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+
+  const refreshTokenRef = useRef<() => Promise<void>>(
+    async () => {},
+  );
+
+  const scheduleRefresh = useCallback(() => {
+    if (refreshTimerRef.current) {
+      clearTimeout(refreshTimerRef.current);
+    }
+
+    refreshTimerRef.current = setTimeout(() => {
+      void refreshTokenRef.current();
+    }, REFRESH_DELAY_MS);
   }, []);
 
-  async function loadConfig() {
+  const loadConfig = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE}/v1/keycloak/config`);
-      if (response.ok) {
-        const cfg = await response.json();
-        setConfig(cfg);
-      }
-    } catch {
-      // Config unavailable — will use defaults
-    }
-  }
+      const response = await fetch(
+        `${API_BASE}/v1/keycloak/config`,
+        {
+          credentials: "include",
+        },
+      );
 
-  async function checkSession() {
-    try {
-      const response = await fetch(`${API_BASE}/v1/auth/me`, {
-        credentials: "include", // httpOnly cookies sent automatically
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setUser({
-          sub: data.sub,
-          roles: data.roles || ["ai_user"],
-          tenant_id: data.tenant_id || "default",
-          workspace_id: data.workspace_id || "default",
-          email: data.email,
-          username: data.username,
-        });
-        scheduleRefresh();
+      if (!response.ok) {
+        return;
       }
+
+      const cfg: KeycloakConfig = await response.json();
+      setConfig(cfg);
     } catch {
-      // Not authenticated
+      // Keycloak configuration is optional during local startup.
+    }
+  }, []);
+
+  const checkSession = useCallback(async () => {
+    try {
+      const response = await fetch(
+        `${API_BASE}/v1/auth/me`,
+        {
+          credentials: "include",
+        },
+      );
+
+      if (!response.ok) {
+        setUser(null);
+        return;
+      }
+
+      const data = await response.json();
+
+      const authenticatedUser: AuthUser = {
+        sub: data.sub,
+        roles: data.roles || ["ai_user"],
+        tenant_id: data.tenant_id || "default",
+        workspace_id: data.workspace_id || "default",
+        email: data.email,
+        username: data.username,
+        preferred_username: data.preferred_username,
+      };
+
+      setUser(authenticatedUser);
+      scheduleRefresh();
+    } catch {
+      setUser(null);
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [scheduleRefresh]);
 
-  function scheduleRefresh() {
-    if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
-    // Refresh 60 seconds before token expiry (15 min - 60s = 840s)
-    refreshTimerRef.current = setTimeout(() => {
-      refreshToken();
-    }, 840 * 1000);
-  }
+  const refreshToken = useCallback(async () => {
+    try {
+      const response = await fetch(
+        `${API_BASE}/v1/auth/refresh`,
+        {
+          method: "POST",
+          credentials: "include",
+        },
+      );
+
+      if (!response.ok) {
+        setUser(null);
+
+        if (refreshTimerRef.current) {
+          clearTimeout(refreshTimerRef.current);
+          refreshTimerRef.current = null;
+        }
+
+        return;
+      }
+
+      const data = await response.json();
+
+      setUser(data.user);
+      scheduleRefresh();
+    } catch {
+      setUser(null);
+
+      if (refreshTimerRef.current) {
+        clearTimeout(refreshTimerRef.current);
+        refreshTimerRef.current = null;
+      }
+    }
+  }, [scheduleRefresh]);
+
+  refreshTokenRef.current = refreshToken;
+
+  useEffect(() => {
+    void loadConfig();
+    void checkSession();
+
+    return () => {
+      if (refreshTimerRef.current) {
+        clearTimeout(refreshTimerRef.current);
+        refreshTimerRef.current = null;
+      }
+    };
+  }, [checkSession, loadConfig]);
 
   /**
-   * OIDC Authorization Code Flow with PKCE:
-   * FIX F-04: Use server-side /api/auth/start to store PKCE verifier + state in
-   * httpOnly cookies. Previously stored in sessionStorage — callback route reads
-   * cookies → state always mismatched → every login failed with state_mismatch.
+   * OIDC Authorization Code Flow with PKCE.
+   *
+   * The backend creates and stores the PKCE verifier/state
+   * in secure httpOnly cookies through /api/auth/start.
    */
   async function login() {
-    const returnTo = window.location.pathname + window.location.search;
-    const startResp = await fetch("/api/auth/start", {
+    const returnTo =
+      window.location.pathname + window.location.search;
+
+    const startResponse = await fetch("/api/auth/start", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       credentials: "include",
       body: JSON.stringify({ returnTo }),
     });
-    if (!startResp.ok) {
+
+    if (!startResponse.ok) {
       console.error("Failed to start OIDC flow");
       return;
     }
-    const { codeChallenge, codeChallengeMethod, state } = await startResp.json();
 
-    const redirectUri = `${window.location.origin}/api/auth/callback`;
+    const {
+      codeChallenge,
+      codeChallengeMethod,
+      state,
+    } = await startResponse.json();
+
+    const redirectUri =
+      `${window.location.origin}/api/auth/callback`;
+
     const params = new URLSearchParams({
-      client_id: config?.client_id || "hsaai-frontend",
+      client_id:
+        config?.client_id || "hsaai-frontend",
       redirect_uri: redirectUri,
       response_type: "code",
       scope: "openid profile email roles",
       code_challenge: codeChallenge,
       code_challenge_method: codeChallengeMethod,
-      state: state,
+      state,
     });
 
-    const authEndpoint = config?.authorization_endpoint ||
+    const authEndpoint =
+      config?.authorization_endpoint ||
       `${config?.issuer || "http://keycloak:8080/realms/hsaai"}/protocol/openid-connect/auth`;
 
-    window.location.href = `${authEndpoint}?${params.toString()}`;
+    window.location.href =
+      `${authEndpoint}?${params.toString()}`;
   }
 
   /**
-   * Resource Owner Password Credentials login (for CLI/API clients).
-   * Browser clients should use login() which uses PKCE.
+   * Resource Owner Password Credentials login.
+   *
+   * Intended for non-browser clients and controlled
+   * internal integrations. Browser authentication should
+   * use login() with PKCE.
    */
-  async function loginWithPassword(username: string, password: string) {
-    const response = await fetch(`${API_BASE}/v1/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ username, password }),
-    });
+  async function loginWithPassword(
+    username: string,
+    password: string,
+  ) {
+    const response = await fetch(
+      `${API_BASE}/v1/auth/login`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          username,
+          password,
+        }),
+      },
+    );
+
     if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.detail || "Login failed");
+      const error = await response
+        .json()
+        .catch(() => ({}));
+
+      throw new Error(
+        error.detail || "Login failed",
+      );
     }
+
     const data = await response.json();
+
     setUser(data.user);
     scheduleRefresh();
   }
 
   async function logout() {
     try {
-      await fetch(`${API_BASE}/v1/auth/logout`, {
-        method: "POST",
-        credentials: "include",
-      });
+      await fetch(
+        `${API_BASE}/v1/auth/logout`,
+        {
+          method: "POST",
+          credentials: "include",
+        },
+      );
     } catch {
-      // Best-effort logout
+      // Best-effort backend logout.
     }
-    // Also redirect to Keycloak end_session_endpoint for front-channel logout
-    if (config?.end_session_endpoint) {
-      const idTokenHint = ""; // id_token not accessible from JS (httpOnly)
-      window.location.href = config.end_session_endpoint;
-      return;
-    }
-    setUser(null);
-    if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
-  }
 
-  async function refreshToken() {
-    try {
-      const response = await fetch(`${API_BASE}/v1/auth/refresh`, {
-        method: "POST",
-        credentials: "include",
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setUser(data.user);
-        scheduleRefresh();
-      } else {
-        // Refresh failed — session expired
-        setUser(null);
-      }
-    } catch {
-      setUser(null);
+    if (refreshTimerRef.current) {
+      clearTimeout(refreshTimerRef.current);
+      refreshTimerRef.current = null;
+    }
+
+    setUser(null);
+
+    if (config?.end_session_endpoint) {
+      window.location.href =
+        config.end_session_endpoint;
     }
   }
 
@@ -258,20 +346,18 @@ export function useAuth() {
 
 export function useRoles(): string[] {
   const { user } = useAuth();
+
   return user?.roles || ["viewer"];
 }
 
 /**
- * FIX v2.1 (P0): exchangeCodeForTokens — server-side callable function that
- * exchanges an OIDC authorization code for access/refresh tokens.
- * Used by the /api/auth/callback route handler (Next.js Route Handler).
+ * Server-side OIDC authorization-code exchange.
  *
- * FIX F-04: Now accepts the PKCE code_verifier (read from httpOnly cookie by
- * the caller). Previously did not send code_verifier → PKCE verification failed
- * server-side at Keycloak.
+ * This function is intended to be called by the
+ * Next.js /api/auth/callback route.
  *
- * This function runs server-side only (in the Next.js server runtime).
- * It performs the back-channel token exchange with Keycloak using PKCE.
+ * The code_verifier is read server-side from the
+ * secure httpOnly PKCE cookie.
  */
 export async function exchangeCodeForTokens(
   code: string,
@@ -283,19 +369,35 @@ export async function exchangeCodeForTokens(
   id_token?: string;
   expires_in?: number;
 }> {
-  const keycloakUrl = process.env.KEYCLOAK_URL || "http://keycloak:8080";
-  const realm = process.env.KEYCLOAK_REALM || "hsaai";
-  const clientId = process.env.KEYCLOAK_CLIENT_ID || "hsaai-frontend";
-  const clientSecret = process.env.KEYCLOAK_CLIENT_SECRET;
+  const keycloakUrl =
+    process.env.KEYCLOAK_URL ||
+    "http://keycloak:8080";
+
+  const realm =
+    process.env.KEYCLOAK_REALM ||
+    "hsaai";
+
+  const clientId =
+    process.env.KEYCLOAK_CLIENT_ID ||
+    "hsaai-frontend";
+
+  const clientSecret =
+    process.env.KEYCLOAK_CLIENT_SECRET;
 
   if (!clientSecret) {
-    throw new Error("KEYCLOAK_CLIENT_SECRET is not set — cannot exchange code for tokens");
-  }
-  if (!codeVerifier) {
-    throw new Error("PKCE code_verifier is missing — cannot complete token exchange");
+    throw new Error(
+      "KEYCLOAK_CLIENT_SECRET is not set — cannot exchange code for tokens",
+    );
   }
 
-  const tokenEndpoint = `${keycloakUrl}/realms/${realm}/protocol/openid-connect/token`;
+  if (!codeVerifier) {
+    throw new Error(
+      "PKCE code_verifier is missing — cannot complete token exchange",
+    );
+  }
+
+  const tokenEndpoint =
+    `${keycloakUrl}/realms/${realm}/protocol/openid-connect/token`;
 
   const body = new URLSearchParams({
     grant_type: "authorization_code",
@@ -303,18 +405,27 @@ export async function exchangeCodeForTokens(
     redirect_uri: redirectUri,
     client_id: clientId,
     client_secret: clientSecret,
-    code_verifier: codeVerifier,  // FIX F-04: required for PKCE verification
+    code_verifier: codeVerifier,
   });
 
-  const response = await fetch(tokenEndpoint, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body,
-  });
+  const response = await fetch(
+    tokenEndpoint,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type":
+          "application/x-www-form-urlencoded",
+      },
+      body,
+    },
+  );
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Token exchange failed: ${response.status} ${errorText}`);
+
+    throw new Error(
+      `Token exchange failed: ${response.status} ${errorText}`,
+    );
   }
 
   return response.json();

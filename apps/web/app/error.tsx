@@ -38,13 +38,11 @@ function reportRouteError(error: Error & { digest?: string }) {
 
   if (!isProd) {
     // Dev: keep console.error for developer visibility.
-    // eslint-disable-next-line no-console
     console.error("Route error:", error);
     return;
   }
 
   // Prod: structured JSON log (captured by Next.js / OTLP exporter when configured).
-  // eslint-disable-next-line no-console
   console.error(JSON.stringify(event));
 
   // Hook for future Sentry/OTEL integration without hard dependency.

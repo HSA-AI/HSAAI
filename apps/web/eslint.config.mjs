@@ -10,7 +10,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const compat = new FlatCompat({ baseDirectory: __dirname });
 
-export default [
+const eslintConfig = [
   { ignores: [".next/**", "node_modules/**", "next-env.d.ts"] },
   // Extends next/core-web-vitals (react, react-hooks, @next/next rule sets).
   ...compat.extends("next/core-web-vitals"),
@@ -31,3 +31,5 @@ export default [
     },
   },
 ];
+
+export default eslintConfig;

@@ -1,5 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { describe, it, expect } from "vitest";
 
 // Simple smoke test for brand constants
 describe("HSAAI Brand", () => {

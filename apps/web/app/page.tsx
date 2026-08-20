@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -50,7 +51,7 @@ export default function Page() {
         <header className="mb-8 flex flex-wrap items-center justify-between gap-5">
           <div className="flex items-center gap-4">
             <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-[1.25rem] border border-hsa-yellow/30 bg-hsa-yellow shadow-2xl shadow-hsa-yellow/20 sm:h-20 sm:w-20">
-              <img src={brand.logoPath} alt="HSAAI Official Logo" className="h-full w-full object-cover" />
+              <Image src={brand.logoPath} alt="HSAAI Official Logo" width={64} height={64} className="h-full w-full object-cover" />
             </div>
             <div>
               <h1 className="text-3xl font-black tracking-tight sm:text-4xl">{brand.platformName}</h1>
@@ -63,7 +64,7 @@ export default function Page() {
               className="inline-flex items-center gap-2 rounded-full bg-hsa-yellow px-5 py-3 text-sm font-black text-hsa-black shadow-xl shadow-hsa-yellow/20 transition hover:-translate-y-0.5 hover:bg-hsa-gold"
               aria-label="فتح المساعد الذكي وبدء محادثة جديدة"
             >
-              <img src={brand.assistant.iconPath} alt="HSAAI Enterprise Assistant" className="h-7 w-7 rounded-full object-cover ring-1 ring-black/10" />
+              <Image src={brand.assistant.iconPath} alt="HSAAI Enterprise Assistant" width={28} height={28} className="h-7 w-7 rounded-full object-cover ring-1 ring-black/10" />
               المساعد الذكي
             </Link>
             <span className="rounded-full border border-hsa-yellow/25 bg-hsa-yellow/10 px-4 py-2 text-hsa-yellow">Enterprise AI</span>
@@ -77,7 +78,7 @@ export default function Page() {
             <div className="rounded-[2.25rem] border border-hsa-yellow/25 bg-white/[0.045] p-5 shadow-2xl shadow-black/40 backdrop-blur sm:p-8 lg:p-10">
               <div className="mx-auto max-w-4xl text-center">
                 <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-4 border-hsa-yellow bg-black shadow-2xl shadow-hsa-yellow/20 sm:h-28 sm:w-28">
-                  <img src={brand.assistant.iconPath} alt="HSAAI Enterprise Assistant" className="h-full w-full object-cover" />
+                  <Image src={brand.assistant.iconPath} alt="HSAAI Enterprise Assistant" width={64} height={64} className="h-full w-full object-cover" />
                 </div>
                 <p className="text-sm font-black text-hsa-yellow">HSAAI Enterprise Assistant First Experience</p>
                 <h2 className="mt-3 text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl">كيف يمكنني مساعدتك اليوم؟</h2>
@@ -105,7 +106,7 @@ export default function Page() {
                     className="group flex min-w-[12rem] items-center justify-center gap-3 rounded-[1.75rem] border border-hsa-yellow bg-hsa-yellow px-6 py-4 text-base font-black text-hsa-black shadow-2xl shadow-hsa-yellow/20 transition hover:-translate-y-0.5 hover:bg-hsa-gold sm:py-5"
                     aria-label="فتح المساعد الذكي"
                   >
-                    <img src={brand.assistant.iconPath} alt="HSAAI Enterprise Assistant" className="h-9 w-9 rounded-full object-cover ring-1 ring-black/10" />
+                    <Image src={brand.assistant.iconPath} alt="HSAAI Enterprise Assistant" width={36} height={36} className="h-9 w-9 rounded-full object-cover ring-1 ring-black/10" />
                     المساعد الذكي
                   </Link>
                 </div>
@@ -127,7 +128,7 @@ export default function Page() {
                   const Icon = item.icon;
                   return (
                     <Link key={item.title} href={item.href} className={`group rounded-[1.5rem] border p-5 transition hover:-translate-y-0.5 ${item.primary ? "border-hsa-yellow/45 bg-hsa-yellow/15" : "border-white/10 bg-white/[0.035] hover:border-hsa-yellow/30 hover:bg-hsa-yellow/[0.06]"}`}>
-                      <span className={`mb-4 flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl ${item.primary ? "bg-hsa-yellow text-hsa-black" : "bg-white/5 text-hsa-yellow"}`}>{item.primary ? <img src={brand.assistant.iconPath} alt="HSAAI Enterprise Assistant" className="h-full w-full rounded-2xl object-cover" /> : <Icon size={20} />}</span>
+                      <span className={`mb-4 flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl ${item.primary ? "bg-hsa-yellow text-hsa-black" : "bg-white/5 text-hsa-yellow"}`}>{item.primary ? <Image src={brand.assistant.iconPath} alt="HSAAI Enterprise Assistant" width={44} height={44} className="h-full w-full rounded-2xl object-cover" /> : <Icon size={20} />}</span>
                       <strong className="block text-lg font-black">{item.title}</strong>
                       <span className="mt-1 block text-sm leading-6 text-slate-400">{item.desc}</span>
                     </Link>
@@ -145,7 +146,7 @@ export default function Page() {
                   return (
                     <Link key={item.title} href={item.href} className="group rounded-[1.5rem] border border-white/10 bg-white/[0.035] p-5 transition hover:border-hsa-yellow/35 hover:bg-hsa-yellow/[0.055]">
                       <div className="flex items-start justify-between gap-4">
-                        <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-hsa-yellow/10 text-hsa-yellow">{item.title === "المساعد" ? <img src={brand.assistant.iconPath} alt="HSAAI Enterprise Assistant" className="h-full w-full rounded-2xl object-cover" /> : <Icon size={20} />}</span>
+                        <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-hsa-yellow/10 text-hsa-yellow">{item.title === "المساعد" ? <Image src={brand.assistant.iconPath} alt="HSAAI Enterprise Assistant" width={44} height={44} className="h-full w-full rounded-2xl object-cover" /> : <Icon size={20} />}</span>
                         <ArrowLeft size={18} className="mt-2 text-slate-500 transition group-hover:-translate-x-1 group-hover:text-hsa-yellow" />
                       </div>
                       <h4 className="mt-4 text-xl font-black">{item.title}</h4>
@@ -184,7 +185,7 @@ export default function Page() {
         className="fixed bottom-5 left-5 z-50 inline-flex items-center gap-3 rounded-full bg-hsa-yellow px-5 py-4 text-sm font-black text-hsa-black shadow-2xl shadow-hsa-yellow/25 transition hover:-translate-y-0.5 hover:bg-hsa-gold sm:hidden"
         aria-label="فتح المساعد الذكي من الزر العائم"
       >
-        <img src={brand.assistant.iconPath} alt="HSAAI Enterprise Assistant" className="h-8 w-8 rounded-full object-cover" />
+        <Image src={brand.assistant.iconPath} alt="HSAAI Enterprise Assistant" width={32} height={32} className="h-8 w-8 rounded-full object-cover" />
         المساعد الذكي
       </Link>
     </main>
