@@ -204,3 +204,4 @@ storage/audit_logs/*.log
 .env.production
 .env.production.*
 .repair-backup/
+.recovery/
