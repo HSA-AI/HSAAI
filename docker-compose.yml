@@ -809,6 +809,8 @@ volumes:
   prometheus_data:
   keycloak_data:
   minio_data:  # Phase 2: object storage
+  vault_data:
+  vault_audit:
   thanos_store_data:  # Phase 3: long-term metrics
   thanos_compactor_data:
   thanos_ruler_data:

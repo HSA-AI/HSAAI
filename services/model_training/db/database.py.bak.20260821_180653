@@ -1,0 +1,58 @@
+from __future__ import annotations
+
+from sqlalchemy import create_engine, event, text
+from sqlalchemy.orm import sessionmaker, DeclarativeBase
+
+from services.model_training.config import settings
+
+
+engine = create_engine(
+    settings.database_url,
+    pool_pre_ping=True,
+    future=True,
+)
+
+
+SessionLocal = sessionmaker(
+    bind=engine,
+    autoflush=False,
+    autocommit=False,
+    future=True,
+)
+
+
+class Base(DeclarativeBase):
+    pass
+
+
+def set_tenant_id(db, tenant_id: str) -> None:
+    """
+    Set the PostgreSQL transaction-local tenant context.
+
+    RLS policies use:
+        current_setting('app.tenant_id', true)
+
+    The value is intentionally set with SET LOCAL so it cannot
+    leak into a later transaction using the same pooled connection.
+    """
+    if not tenant_id:
+        raise ValueError("tenant_id is required")
+
+    tenant_id = str(tenant_id).strip()
+
+    if not tenant_id:
+        raise ValueError("tenant_id cannot be empty")
+
+    db.execute(
+        text("SELECT set_config('app.tenant_id', :tenant_id, true)"),
+        {"tenant_id": tenant_id},
+    )
+
+
+def get_db():
+    db = SessionLocal()
+
+    try:
+        yield db
+    finally:
+        db.close()

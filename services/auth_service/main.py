@@ -383,8 +383,8 @@ def keycloak_config():
 
 @app.post("/v1/auth/authorize")
 def authorize(
+    response: Response,
     redirect_uri: str = "http://localhost:3000/api/auth/callback",
-    response: Response | None = None,
 ):
     code_verifier = generate_code_verifier()
     code_challenge = generate_code_challenge(

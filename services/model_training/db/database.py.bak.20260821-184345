@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from collections.abc import Generator
+from typing import Any
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, event, text
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from services.model_training.config import settings
@@ -44,16 +45,16 @@ class Base(DeclarativeBase):
 # Tenant / PostgreSQL RLS
 # ============================================================
 
-MAX_TENANT_ID_LENGTH = 64
+TENANT_ID_MAX_LENGTH = 64
+TENANT_SESSION_KEY = "tenant_id"
 
 
 def validate_tenant_id(tenant_id: str) -> str:
     """
-    Validate and normalize tenant_id.
+    Validate tenant_id.
 
-    IMPORTANT:
-    tenant_id must come from authenticated JWT claims.
-    Never trust a tenant ID supplied by a client header/body.
+    tenant_id MUST come from authenticated JWT/service claims.
+    Never accept an arbitrary client supplied tenant as trusted input.
     """
     if tenant_id is None:
         raise ValueError("tenant_id is required")
@@ -63,25 +64,23 @@ def validate_tenant_id(tenant_id: str) -> str:
     if not value:
         raise ValueError("tenant_id cannot be empty")
 
-    if len(value) > MAX_TENANT_ID_LENGTH:
-        raise ValueError(
-            "tenant_id exceeds maximum length"
-        )
+    if len(value) > TENANT_ID_MAX_LENGTH:
+        raise ValueError("tenant_id exceeds maximum length")
 
     return value
 
 
 def set_tenant_id(db: Session, tenant_id: str) -> None:
     """
-    Bind the current PostgreSQL transaction/session to a tenant.
+    Store tenant context on the SQLAlchemy Session and immediately
+    apply it to the current PostgreSQL transaction.
 
-    PostgreSQL RLS policies can read:
-
-        current_setting('app.tenant_id', true)
-
-    The value must originate from authenticated JWT claims.
+    SET LOCAL is intentionally used so the setting cannot leak
+    permanently to another pooled PostgreSQL connection.
     """
     tenant_id = validate_tenant_id(tenant_id)
+
+    db.info[TENANT_SESSION_KEY] = tenant_id
 
     db.execute(
         text(
@@ -91,15 +90,25 @@ def set_tenant_id(db: Session, tenant_id: str) -> None:
             "true"
             ")"
         ),
-        {
-            "tenant_id": tenant_id,
-        },
+        {"tenant_id": tenant_id},
     )
+
+
+def get_session_tenant_id(db: Session) -> str | None:
+    """
+    Return tenant stored on the SQLAlchemy Session.
+    """
+    value = db.info.get(TENANT_SESSION_KEY)
+
+    if value is None:
+        return None
+
+    return str(value)
 
 
 def get_current_tenant_id(db: Session) -> str | None:
     """
-    Return the tenant currently configured for this database session.
+    Return the tenant currently active in PostgreSQL.
     """
     result = db.execute(
         text(
@@ -112,54 +121,81 @@ def get_current_tenant_id(db: Session) -> str | None:
 
     value = result.scalar()
 
-    if value is None:
+    if value is None or value == "":
         return None
 
-    value = str(value).strip()
-
-    return value or None
+    return str(value)
 
 
 def require_tenant_id(db: Session) -> str:
     """
-    Require an active tenant context.
-
-    Raises RuntimeError if the session has no tenant configured.
+    Require a configured tenant context.
     """
-    tenant_id = get_current_tenant_id(db)
+    tenant_id = get_session_tenant_id(db)
+
+    if not tenant_id:
+        tenant_id = get_current_tenant_id(db)
 
     if not tenant_id:
         raise RuntimeError(
             "PostgreSQL RLS tenant context is not configured"
         )
 
-    return validate_tenant_id(tenant_id)
+    return tenant_id
 
 
 # ============================================================
-# Database Dependency
+# Automatically restore SET LOCAL after every transaction
+# ============================================================
+
+@event.listens_for(Session, "after_begin")
+def _apply_tenant_after_begin(
+    session: Session,
+    transaction: Any,
+    connection,
+) -> None:
+    """
+    Re-apply the tenant context whenever SQLAlchemy starts a new
+    database transaction.
+
+    This is necessary because SET LOCAL is cleared by COMMIT/ROLLBACK.
+    """
+    tenant_id = session.info.get(TENANT_SESSION_KEY)
+
+    if not tenant_id:
+        return
+
+    connection.execute(
+        text(
+            "SELECT set_config("
+            "'app.tenant_id', "
+            ":tenant_id, "
+            "true"
+            ")"
+        ),
+        {"tenant_id": validate_tenant_id(tenant_id)},
+    )
+
+
+# ============================================================
+# FastAPI Database Dependency
 # ============================================================
 
 def get_db() -> Generator[Session, None, None]:
     """
-    Standard FastAPI database dependency.
+    Standard SQLAlchemy dependency.
 
     IMPORTANT:
-    This function intentionally does NOT invent a tenant.
-
-    Protected API dependencies must call set_tenant_id()
-    using tenant_id extracted from authenticated JWT claims
-    before executing tenant-scoped queries.
+    The tenant-aware API dependency must call set_tenant_id()
+    before executing tenant protected queries.
     """
     db = SessionLocal()
 
     try:
         yield db
-
     except Exception:
         db.rollback()
         raise
-
     finally:
         db.close()
 
@@ -172,17 +208,18 @@ def get_tenant_db(
     tenant_id: str,
 ) -> Generator[Session, None, None]:
     """
-    Create a tenant-bound SQLAlchemy session.
-
-    Intended for internal/service/worker code where the tenant
-    has already been obtained from a trusted authenticated context.
+    Internal tenant-aware database dependency/helper.
     """
     tenant_id = validate_tenant_id(tenant_id)
 
     db = SessionLocal()
 
     try:
+        db.info[TENANT_SESSION_KEY] = tenant_id
+
+        # Start transaction and apply RLS context.
         set_tenant_id(db, tenant_id)
+
         yield db
 
     except Exception:
@@ -199,21 +236,19 @@ def get_tenant_db(
 
 def check_database_connection() -> bool:
     """
-    Verify that PostgreSQL is reachable.
+    Verify PostgreSQL connectivity.
     """
     try:
         with engine.connect() as connection:
             connection.execute(text("SELECT 1"))
-
         return True
-
     except Exception:
         return False
 
 
 def database_health() -> dict[str, object]:
     """
-    Return database health information.
+    Return PostgreSQL health information.
     """
     try:
         with engine.connect() as connection:

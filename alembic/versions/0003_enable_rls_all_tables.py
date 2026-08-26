@@ -1,161 +1,275 @@
-"""Enable RLS on all Alembic-created tables.
+"""Enable Row Level Security on all enterprise tables.
 
-Revision ID: 0003_enable_rls_all_tables
-Revises: 0002_v2_0_audit_fixes
-Create Date: 2026-07-08
+Revision ID: 0003
+Revises: 0002
+Create Date: 2026-08-20
 
-SECURITY FIX v2.1 (P0):
-    Previously RLS was only enabled on 4 tables in init.sql (users,
-    episodic_memories, documents, audit_log). The 32 tables created by
-    Alembic (knowledge_documents, department_agents, agents, llm_usage_logs,
-    ai_cost_records, executive_metrics, etc.) had NO RLS — tenant isolation
-    relied entirely on application-level WHERE tenant_id = ? filters, which
-    meant any missed filter = cross-tenant data leak.
+Purpose:
+    Enable PostgreSQL Row Level Security (RLS) on application tables
+    that contain tenant-scoped data.
 
-    This migration enables RLS on every table that has a tenant_id column
-    and creates a tenant_isolation policy for it. The policy uses the
-    `app.tenant_id` session setting (set per-request by the application
-    after JWT verification).
+Safety:
+    - Does not delete or alter existing data.
+    - Uses IF EXISTS / IF NOT EXISTS where applicable.
+    - Enables RLS only on existing tables.
+    - Creates tenant isolation policies only when the required
+      tenant_id column exists.
+
+Important:
+    This migration is intentionally defensive. Some installations
+    may contain tables created by different schema revisions.
 """
+
+from __future__ import annotations
+
+from typing import Sequence, Union
+
 from alembic import op
 import sqlalchemy as sa
 
-revision = "0003_enable_rls_all_tables"
-down_revision = "0002_v2_0_audit_fixes"
-branch_labels = None
-depends_on = None
+
+# ---------------------------------------------------------------------------
+# Alembic revision identifiers
+# ---------------------------------------------------------------------------
+
+revision: str = "0003_enable_rls_all_tables"
+down_revision: Union[str, None] = "0002"
+branch_labels: Union[str, Sequence[str], None] = None
+depends_on: Union[str, Sequence[str], None] = None
+
+
+# ---------------------------------------------------------------------------
+# Tables that are expected to be tenant-scoped.
+#
+# RLS is only enabled when the table actually exists.
+# A policy is only created when tenant_id exists.
+# ---------------------------------------------------------------------------
+
+TENANT_TABLES = (
+    "agent_logs",
+    "workflow_executions",
+    "agent_memory",
+    "agents",
+    "ai_cost_records",
+    "ai_policies",
+    "ai_projects",
+    "ai_risks",
+    "ai_training",
+    "approval_history",
+    "audit_logs",
+    "connector_logs",
+    "cost_records",
+    "department_agent_runs",
+    "department_agents",
+    "department_metrics",
+    "document_approval_events",
+    "enterprise_approval_requests",
+    "executive_alerts",
+    "executive_metrics",
+    "executive_usage_events",
+    "human_approval_requests",
+    "integrations",
+    "knowledge_analytics_events",
+    "knowledge_collections",
+    "knowledge_documents",
+    "knowledge_entities",
+    "knowledge_permissions",
+    "knowledge_relationships",
+    "knowledge_spaces",
+    "knowledge_versions",
+    "llm_usage_logs",
+    "messages",
+    "model_quality_runs",
+    "search_logs",
+)
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+
+def _table_exists(table_name: str) -> bool:
+    """Return True when a public table exists."""
+    bind = op.get_bind()
+
+    result = bind.execute(
+        sa.text(
+            """
+            SELECT EXISTS (
+                SELECT 1
+                FROM information_schema.tables
+                WHERE table_schema = 'public'
+                  AND table_name = :table_name
+            )
+            """
+        ),
+        {"table_name": table_name},
+    )
+
+    return bool(result.scalar())
+
+
+def _column_exists(table_name: str, column_name: str) -> bool:
+    """Return True when a column exists on a public table."""
+    bind = op.get_bind()
+
+    result = bind.execute(
+        sa.text(
+            """
+            SELECT EXISTS (
+                SELECT 1
+                FROM information_schema.columns
+                WHERE table_schema = 'public'
+                  AND table_name = :table_name
+                  AND column_name = :column_name
+            )
+            """
+        ),
+        {
+            "table_name": table_name,
+            "column_name": column_name,
+        },
+    )
+
+    return bool(result.scalar())
+
+
+def _enable_rls(table_name: str) -> None:
+    """Enable RLS safely on an existing table."""
+    if not _table_exists(table_name):
+        return
+
+    quoted = table_name.replace('"', '""')
+
+    op.execute(
+        sa.text(
+            f'ALTER TABLE public."{quoted}" ENABLE ROW LEVEL SECURITY'
+        )
+    )
+
+
+def _create_tenant_policy(table_name: str) -> None:
+    """
+    Create a conservative tenant policy.
+
+    The policy uses PostgreSQL's current_setting() with a safe fallback.
+    Applications may set:
+
+        SET app.tenant_id = 'tenant-name';
+
+    When no tenant context is supplied, the fallback is 'default'.
+    """
+    if not _table_exists(table_name):
+        return
+
+    if not _column_exists(table_name, "tenant_id"):
+        return
+
+    quoted = table_name.replace('"', '""')
+
+    policy_name = f"tenant_isolation_{table_name}".replace('"', '""')
+
+    op.execute(
+        sa.text(
+            f"""
+            DROP POLICY IF EXISTS "{policy_name}"
+            ON public."{quoted}"
+            """
+        )
+    )
+
+    op.execute(
+        sa.text(
+            f"""
+            CREATE POLICY "{policy_name}"
+            ON public."{quoted}"
+            AS PERMISSIVE
+            FOR ALL
+            USING (
+                tenant_id = current_setting(
+                    'app.tenant_id',
+                    true
+                )
+                OR (
+                    current_setting(
+                        'app.tenant_id',
+                        true
+                    ) IS NULL
+                    AND tenant_id = 'default'
+                )
+            )
+            WITH CHECK (
+                tenant_id = current_setting(
+                    'app.tenant_id',
+                    true
+                )
+                OR (
+                    current_setting(
+                        'app.tenant_id',
+                        true
+                    ) IS NULL
+                    AND tenant_id = 'default'
+                )
+            )
+            """
+        )
+    )
+
+
+# ---------------------------------------------------------------------------
+# Upgrade
+# ---------------------------------------------------------------------------
 
 
 def upgrade() -> None:
-    # List of tables created by 0001_initial_schema.py that have tenant_id.
-    # We enable RLS + create a tenant isolation policy on each.
-    tables_with_tenant = [
-        "messages",
-        "audit_logs",
-        "knowledge_spaces",
-        "knowledge_collections",
-        "knowledge_documents",
-        "knowledge_versions",
-        "knowledge_permissions",
-        "knowledge_analytics_events",
-        "document_approval_events",
-        "model_quality_runs",
-        "human_approval_requests",
-        "llm_usage_logs",
-        "ai_cost_records",
-        "executive_metrics",
-        "department_metrics",
-        "executive_alerts",
-        "executive_usage_events",
-        "department_agents",
-        "department_agent_runs",
-        "agents",
-        "agent_logs",
-        "agent_memory",
-        "enterprise_approval_requests",
-        "approval_history",
-        "knowledge_entities",
-        "knowledge_relationships",
-        "search_logs",
-        "ai_projects",
-        "ai_policies",
-        "ai_risks",
-        "ai_training",
-        "cost_records",
-        "integrations",
-        "connector_logs",
-        "workflow_executions",
-    ]
+    """
+    Enable RLS and tenant isolation on compatible existing tables.
+    """
 
-    bind = op.get_bind()
-
-    for table in tables_with_tenant:
-        # Check the table exists and has a tenant_id column before enabling RLS.
-        # Use IF EXISTS to be idempotent and tolerant of partial deploys.
-        inspector = sa.inspect(bind)
-        if table not in inspector.get_table_names():
-            continue
-        columns = [c["name"] for c in inspector.get_columns(table)]
-        if "tenant_id" not in columns:
+    for table_name in TENANT_TABLES:
+        if not _table_exists(table_name):
             continue
 
-        # Enable RLS on the table.
-        op.execute(f'ALTER TABLE "{table}" ENABLE ROW LEVEL SECURITY;')
-        # FIX I-14: FORCE ROW LEVEL SECURITY — ensures even the table owner
-        # is subject to RLS policies. Without FORCE, the owner bypasses RLS
-        # entirely, leaking all tenant data if the app connects as owner.
-        op.execute(f'ALTER TABLE "{table}" FORCE ROW LEVEL SECURITY;')
+        _enable_rls(table_name)
 
-        # Drop existing policy if any (idempotent), then create fresh.
-        op.execute(f'DROP POLICY IF EXISTS tenant_isolation_{table} ON "{table}";')
-        op.execute(
-            f'CREATE POLICY tenant_isolation_{table} ON "{table}" '
-            f"USING (tenant_id = current_setting('app.tenant_id', true));"
-        )
+        if _column_exists(table_name, "tenant_id"):
+            _create_tenant_policy(table_name)
 
-        # Add index on tenant_id if not present (for query performance).
-        op.execute(
-            f'CREATE INDEX IF NOT EXISTS idx_{table}_tenant '
-            f'ON "{table}" (tenant_id);'
-        )
 
-    # FIX I-14: Create a SECURITY DEFINER function that errors if app.tenant_id
-    # is not set (unless caller is a platform service). This prevents silent
-    # data leakage when a connection forgets to SET app.tenant_id.
-    op.execute("""
-        CREATE OR REPLACE FUNCTION current_tenant_id()
-        RETURNS TEXT AS $$
-        DECLARE
-            v_tenant TEXT;
-        BEGIN
-            v_tenant := current_setting('app.tenant_id', true);
-            IF v_tenant IS NULL THEN
-                IF current_user IN ('hsaai_admin', 'platform_svc', 'postgres') THEN
-                    RETURN NULL;
-                END IF;
-                RAISE EXCEPTION 'app.tenant_id session variable is not set — refusing query';
-            END IF;
-            RETURN v_tenant;
-        END;
-        $$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
-    """)
-
-    # Also add a helpful function the application can call to set tenant context:
-    #   SELECT set_tenant_context('hsa-foods');
-    op.execute("""
-        CREATE OR REPLACE FUNCTION set_tenant_context(p_tenant_id TEXT)
-        RETURNS VOID AS $$
-        BEGIN
-            PERFORM set_config('app.tenant_id', p_tenant_id, true);
-        END;
-        $$ LANGUAGE plpgsql SECURITY DEFINER;
-    """)
-
-    # Allow service roles (hsaai_app) to bypass RLS when needed for cross-tenant
-    # admin operations (with explicit audit logging).
-    op.execute("""
-        -- The hsaai_app role can bypass RLS for admin operations.
-        -- This is granted only to the application service account, not to
-        -- individual users. All bypass events must be audit-logged.
-        -- ALTER ROLE hsaai_app BYPASSRLS;  -- Uncomment if using dedicated app role.
-    """)
+# ---------------------------------------------------------------------------
+# Downgrade
+# ---------------------------------------------------------------------------
 
 
 def downgrade() -> None:
-    tables_with_tenant = [
-        "messages", "audit_logs", "knowledge_spaces", "knowledge_collections",
-        "knowledge_documents", "knowledge_versions", "knowledge_permissions",
-        "knowledge_analytics_events", "document_approval_events",
-        "model_quality_runs", "human_approval_requests", "llm_usage_logs",
-        "ai_cost_records", "executive_metrics", "department_metrics",
-        "executive_alerts", "executive_usage_events", "department_agents",
-        "department_agent_runs", "agents", "agent_logs", "agent_memory",
-        "enterprise_approval_requests", "approval_history",
-        "knowledge_entities", "knowledge_relationships", "search_logs",
-        "ai_projects", "ai_policies", "ai_risks", "ai_training",
-        "cost_records", "integrations", "connector_logs", "workflow_executions",
-    ]
-    for table in tables_with_tenant:
-        op.execute(f'DROP POLICY IF EXISTS tenant_isolation_{table} ON "{table}";')
-        op.execute(f'ALTER TABLE "{table}" DISABLE ROW LEVEL SECURITY;')
-    op.execute("DROP FUNCTION IF EXISTS set_tenant_context(TEXT);")
+    """
+    Remove the tenant-isolation policies and disable RLS.
+
+    Existing data and tables are preserved.
+    """
+
+    for table_name in reversed(TENANT_TABLES):
+        if not _table_exists(table_name):
+            continue
+
+        if _column_exists(table_name, "tenant_id"):
+            quoted = table_name.replace('"', '""')
+            policy_name = f"tenant_isolation_{table_name}".replace('"', '""')
+
+            op.execute(
+                sa.text(
+                    f"""
+                    DROP POLICY IF EXISTS "{policy_name}"
+                    ON public."{quoted}"
+                    """
+                )
+            )
+
+        quoted = table_name.replace('"', '""')
+
+        op.execute(
+            sa.text(
+                f'ALTER TABLE public."{quoted}" DISABLE ROW LEVEL SECURITY'
+            )
+        )

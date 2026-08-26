@@ -32,9 +32,10 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 
 revision: str = "0005"
-down_revision: Union[str, None] = "0004"
+down_revision: Union[str, None] = "0004_model_training_tenant_isolation"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -70,7 +71,7 @@ def upgrade() -> None:
         sa.Column("category", sa.String(50), server_default="general"),
         sa.Column("severity", sa.String(20), server_default="info"),
         sa.Column("confidence_score", sa.Float, server_default="0.85"),
-        sa.Column("source_data", sa.JSON, server_default="{}"),
+        sa.Column("source_data", postgresql.JSONB(), server_default="{}"),
         sa.Column("model_name", sa.String(100), server_default="hsaai-analytics"),
         sa.Column("status", sa.String(20), server_default="active"),
         sa.Column("tenant_id", sa.String(100), server_default="default", nullable=False),
@@ -111,7 +112,7 @@ def upgrade() -> None:
         sa.Column("report_type", sa.String(50), server_default="dashboard"),
         sa.Column("dashboard_url", sa.String(500), server_default=""),
         sa.Column("powerbi_report_id", sa.String(100), nullable=True),
-        sa.Column("permissions", sa.JSON, server_default="{}"),
+        sa.Column("permissions", postgresql.JSONB(), server_default="{}"),
         sa.Column("tenant_id", sa.String(100), server_default="default", nullable=False),
         sa.Column("workspace_id", sa.String(100), server_default="default"),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("NOW()")),
