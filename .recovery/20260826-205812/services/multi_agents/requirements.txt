@@ -1,0 +1,4 @@
+# FIX B-15: Shared dependencies live in packages/common/requirements.txt
+# to prevent drift across api_gateway, multi_agents, and workflow_engine.
+# Add any multi_agents-specific packages below this line.
+-r ../../packages/common/requirements.txt

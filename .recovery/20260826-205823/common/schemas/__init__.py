@@ -1,0 +1,1 @@
+"""HSAAI common schemas package."""

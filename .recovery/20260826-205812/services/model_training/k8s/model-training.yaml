@@ -1,0 +1,96 @@
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hsaai-model-training-config
+data:
+  REDIS_URL: redis://hsaai-training-redis:6379/0
+  ARTIFACTS_ROOT: /artifacts
+  HF_HOME: /hf-cache
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hsaai-model-training-secret
+type: Opaque
+stringData:
+  DATABASE_URL: postgresql+psycopg://hsaai:hsaai@postgres:5432/hsaai_training
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: hsaai-training-artifacts-pvc
+spec:
+  accessModes: ["ReadWriteMany"]
+  resources:
+    requests:
+      storage: 1Ti
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hsaai-model-training-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels: {app: hsaai-model-training-api}
+  template:
+    metadata:
+      labels: {app: hsaai-model-training-api}
+    spec:
+      containers:
+        - name: api
+          image: hsaai/model-training:latest
+          ports: [{containerPort: 8090}]
+          envFrom:
+            - configMapRef: {name: hsaai-model-training-config}
+            - secretRef: {name: hsaai-model-training-secret}
+          volumeMounts:
+            - {name: artifacts, mountPath: /artifacts}
+            - {name: hf-cache, mountPath: /hf-cache}
+      volumes:
+        - name: artifacts
+          persistentVolumeClaim: {claimName: hsaai-training-artifacts-pvc}
+        - name: hf-cache
+          emptyDir: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hsaai-training-worker-gpu
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: hsaai-training-worker-gpu}
+  template:
+    metadata:
+      labels: {app: hsaai-training-worker-gpu}
+    spec:
+      nodeSelector:
+        nvidia.com/gpu.present: "true"
+      containers:
+        - name: worker
+          image: hsaai/model-training:latest
+          command: ["python3.11", "-m", "services.model_training.workers.queue_worker"]
+          resources:
+            limits:
+              nvidia.com/gpu: 1
+          envFrom:
+            - configMapRef: {name: hsaai-model-training-config}
+            - secretRef: {name: hsaai-model-training-secret}
+          volumeMounts:
+            - {name: artifacts, mountPath: /artifacts}
+      volumes:
+        - name: artifacts
+          persistentVolumeClaim: {claimName: hsaai-training-artifacts-pvc}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hsaai-model-training-api
+spec:
+  selector: {app: hsaai-model-training-api}
+  ports:
+    - name: http
+      port: 8090
+      targetPort: 8090
