@@ -284,5 +284,12 @@ services:
     networks:
     - hsaai_private
 volumes:
-  loki_data: null
-  promtail_data: null
+  es_data:
+  grafana_data:
+  keycloak_data:
+  neo4j_data:
+  postgres_data:
+  qdrant_data:
+  ollama_data:
+  loki_data:
+  promtail_data:

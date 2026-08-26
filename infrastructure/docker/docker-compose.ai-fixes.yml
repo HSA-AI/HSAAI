@@ -1,0 +1,59 @@
+services:
+
+  ai_orchestrator:
+    build:
+      context: ../..
+      dockerfile: services/ai_orchestrator/Dockerfile
+
+    environment:
+      MULTI_AGENTS_URL: http://multi_agents:8040
+
+      INTERNAL_ONLY_MODE: "true"
+      ALLOW_EXTERNAL_APIS: "false"
+
+    expose:
+      - "8020"
+
+    depends_on:
+      multi_agents:
+        condition: service_started
+
+    networks:
+      - hsaai_private
+
+    restart: unless-stopped
+
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8020/health', timeout=3)"
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+
+  multi_agents:
+    build:
+      context: ../..
+      dockerfile: services/multi_agents/Dockerfile
+
+    environment:
+      INTERNAL_ONLY_MODE: "true"
+      ALLOW_EXTERNAL_APIS: "false"
+
+      RAG_ENGINE_URL: http://rag_engine:8030
+      LLM_GATEWAY_URL: http://llm_gateway:8090
+
+    expose:
+      - "8040"
+
+    networks:
+      - hsaai_private
+
+    restart: unless-stopped
+
+
+networks:
+  hsaai_private:
+    external: true

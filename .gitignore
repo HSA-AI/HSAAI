@@ -201,3 +201,7 @@ storage/audit_logs/*.log
 
 # TypeScript incremental build cache
 *.tsbuildinfo
+.env.production
+.env.production.*
+.repair-backup/
+.recovery/
