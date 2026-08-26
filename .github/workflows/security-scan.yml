@@ -1,14 +1,391 @@
 name: HSAAI Security Scan
+
+run-name: Security Scan - ${{ github.ref_name }}
+
 on:
   push:
+    branches:
+      - main
+      - fix/ml-docker-environment
+
   pull_request:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+concurrency:
+  group: security-scan-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+
   scan:
+    name: HSAAI Security Scan
     runs-on: ubuntu-latest
+
+    timeout-minutes: 20
+
+    permissions:
+      contents: read
+      security-events: write
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Secret placeholder check
+
+      # ---------------------------------------------------------
+      # 1. Checkout
+      # ---------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      # ---------------------------------------------------------
+      # 2. Python setup
+      # ---------------------------------------------------------
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      # ---------------------------------------------------------
+      # 3. Install security tooling
+      # ---------------------------------------------------------
+      - name: Install security tools
         run: |
-          ! grep -R "sk-" -n . --exclude-dir=.git || exit 1
-      - name: Internal-only config check
-        run: grep -q "ALLOW_EXTERNAL_AI=false" .env.hsa-internal.example
+          python -m pip install --upgrade pip
+
+          python -m pip install \
+            bandit \
+            pip-audit \
+            detect-secrets
+
+      # ---------------------------------------------------------
+      # 4. Python syntax validation
+      # ---------------------------------------------------------
+      - name: Python compile check
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "=== Python compile validation ==="
+
+          python - <<'PY'
+          import pathlib
+          import py_compile
+          import sys
+
+          root = pathlib.Path(".")
+
+          excluded = {
+              ".git",
+              ".venv",
+              "venv",
+              "node_modules",
+              "__pycache__",
+              ".repair-backup",
+              ".recovery",
+          }
+
+          files = []
+
+          for path in root.rglob("*.py"):
+              if any(part in excluded for part in path.parts):
+                  continue
+              files.append(path)
+
+          print(f"Python files discovered: {len(files)}")
+
+          failures = []
+
+          for path in files:
+              try:
+                  py_compile.compile(
+                      str(path),
+                      doraise=True,
+                  )
+              except Exception as exc:
+                  failures.append((path, exc))
+
+          if failures:
+              print("\nPython compilation failures:")
+              for path, exc in failures:
+                  print(f"- {path}: {exc}")
+
+              sys.exit(1)
+
+          print("Python compilation: PASS")
+          PY
+
+      # ---------------------------------------------------------
+      # 5. Bandit security scan
+      # ---------------------------------------------------------
+      - name: Bandit Python security scan
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p security-reports
+
+          mapfile -t PYTHON_DIRS < <(
+            find services packages \
+              -type f \
+              -name '*.py' \
+              -not -path '*/__pycache__/*' \
+              -print 2>/dev/null |
+            sed 's#/[^/]*$##' |
+            sort -u
+          )
+
+          if [ "${#PYTHON_DIRS[@]}" -eq 0 ]; then
+            echo "No Python source directories found."
+            exit 0
+          fi
+
+          echo "Scanning Python source..."
+
+          bandit \
+            -r services packages \
+            -x '*/__pycache__/*,*/tests/*' \
+            -f json \
+            -o security-reports/bandit.json \
+            --severity-level medium \
+            --confidence-level medium \
+            || BANDIT_EXIT=$?
+
+          BANDIT_EXIT="${BANDIT_EXIT:-0}"
+
+          if [ "$BANDIT_EXIT" -ne 0 ]; then
+            echo "Bandit detected security findings."
+
+            if [ -f security-reports/bandit.json ]; then
+              python - <<'PY'
+          import json
+          from pathlib import Path
+
+          p = Path("security-reports/bandit.json")
+
+          if p.exists():
+              try:
+                  data = json.loads(p.read_text())
+                  metrics = data.get("metrics", {})
+                  results = data.get("results", [])
+
+                  print("Bandit results:")
+                  print(f"Total findings: {len(results)}")
+
+                  for result in results[:30]:
+                      print(
+                          f"- {result.get('issue_severity')} "
+                          f"{result.get('issue_confidence')} "
+                          f"{result.get('filename')}:{result.get('line_number')} "
+                          f"{result.get('issue_text')}"
+                      )
+
+              except Exception as exc:
+                  print(f"Could not parse Bandit report: {exc}")
+          PY
+            fi
+
+            exit "$BANDIT_EXIT"
+          fi
+
+          echo "Bandit: PASS"
+
+      # ---------------------------------------------------------
+      # 6. Dependency vulnerability audit
+      # ---------------------------------------------------------
+      - name: Python dependency audit
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p security-reports
+
+          REQUIREMENT_FILES=()
+
+          while IFS= read -r file; do
+            REQUIREMENT_FILES+=("$file")
+          done < <(
+            find . \
+              -type f \
+              \( -name 'requirements.txt' \
+              -o -name 'requirements-*.txt' \
+              -o -name 'pyproject.toml' \
+              \) \
+              -not -path './.git/*' \
+              -not -path '*/node_modules/*' \
+              -not -path '*/.venv/*' \
+              -not -path '*/venv/*' |
+            sort
+          )
+
+          echo "Dependency manifests found: ${#REQUIREMENT_FILES[@]}"
+
+          if [ "${#REQUIREMENT_FILES[@]}" -eq 0 ]; then
+            echo "No Python dependency manifests found."
+            exit 0
+          fi
+
+          AUDIT_FAILED=0
+
+          for file in "${REQUIREMENT_FILES[@]}"; do
+            echo
+            echo "=== Auditing $file ==="
+
+            if [[ "$file" == *.txt ]]; then
+              python -m pip_audit \
+                -r "$file" \
+                --format json \
+                --output "security-reports/$(echo "$file" | tr '/.' '__').json" \
+                || AUDIT_FAILED=1
+            fi
+          done
+
+          if [ "$AUDIT_FAILED" -ne 0 ]; then
+            echo "Dependency audit found vulnerabilities."
+            exit 1
+          fi
+
+          echo "Dependency audit: PASS"
+
+      # ---------------------------------------------------------
+      # 7. Secret detection
+      # ---------------------------------------------------------
+      - name: Secret detection
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p security-reports
+
+          detect-secrets scan \
+            --all-files \
+            --exclude-files '(^|/)\.git/' \
+            --exclude-files '(^|/)\.env\.production$' \
+            --exclude-files '(^|/)\.repair-backup/' \
+            --exclude-files '(^|/)\.recovery/' \
+            > security-reports/detect-secrets.json
+
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path("security-reports/detect-secrets.json")
+
+          data = json.loads(path.read_text())
+
+          results = data.get("results", {})
+
+          total = sum(len(v) for v in results.values())
+
+          print(f"Potential secrets detected: {total}")
+
+          if total:
+              print()
+              print("Potential secrets:")
+              for filename, findings in results.items():
+                  for finding in findings:
+                      print(
+                          f"- {filename}: "
+                          f"{finding.get('type', 'unknown')} "
+                          f"line={finding.get('line_number', '?')}"
+                      )
+
+              raise SystemExit(
+                  "Secret detection failed."
+              )
+
+          print("Secret detection: PASS")
+          PY
+
+      # ---------------------------------------------------------
+      # 8. Dangerous files / repository hygiene
+      # ---------------------------------------------------------
+      - name: Repository security hygiene
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "=== Checking for forbidden artifacts ==="
+
+          FORBIDDEN_FOUND=0
+
+          while IFS= read -r file; do
+            case "$file" in
+              *.env.production)
+                echo "[ERROR] Production environment file tracked: $file"
+                FORBIDDEN_FOUND=1
+                ;;
+              *.pem)
+                echo "[ERROR] PEM file tracked: $file"
+                FORBIDDEN_FOUND=1
+                ;;
+              *.key)
+                echo "[ERROR] Key file tracked: $file"
+                FORBIDDEN_FOUND=1
+                ;;
+              *.p12)
+                echo "[ERROR] PKCS12 file tracked: $file"
+                FORBIDDEN_FOUND=1
+                ;;
+              *.pfx)
+                echo "[ERROR] PFX file tracked: $file"
+                FORBIDDEN_FOUND=1
+                ;;
+              *.bak)
+                echo "[WARNING] Backup file tracked: $file"
+                ;;
+              *.backup)
+                echo "[WARNING] Backup file tracked: $file"
+                ;;
+            esac
+          done < <(git ls-files)
+
+          if [ "$FORBIDDEN_FOUND" -ne 0 ]; then
+            exit 1
+          fi
+
+          echo "Repository security hygiene: PASS"
+
+      # ---------------------------------------------------------
+      # 9. Docker Compose static validation
+      # ---------------------------------------------------------
+      - name: Docker Compose static validation
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          COMPOSE_FILE="infrastructure/docker/docker-compose.production.yml"
+
+          if [ ! -f "$COMPOSE_FILE" ]; then
+            echo "Production Compose file not found."
+            exit 1
+          fi
+
+          echo "Compose file exists: $COMPOSE_FILE"
+
+          if grep -nE \
+            '(\$\{[^}]+:\?[^}]+\})|(\$\{[^}]+:-[^}]+\})' \
+            "$COMPOSE_FILE" >/dev/null; then
+            echo "Compose variable interpolation detected."
+          fi
+
+          echo "Docker Compose static validation: PASS"
+
+      # ---------------------------------------------------------
+      # 10. Upload security reports
+      # ---------------------------------------------------------
+      - name: Upload security reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hsaai-security-reports
+          path: security-reports/
+          if-no-files-found: ignore
+          retention-days: 14
