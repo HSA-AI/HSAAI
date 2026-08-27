@@ -1,26 +1,36 @@
 # HSAAI Enterprise License
 
+**HSAAI Enterprise AI Platform — Proprietary Software License**
+
 Copyright © 2026 Hayel Saeed Anam Group (HSA Group). All rights reserved.
 
-This software and associated documentation files (the "Software") are
-proprietary and confidential to Hayel Saeed Anam Group.
+This software and its associated documentation files (the "Software") are
+proprietary, confidential, and protected intellectual property of
+Hayel Saeed Anam Group (HSA Group).
+
+The Software includes the HSAAI Enterprise AI Platform, its source code,
+software components, configurations, architecture, documentation, and
+associated enterprise AI technologies.
 
 ## License Terms
 
-1. **Internal Use Only**: This Software is licensed for internal use
-   exclusively within Hayel Saeed Anam Group and its subsidiaries.
+1. **Internal Use Only**: This Software is licensed exclusively for
+   authorized internal use within Hayel Saeed Anam Group (HSA Group)
+   and its subsidiaries.
 
 2. **No Redistribution**: The Software may not be redistributed, sold,
-   sublicensed, or made available to any third party without prior
-   written authorization from HSA Group.
+   sublicensed, published, transferred, or made available to any third
+   party without prior written authorization from HSA Group.
 
-3. **No Modification**: The Software may not be modified, adapted, or
-   have derivative works created from it without prior written
-   authorization from HSA Group.
+3. **No Modification**: The Software may not be modified, adapted,
+   translated, reverse engineered, or used to create derivative works
+   without prior written authorization from HSA Group.
 
-4. **Confidentiality**: The Software contains trade secrets and
-   proprietary information. Recipients must maintain the Software
-   in strict confidence.
+4. **Confidentiality**: The Software contains proprietary information,
+   confidential business information, trade secrets, and enterprise
+   intellectual property. Recipients must maintain the Software in
+   strict confidence and protect it against unauthorized access,
+   disclosure, copying, or use.
 
 5. **Warranty Disclaimer**: THE SOFTWARE IS PROVIDED "AS IS", WITHOUT
    WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
@@ -33,9 +43,38 @@ proprietary and confidential to Hayel Saeed Anam Group.
    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
    SOFTWARE.
 
+## Intellectual Property
+
+All rights, title, and interest in and to the Software, including its
+source code, architecture, documentation, configurations, designs,
+enterprise AI components, and associated intellectual property, are
+owned by or licensed to Hayel Saeed Anam Group (HSA Group), unless
+otherwise expressly stated.
+
+No rights or licenses are granted except those expressly provided
+under this Enterprise Software License.
+
+## Confidentiality and Enterprise Use
+
+HSAAI is an internal enterprise AI platform intended for authorized
+HSA Group users, systems, applications, and business operations.
+
+Access to, use of, or disclosure of the Software must comply with
+applicable HSA Group information security, confidentiality, access
+control, data protection, and governance requirements.
+
 ## Contact
 
-For licensing inquiries, contact:
-- **Organization**: Hayel Saeed Anam Group
+For licensing, authorization, or enterprise software inquiries, contact:
+
+- **Organization**: Hayel Saeed Anam Group (HSA Group)
 - **Email**: ai@hsa.com.ye
 - **Address**: HSA Group, Yemen
+
+## License Notice
+
+**HSAAI Enterprise AI Platform — Proprietary and Confidential**
+
+Copyright © 2026 Hayel Saeed Anam Group (HSA Group). All rights reserved.
+
+**Internal Use Only. No Redistribution. No Unauthorized Use.**
