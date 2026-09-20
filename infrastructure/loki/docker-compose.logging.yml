@@ -1,0 +1,48 @@
+# HSAAI Log Aggregation Stack (v3.0) — Loki + Promtail + Grafana datasource
+
+version: "3.8"
+
+services:
+  loki:
+    image: grafana/loki:3.0.0
+    container_name: hsaai-loki
+    volumes:
+      - ./loki/loki-config.yml:/etc/loki/local-config.yaml:ro
+      - loki-data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - "3100:3100"
+    networks:
+      - hsaai-private
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3100/ready || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  promtail:
+    image: grafana/promtail:3.0.0
+    container_name: hsaai-promtail
+    volumes:
+      - ./promtail/promtail-config.yml:/etc/promtail/config.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - promtail-data:/tmp
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - hsaai-private
+    depends_on:
+      - loki
+    restart: unless-stopped
+
+  # Note: Grafana is already in the main docker-compose; we just add the Loki datasource
+  # via provisioning (see infrastructure/grafana/provisioning/datasources/loki.yml)
+
+volumes:
+  loki-data:
+  promtail-data:
+
+networks:
+  hsaai-private:
+    external: true
+    name: hsaai_private

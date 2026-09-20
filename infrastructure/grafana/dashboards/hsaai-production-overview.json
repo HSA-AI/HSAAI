@@ -1,0 +1,213 @@
+{
+  "dashboard": {
+    "title": "HSAAI Production Overview",
+    "tags": [
+      "hsaai",
+      "production"
+    ],
+    "timezone": "utc",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Request Rate (req/s)",
+        "type": "timeseries",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 0
+        },
+        "targets": [
+          {
+            "expr": "sum(rate(hsaai_backend_requests_total[5m])) by (path)",
+            "legendFormat": "{{path}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "reqps"
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Error Rate (%)",
+        "type": "timeseries",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 0
+        },
+        "targets": [
+          {
+            "expr": "sum(rate(hsaai_backend_errors_total[5m])) by (path) / sum(rate(hsaai_backend_requests_total[5m])) by (path) * 100",
+            "legendFormat": "{{path}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "max": 100
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "P50 / P95 / P99 Latency",
+        "type": "timeseries",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 8
+        },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, sum(rate(hsaai_backend_request_latency_seconds_bucket[5m])) by (le, path))",
+            "legendFormat": "P50 {{path}}"
+          },
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(hsaai_backend_request_latency_seconds_bucket[5m])) by (le, path))",
+            "legendFormat": "P95 {{path}}"
+          },
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(hsaai_backend_request_latency_seconds_bucket[5m])) by (le, path))",
+            "legendFormat": "P99 {{path}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s"
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Auth Failures / sec",
+        "type": "timeseries",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 8
+        },
+        "targets": [
+          {
+            "expr": "sum(rate(hsaai_auth_failures_total[5m])) by (path)",
+            "legendFormat": "{{path}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "ops"
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "AI Tokens Used",
+        "type": "stat",
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 0,
+          "y": 16
+        },
+        "targets": [
+          {
+            "expr": "sum(increase(hsaai_llm_tokens_total[1h]))",
+            "legendFormat": "Tokens/hr"
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Active Services",
+        "type": "stat",
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 6,
+          "y": 16
+        },
+        "targets": [
+          {
+            "expr": "count(up{job=~\"hsaai-.*\"} == 1)",
+            "legendFormat": "Healthy"
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Circuit Breaker States",
+        "type": "stat",
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 12,
+          "y": 16
+        },
+        "targets": [
+          {
+            "expr": "sum(hsaai_circuit_breaker_state{state=\"closed\"})",
+            "legendFormat": "Closed"
+          },
+          {
+            "expr": "sum(hsaai_circuit_breaker_state{state=\"open\"})",
+            "legendFormat": "Open"
+          },
+          {
+            "expr": "sum(hsaai_circuit_breaker_state{state=\"half_open\"})",
+            "legendFormat": "Half-Open"
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Hallucination Rate",
+        "type": "gauge",
+        "gridPos": {
+          "h": 4,
+          "w": 6,
+          "x": 18,
+          "y": 16
+        },
+        "targets": [
+          {
+            "expr": "sum(rate(hsaai_hallucination_detected_total[15m])) / sum(rate(hsaai_llm_responses_total[15m]))",
+            "legendFormat": "Rate"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "max": 1,
+            "thresholds": {
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 0.05
+                },
+                {
+                  "color": "red",
+                  "value": 0.1
+                }
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "refresh": "30s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    }
+  },
+  "overwrite": true
+}

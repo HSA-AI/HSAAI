@@ -1,0 +1,460 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "HSAAI Auth Service",
+    "version": "4.0.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/keycloak/config": {
+      "get": {
+        "summary": "Keycloak Config",
+        "description": "Frontend uses this to discover OIDC endpoints.",
+        "operationId": "keycloak_config_v1_keycloak_config_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/authorize": {
+      "post": {
+        "summary": "Authorize",
+        "description": "Step 1: Generate PKCE challenge and redirect to Keycloak login.\n\nSECURITY FIX v2.0:\n  - code_verifier is NOT returned in the JSON response (was leaked in v1.1).\n  - code_verifier is set in a short-lived httpOnly cookie (hsaai_pkce_verifier)\n    so /v1/auth/callback can read it server-side.\n  - state is stored in _pkce_states with TTL=600s (production: Redis).",
+        "operationId": "authorize_v1_auth_authorize_post",
+        "parameters": [
+          {
+            "name": "redirect_uri",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "http://localhost:3000/api/auth/callback",
+              "title": "Redirect Uri"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/callback": {
+      "post": {
+        "summary": "Auth Callback",
+        "description": "Step 2: Exchange authorization code for tokens (server-side).\n\nSECURITY FIX v2.0:\n  - Validates `state` parameter against _pkce_states (CSRF protection).\n  - Uses STORED code_verifier (from cookie/state store), NOT client-supplied.\n  - Atomic get+delete on state to prevent replay attacks.",
+        "operationId": "auth_callback_v1_auth_callback_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenExchangeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/login": {
+      "post": {
+        "summary": "Login Direct",
+        "description": "Resource Owner Password Credentials flow (for non-browser clients only).\n\nBrowser clients MUST use /v1/auth/authorize → /v1/auth/callback (PKCE flow).\nThis endpoint exists for CLI/API clients that cannot open a browser.",
+        "operationId": "login_direct_v1_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/refresh": {
+      "post": {
+        "summary": "Refresh Token",
+        "description": "Refresh the access token using the httpOnly refresh_token cookie.",
+        "operationId": "refresh_token_v1_auth_refresh_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/logout": {
+      "post": {
+        "summary": "Logout",
+        "description": "Logout: Clear cookies and notify Keycloak (back-channel logout).",
+        "operationId": "logout_v1_auth_logout_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/me": {
+      "get": {
+        "summary": "Me",
+        "description": "Get current user from httpOnly cookie token.",
+        "operationId": "me_v1_auth_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/token/verify": {
+      "post": {
+        "summary": "Verify Token",
+        "operationId": "verify_token_v1_token_verify_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/v1/mfa/enroll": {
+      "post": {
+        "summary": "Mfa Enroll",
+        "description": "Enroll MFA for the CURRENT authenticated user only.\n\nSECURITY FIX v2.0:\n  - Now requires authentication (was completely unauthenticated in v1.1).\n  - Does NOT return the raw secret in the response (only otpauth_uri for QR scan).\n  - The secret is stored server-side, associated with the user's sub.",
+        "operationId": "mfa_enroll_v1_mfa_enroll_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MfaEnrollRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/v1/mfa/verify": {
+      "post": {
+        "summary": "Mfa Verify",
+        "description": "Verify OTP for the CURRENT authenticated user only.\n\nSECURITY FIX v2.0:\n  - Now requires authentication.\n  - All params in POST body (was query params — leaked to logs).\n  - Secret is server-side (was client-supplied).\nFIX v0.1 (P0): Now actually verifies OTP locally via pyotp.TOTP.verify()\n  instead of relying on Keycloak \"required actions\". Previously the OTP\n  was required but never verified in this service.",
+        "operationId": "mfa_verify_v1_mfa_verify_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MfaVerifyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/ready": {
+      "get": {
+        "summary": "Ready",
+        "operationId": "ready_ready_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "LoginRequest": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          },
+          "otp": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Otp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "LoginRequest"
+      },
+      "MfaEnrollRequest": {
+        "properties": {},
+        "type": "object",
+        "title": "MfaEnrollRequest"
+      },
+      "MfaVerifyRequest": {
+        "properties": {
+          "otp": {
+            "type": "string",
+            "title": "Otp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "otp"
+        ],
+        "title": "MfaVerifyRequest"
+      },
+      "TokenExchangeRequest": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "state": {
+            "type": "string",
+            "title": "State"
+          },
+          "redirect_uri": {
+            "type": "string",
+            "title": "Redirect Uri"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "state",
+          "redirect_uri"
+        ],
+        "title": "TokenExchangeRequest"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

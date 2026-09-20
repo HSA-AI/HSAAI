@@ -1,0 +1,43 @@
+{
+  "name": "HSAAI Enterprise Repository Reordered",
+  "version": "2.1.0-enterprise-reordered",
+  "structure": [
+    "apps/web",
+    "services",
+    "packages",
+    "infrastructure",
+    "storage",
+    "docs",
+    "tests",
+    "scripts",
+    ".github/workflows"
+  ],
+  "validation": {
+    "structure": "OK",
+    "python_compileall": "OK",
+    "pytest": "5 passed"
+  },
+  "file_type_counts": {
+    ".css": 1,
+    ".env": 1,
+    ".example": 3,
+    ".jpg": 1,
+    ".json": 5,
+    ".md": 64,
+    ".mjs": 2,
+    ".png": 5,
+    ".py": 142,
+    ".pyc": 3,
+    ".sh": 4,
+    ".svg": 1,
+    ".tag": 1,
+    ".ts": 7,
+    ".tsx": 31,
+    ".txt": 12,
+    ".webp": 1,
+    ".yaml": 26,
+    ".yml": 10,
+    ".zip": 4,
+    "[no_ext]": 22
+  }
+}

@@ -1,0 +1,60 @@
+# Apply after provisioning data services, roles and secrets.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: embedding-models
+  namespace: hsaai
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hsaai-schema-0006
+  namespace: hsaai
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 600
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/part-of: hsaai
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: migrate
+        image: ghcr.io/REPLACE_ORGANIZATION/hsaai-backend-core:4.0.0-rc.2
+        command:
+        - python
+        - -m
+        - alembic
+        - upgrade
+        - head
+        envFrom:
+        - configMapRef:
+            name: hsaai-config
+        - secretRef:
+            name: hsaai-migration-secret
+        resources:
+          requests:
+            cpu: 250m
+            memory: 256Mi
+          limits:
+            cpu: '1'
+            memory: 1Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL

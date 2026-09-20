@@ -1,0 +1,252 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "hsaai-finops",
+    "title": "HSAAI FinOps — Cost per Tenant / Query / Agent",
+    "tags": ["hsaai", "finops", "phase3"],
+    "timezone": "browser",
+    "schemaVersion": 39,
+    "version": 1,
+    "refresh": "1m",
+    "time": {
+      "from": "now-24h",
+      "to": "now"
+    },
+    "templating": {
+      "list": [
+        {
+          "name": "tenant",
+          "type": "query",
+          "datasource": "Prometheus",
+          "query": "label_values(hsaai_llm_tokens_total, tenant_id)",
+          "refresh": 1,
+          "includeAll": true,
+          "multi": true
+        },
+        {
+          "name": "agent",
+          "type": "query",
+          "datasource": "Prometheus",
+          "query": "label_values(hsaai_agent_executions_total, agent_id)",
+          "refresh": 1,
+          "includeAll": true,
+          "multi": true
+        }
+      ]
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Total Daily Token Cost (All Tenants)",
+        "type": "stat",
+        "gridPos": {"h": 6, "w": 6, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "sum(increase(hsaai_llm_tokens_total[24h])) * 0.00002",
+            "legendFormat": "Daily Cost ($)",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 100},
+                {"color": "red", "value": 500}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Cost per Tenant (24h)",
+        "type": "bargauge",
+        "gridPos": {"h": 6, "w": 12, "x": 6, "y": 0},
+        "targets": [
+          {
+            "expr": "sum by (tenant_id) (increase(hsaai_llm_tokens_total{tenant_id=~\"$tenant\"}[24h])) * 0.00002",
+            "legendFormat": "{{tenant_id}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD"
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Cost per Agent (24h)",
+        "type": "bargauge",
+        "gridPos": {"h": 6, "w": 6, "x": 18, "y": 0},
+        "targets": [
+          {
+            "expr": "sum by (agent_id) (increase(hsaai_llm_tokens_total{agent_id=~\"$agent\"}[24h])) * 0.00002",
+            "legendFormat": "{{agent_id}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD"
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Token Usage Trend (7 days, per tenant)",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 6},
+        "targets": [
+          {
+            "expr": "sum by (tenant_id) (rate(hsaai_llm_tokens_total{tenant_id=~\"$tenant\"}[1h]))",
+            "legendFormat": "{{tenant_id}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "fillOpacity": 10
+            }
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "Cost per Query Type (24h)",
+        "type": "piechart",
+        "gridPos": {"h": 8, "w": 8, "x": 0, "y": 14},
+        "targets": [
+          {
+            "expr": "sum by (task) (increase(hsaai_llm_tokens_total[24h])) * 0.00002",
+            "legendFormat": "{{task}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD"
+          }
+        }
+      },
+      {
+        "id": 6,
+        "title": "Cache Hit Rate (Semantic Cache Savings)",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 8, "x": 8, "y": 14},
+        "targets": [
+          {
+            "expr": "sum(rate(hsaai_llm_cache_hits_total[1h])) / (sum(rate(hsaai_llm_cache_hits_total[1h])) + sum(rate(hsaai_llm_cache_misses_total[1h]))) * 100",
+            "legendFormat": "Cache Hit %",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "yellow", "value": 20},
+                {"color": "green", "value": 40}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 7,
+        "title": "Estimated Monthly Cost Projection",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 8, "x": 16, "y": 14},
+        "targets": [
+          {
+            "expr": "sum(rate(hsaai_llm_tokens_total[7d])) * 86400 * 30 * 0.00002",
+            "legendFormat": "Projected Monthly $",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD"
+          }
+        }
+      },
+      {
+        "id": 8,
+        "title": "Tenant Budget Utilization",
+        "type": "table",
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 22},
+        "targets": [
+          {
+            "expr": "sum by (tenant_id) (increase(hsaai_llm_tokens_total[24h]))",
+            "format": "table",
+            "instant": true,
+            "refId": "A"
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {"Time": true, "__name__": true},
+              "renameByName": {"Value": "Tokens Used (24h)"}
+            }
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "GPU Utilization (Training + Inference)",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 30},
+        "targets": [
+          {
+            "expr": "avg by (gpu) (nvidia_gpu_utilization_percent)",
+            "legendFormat": "GPU {{gpu}} Utilization %",
+            "refId": "A"
+          },
+          {
+            "expr": "avg by (gpu) (nvidia_gpu_memory_used_bytes / nvidia_gpu_memory_total_bytes * 100)",
+            "legendFormat": "GPU {{gpu}} Memory %",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "max": 100
+          }
+        }
+      },
+      {
+        "id": 10,
+        "title": "Cost per Model (24h)",
+        "type": "bargauge",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 30},
+        "targets": [
+          {
+            "expr": "sum by (model) (increase(hsaai_llm_tokens_total[24h])) * 0.00002",
+            "legendFormat": "{{model}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD"
+          }
+        }
+      }
+    ]
+  }
+}

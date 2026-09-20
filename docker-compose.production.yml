@@ -1,0 +1,1963 @@
+networks:
+  default:
+    driver: bridge
+  hsaai_private:
+    driver: bridge
+    internal: true
+services:
+  agent-runtime:
+    build:
+      context: .
+      dockerfile: services/multi_agents/Dockerfile
+    cap_drop:
+    - ALL
+    depends_on:
+    - llm-gateway
+    - rag-service
+    - kafka
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    environment:
+      APP_ENV: production
+      AUTH_SERVICE_URL: http://auth-service:8010
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+      LLM_GATEWAY_URL: http://llm-gateway:8090
+      RAG_ENGINE_URL: http://rag-service:8030
+      REDIS_URL: redis://redis:6379/0
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+  alignment-service:
+    build:
+      context: .
+      dockerfile: services/ai_alignment/Dockerfile
+    cap_drop:
+    - ALL
+    depends_on:
+    - llm-gateway
+    - redis
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    environment:
+      APP_ENV: production
+      AUTH_SERVICE_URL: http://auth-service:8010
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+      LLM_GATEWAY_URL: http://llm-gateway:8090
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      SAFETY_REDIS_URL: redis://redis:6379/3
+      RATE_LIMIT_REDIS_URL: redis://redis:6379/6
+      RATE_LIMIT_FAILURE_MODE: closed
+    healthcheck:
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      test:
+      - CMD
+      - python3
+      - -c
+      - import urllib.request; urllib.request.urlopen('http://localhost:8005/health')
+      timeout: 5s
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    ports:
+    - 127.0.0.1:8005:8005
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+  api-gateway:
+    build:
+      context: .
+      dockerfile: services/api_gateway/Dockerfile
+    cap_drop:
+    - ALL
+    depends_on:
+    - llm-gateway
+    - auth-service
+    - rag-service
+    - backend-core
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    environment:
+      AI_ORCHESTRATOR_URL: http://agent-runtime:8040
+      ANALYTICS_URL: http://backend-core:8000
+      APP_ENV: production
+      AUTH_SERVICE_URL: http://auth-service:8010
+      BACKEND_URL: http://backend-core:8000
+      CORS_ALLOW_ORIGINS: ${APP_PUBLIC_URL:?Required}
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-hsaai-frontend}
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+      KEYCLOAK_PUBLIC_URL: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}
+      KEYCLOAK_REALM: hsaai
+      LLM_GATEWAY_URL: http://llm-gateway:8090
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      RAG_ENGINE_URL: http://rag-service:8030
+      REDIS_URL: redis://redis:6379/3
+      AUDIT_HMAC_KEY: ${AUDIT_HMAC_KEY:?Required}
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    ports:
+    - 127.0.0.1:8000:8000
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+  auth-service:
+    build:
+      context: .
+      dockerfile: services/auth_service/Dockerfile
+    cap_drop:
+    - ALL
+    depends_on:
+    - keycloak
+    - postgres
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    environment:
+      APP_ENV: production
+      AUTH_SERVICE_URL: http://auth-service:8010
+      DATABASE_URL: postgresql://hsaai_app:${APP_DB_PASSWORD:?Required}@postgres:5432/hsaai
+      JWT_SECRET: ${JWT_SECRET:?Required}
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_INTERNAL_URL: http://keycloak:8080
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+      KEYCLOAK_URL: http://keycloak:8080
+      REDIS_URL: redis://redis:6379/0
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+  backend-core:
+    build:
+      context: .
+      dockerfile: services/backend_core/Dockerfile
+    cap_drop:
+    - ALL
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+      redis:
+        condition: service_started
+      db-migrate:
+        condition: service_completed_successfully
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    environment:
+      DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY:?Required}
+      ENCRYPTION_SALT_PATH: /data/encryption.salt
+      FIELD_ENCRYPTION_ENABLED: 'true'
+      DEBUG: 'false'
+      ALLOW_DEV_RBAC: 'false'
+      APP_ENV: production
+      AUTH_REQUIRED: 'true'
+      AUTH_SERVICE_URL: http://auth-service:8010
+      CORS_ALLOW_ORIGINS: ${APP_PUBLIC_URL:?Required}
+      DATABASE_URL: postgresql+psycopg://hsaai_app:${APP_DB_PASSWORD:?Required}@postgres:5432/hsaai
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+      KEYCLOAK_URL: http://keycloak:8080
+      LLM_GATEWAY_URL: http://llm-gateway:8090
+      LOCAL_FILE_STORAGE: /data/local_uploads
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      QDRANT_URL: http://qdrant:6333
+      RAG_ENGINE_URL: http://rag-service:8030
+      RAG_EVENT_DB: /data/rag_events.db
+      REDIS_URL: redis://redis:6379/0
+      EMBEDDING_PROVIDER: sentence-transformers
+      EMBEDDING_MODEL: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+      RAG_ANSWER_MODEL: ${LOCAL_LLM_MODEL:-qwen2.5:7b-instruct}
+      RUN_MIGRATIONS_ON_STARTUP: 'false'
+      AUDIT_HMAC_KEY: ${AUDIT_HMAC_KEY:?Required}
+    healthcheck:
+      interval: 30s
+      retries: 3
+      start_period: 20s
+      test:
+      - CMD
+      - python3
+      - -c
+      - import urllib.request; urllib.request.urlopen('http://localhost:8000/health')
+      timeout: 5s
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    ports:
+    - 127.0.0.1:8001:8000
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    volumes:
+    - documents_data:/data
+  collective-intelligence-engine:
+    build:
+      context: .
+      dockerfile: services/collective_intelligence_engine/Dockerfile
+    cap_drop:
+    - ALL
+    depends_on:
+    - redis
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    env_file: .env
+    environment:
+      APP_ENV: production
+      AUTH_SERVICE_URL: http://auth-service:8010
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    ports:
+    - 127.0.0.1:8089:8089
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    profiles:
+    - extended
+  consciousness-stream:
+    build:
+      context: .
+      dockerfile: services/consciousness_stream/Dockerfile
+    cap_drop:
+    - ALL
+    depends_on:
+    - redis
+    - backend-core
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    env_file: .env
+    environment:
+      APP_ENV: production
+      AUTH_SERVICE_URL: http://auth-service:8010
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    ports:
+    - 127.0.0.1:8100:8070
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    profiles:
+    - extended
+  digital-twin:
+    build:
+      context: .
+      dockerfile: services/digital_twin/Dockerfile
+    cap_drop:
+    - ALL
+    depends_on:
+    - redis
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    env_file: .env
+    environment:
+      APP_ENV: production
+      AUTH_SERVICE_URL: http://auth-service:8010
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    ports:
+    - 127.0.0.1:8072:8072
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    profiles:
+    - extended
+  dream-engine:
+    build:
+      context: .
+      dockerfile: services/dream_engine/Dockerfile
+    cap_drop:
+    - ALL
+    depends_on:
+    - redis
+    - consciousness-stream
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    env_file: .env
+    environment:
+      APP_ENV: production
+      AUTH_SERVICE_URL: http://auth-service:8010
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    ports:
+    - 127.0.0.1:8077:8077
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    profiles:
+    - extended
+  empathy-engine:
+    build:
+      context: .
+      dockerfile: services/empathy_engine/Dockerfile
+    cap_drop:
+    - ALL
+    depends_on:
+    - redis
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    env_file: .env
+    environment:
+      APP_ENV: production
+      AUTH_SERVICE_URL: http://auth-service:8010
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    ports:
+    - 127.0.0.1:8078:8078
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    profiles:
+    - extended
+  evolution-engine:
+    build:
+      context: .
+      dockerfile: services/evolution_engine/Dockerfile
+    cap_drop:
+    - ALL
+    depends_on:
+    - redis
+    - backend-core
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    env_file: .env
+    environment:
+      APP_ENV: production
+      AUTH_SERVICE_URL: http://auth-service:8010
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    ports:
+    - 127.0.0.1:8075:8075
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    profiles:
+    - extended
+  federation-hub:
+    build:
+      context: .
+      dockerfile: services/federation_hub/Dockerfile
+    cap_drop:
+    - ALL
+    depends_on:
+    - redis
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    env_file: .env
+    environment:
+      APP_ENV: production
+      AUTH_SERVICE_URL: http://auth-service:8010
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    ports:
+    - 127.0.0.1:8076:8076
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    profiles:
+    - extended
+  genealogy-service:
+    build:
+      context: .
+      dockerfile: services/genealogy_service/Dockerfile
+    cap_drop:
+    - ALL
+    depends_on:
+    - redis
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    env_file: .env
+    environment:
+      APP_ENV: production
+      AUTH_SERVICE_URL: http://auth-service:8010
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    ports:
+    - 127.0.0.1:8081:8081
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    profiles:
+    - extended
+  governance-service:
+    build:
+      context: .
+      dockerfile: services/governance/Dockerfile
+    cap_drop:
+    - ALL
+    depends_on:
+    - redis
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    environment:
+      APP_ENV: production
+      AUDIT_REDIS_URL: redis://redis:6379/4
+      AUTH_SERVICE_URL: http://auth-service:8010
+      GOVERNANCE_REDIS_URL: redis://redis:6379/5
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      AUDIT_HMAC_KEY: ${AUDIT_HMAC_KEY:?Required}
+    healthcheck:
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      test:
+      - CMD
+      - python3
+      - -c
+      - import urllib.request; urllib.request.urlopen('http://localhost:8011/health')
+      timeout: 5s
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    ports:
+    - 127.0.0.1:8011:8011
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+  grafana:
+    depends_on:
+    - tempo
+    - loki
+    - prometheus
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
+    image: grafana/grafana:11.3.0
+    ports:
+    - 127.0.0.1:3001:3000
+    restart: unless-stopped
+    volumes:
+    - grafana_data:/var/lib/grafana
+    - ./infrastructure/grafana/dashboards:/etc/grafana/provisioning/dashboards
+    - ./infrastructure/grafana/datasources:/etc/grafana/provisioning/datasources
+    networks:
+    - hsaai_private
+  imagination-engine:
+    build:
+      context: .
+      dockerfile: services/imagination_engine/Dockerfile
+    cap_drop:
+    - ALL
+    depends_on:
+    - redis
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    env_file: .env
+    environment:
+      APP_ENV: production
+      AUTH_SERVICE_URL: http://auth-service:8010
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    ports:
+    - 127.0.0.1:8083:8083
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    profiles:
+    - extended
+  immune-system:
+    build:
+      context: .
+      dockerfile: services/immune_system/Dockerfile
+    cap_drop:
+    - ALL
+    depends_on:
+    - redis
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    env_file: .env
+    environment:
+      APP_ENV: production
+      AUTH_SERVICE_URL: http://auth-service:8010
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    ports:
+    - 127.0.0.1:8088:8088
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    profiles:
+    - extended
+  intelligence-economy:
+    build:
+      context: .
+      dockerfile: services/intelligence_economy/Dockerfile
+    cap_drop:
+    - ALL
+    depends_on:
+    - redis
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    env_file: .env
+    environment:
+      APP_ENV: production
+      AUTH_SERVICE_URL: http://auth-service:8010
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    ports:
+    - 127.0.0.1:8073:8073
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    profiles:
+    - extended
+  intuition-engine:
+    build:
+      context: .
+      dockerfile: services/intuition_engine/Dockerfile
+    cap_drop:
+    - ALL
+    depends_on:
+    - redis
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    env_file: .env
+    environment:
+      APP_ENV: production
+      AUTH_SERVICE_URL: http://auth-service:8010
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    ports:
+    - 127.0.0.1:8084:8084
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    profiles:
+    - extended
+  kafka:
+    environment:
+      CLUSTER_ID: hsaaiKafkaCluster2026x
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_NODE_ID: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    image: confluentinc/cp-kafka:7.7.1
+    ports:
+    - 127.0.0.1:9092:9092
+    restart: unless-stopped
+    volumes:
+    - kafka_data:/var/lib/kafka/data
+    networks:
+    - hsaai_private
+  keycloak:
+    command:
+    - start
+    - --import-realm
+    - --hostname=${KEYCLOAK_PUBLIC_URL:?Set HTTPS identity URL}
+    - --hostname-backchannel-dynamic=true
+    - --proxy-headers=xforwarded
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      KC_DB: postgres
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?Required}
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: keycloak_app
+      KC_HEALTH_ENABLED: 'true'
+      KC_HTTP_ENABLED: 'true'
+      KC_METRICS_ENABLED: 'true'
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USER:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?Required}
+    image: quay.io/keycloak/keycloak:25.0.6
+    ports:
+    - 8080:8080
+    restart: unless-stopped
+    volumes:
+    - keycloak_data:/opt/keycloak/data
+    - ${KEYCLOAK_REALM_FILE:-./infrastructure/keycloak/hsaai-realm.json}:/opt/keycloak/data/import/hsaai-realm.json:ro
+    networks:
+    - hsaai_private
+  knowledge-genome-engine:
+    build:
+      context: .
+      dockerfile: services/knowledge_genome_engine/Dockerfile
+    cap_drop:
+    - ALL
+    depends_on:
+    - redis
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    env_file: .env
+    environment:
+      APP_ENV: production
+      AUTH_SERVICE_URL: http://auth-service:8010
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    ports:
+    - 127.0.0.1:8096:8096
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    profiles:
+    - extended
+  llm-gateway:
+    build:
+      context: .
+      dockerfile: services/llm_gateway/Dockerfile
+    cap_drop:
+    - ALL
+    depends_on:
+    - redis
+    - otel-collector
+    - ollama
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    environment:
+      APP_ENV: production
+      AUTH_SERVICE_URL: http://auth-service:8010
+      INTERNAL_ONLY_MODE: ${INTERNAL_ONLY_MODE:-true}
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+      LOCAL_LLM_MODEL: ${LOCAL_LLM_MODEL:-qwen2.5:7b-instruct}
+      LOCAL_LLM_PROVIDER: ${LOCAL_LLM_PROVIDER:-ollama}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      REDIS_URL: redis://redis:6379/1
+      TOKEN_BUDGET_REDIS_URL: redis://redis:6379/2
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    ports:
+    - 127.0.0.1:8090:8090
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+  loki:
+    image: grafana/loki:3.3.2
+    ports:
+    - 127.0.0.1:3100:3100
+    restart: unless-stopped
+    volumes:
+    - loki_data:/loki
+    networks:
+    - hsaai_private
+    environment: {}
+  mcp-server:
+    build:
+      context: .
+      dockerfile: services/mcp_server/Dockerfile
+    cap_drop:
+    - ALL
+    depends_on:
+    - backend-core
+    - workflow-engine
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    environment:
+      APP_ENV: production
+      AUTH_SERVICE_URL: http://auth-service:8010
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+      LLM_GATEWAY_URL: http://llm-gateway:8090
+      MULTI_AGENTS_URL: http://agent-runtime:8040
+      RAG_ENGINE_URL: http://rag-service:8030
+      WORKFLOW_ENGINE_URL: http://workflow-engine:8070
+    healthcheck:
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      test:
+      - CMD
+      - python3
+      - -c
+      - import urllib.request; urllib.request.urlopen('http://localhost:8094/health')
+      timeout: 5s
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    ports:
+    - 127.0.0.1:8094:8094
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+  minio:
+    command: server /data --console-address ":9001"
+    container_name: hsaai-minio
+    environment:
+      MINIO_BROWSER: 'on'
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Required set MINIO_ROOT_PASSWORD
+        env var}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-hsaai_minio_admin}
+    healthcheck:
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:9000/minio/health/live
+      timeout: 10s
+    image: minio/minio:RELEASE.2024-10-13T13-34-11Z
+    ports:
+    - 127.0.0.1:9000:9000
+    - 127.0.0.1:9001:9001
+    restart: unless-stopped
+    volumes:
+    - minio_data:/data
+    networks:
+    - hsaai_private
+  minio-init:
+    command:
+    - -c
+    - 'set -e
+
+      mc alias set hsaai http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD"
+
+      mc mb --ignore-existing hsaai/hsaai-documents
+
+      mc mb --ignore-existing hsaai/hsaai-models
+
+      mc mb --ignore-existing hsaai/hsaai-backups
+
+      mc mb --ignore-existing hsaai/hsaai-audit-logs
+
+      # Lifecycle: move objects to GLACIER after 90 days, expire after 365 days.
+
+      mc ilm add --expire-days 365 hsaai/hsaai-documents || true
+
+      mc ilm add --transition-days 90 --transition-tier GLACIER hsaai/hsaai-documents
+      || true
+
+      echo "MinIO buckets created: hsaai-documents, hsaai-models, hsaai-backups, hsaai-audit-logs"
+
+      '
+    container_name: hsaai-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: /bin/sh
+    environment:
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Required set MINIO_ROOT_PASSWORD
+        env var}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-hsaai_minio_admin}
+    image: minio/mc:RELEASE.2024-10-02T08-27-28Z
+    restart: 'no'
+    networks:
+    - hsaai_private
+  mlflow:
+    command: 'mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri "postgresql://mlflow_app:${MLFLOW_DB_PASSWORD:?Required}@postgres:5432/mlflow"
+      --default-artifact-root s3://hsaai-models/ --serve-artifacts
+
+      '
+    container_name: hsaai-mlflow
+    depends_on:
+      minio:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    environment:
+      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-hsaai_minio_admin}
+      AWS_REGION: us-east-1
+      AWS_S3_ENDPOINT: http://minio:9000
+      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:?Required}
+      MLFLOW_BACKEND_STORE_URI: postgresql://mlflow_app:${MLFLOW_DB_PASSWORD:?Required}@postgres:5432/mlflow
+      MLFLOW_DEFAULT_ARTIFACT_ROOT: s3://hsaai-models/
+      MLFLOW_S3_IGNORE_TLS: 'true'
+    healthcheck:
+      interval: 30s
+      retries: 3
+      start_period: 30s
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:5000/health
+      timeout: 10s
+    image: ghcr.io/mlflow/mlflow:v2.18.0
+    ports:
+    - 127.0.0.1:5000:5000
+    restart: unless-stopped
+    networks:
+    - hsaai_private
+  model-training:
+    build:
+      context: .
+      dockerfile: services/model_training/Dockerfile
+    cap_drop:
+    - ALL
+    depends_on:
+      minio:
+        condition: service_healthy
+      mlflow:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      db-migrate:
+        condition: service_completed_successfully
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    environment:
+      APP_ENV: production
+      AUTH_SERVICE_URL: http://auth-service:8010
+      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-hsaai_minio_admin}
+      AWS_REGION: us-east-1
+      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:?Required}
+      DATABASE_URL: postgresql+psycopg://hsaai_app:${APP_DB_PASSWORD:?Required}@postgres:5432/hsaai
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Required}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-hsaai_minio_admin}
+      MLFLOW_S3_ENDPOINT: http://minio:9000
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      MODEL_TRAINING_USE_ALEMBIC: 'true'
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      REDIS_URL: redis://redis:6379/7
+    healthcheck:
+      interval: 30s
+      retries: 3
+      start_period: 20s
+      test:
+      - CMD
+      - python3
+      - -c
+      - import urllib.request; urllib.request.urlopen('http://localhost:8090/health')
+      timeout: 5s
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    ports:
+    - 127.0.0.1:8091:8090
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    profiles:
+    - extended
+  narrative-engine:
+    build:
+      context: .
+      dockerfile: services/narrative_engine/Dockerfile
+    cap_drop:
+    - ALL
+    depends_on:
+    - redis
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    env_file: .env
+    environment:
+      APP_ENV: production
+      AUTH_SERVICE_URL: http://auth-service:8010
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    ports:
+    - 127.0.0.1:8085:8085
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    profiles:
+    - extended
+  neo4j:
+    environment:
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD}
+      NEO4J_PLUGINS: '["apoc"]'
+    image: neo4j:5
+    ports: []
+    restart: unless-stopped
+    volumes:
+    - neo4j_data:/data
+    expose:
+    - '7474'
+    - '7687'
+    networks:
+    - hsaai_private
+  ollama:
+    image: ollama/ollama:0.4.7
+    ports:
+    - 127.0.0.1:11434:11434
+    restart: unless-stopped
+    volumes:
+    - ollama_data:/root/.ollama
+    networks:
+    - hsaai_private
+    environment: {}
+  opa:
+    command: run --server /policies
+    image: openpolicyagent/opa:0.68.0-static
+    ports:
+    - 127.0.0.1:8181:8181
+    restart: unless-stopped
+    volumes:
+    - ./infrastructure/opa/policies:/policies
+    networks:
+    - hsaai_private
+    environment: {}
+  otel-collector:
+    command:
+    - --config=/etc/otelcol/config.yaml
+    depends_on:
+    - tempo
+    - loki
+    image: otel/opentelemetry-collector-contrib:0.110.0
+    ports:
+    - 127.0.0.1:4317:4317
+    - 127.0.0.1:4318:4318
+    restart: unless-stopped
+    volumes:
+    - ./infrastructure/monitoring/otel-collector.yaml:/etc/otelcol/config.yaml
+    networks:
+    - hsaai_private
+    environment: {}
+  pii-detector:
+    build:
+      context: .
+      dockerfile: services/pii_detector/Dockerfile
+    cap_drop:
+    - ALL
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    environment:
+      APP_ENV: production
+      AUTH_SERVICE_URL: http://auth-service:8010
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+    healthcheck:
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      test:
+      - CMD
+      - python3
+      - -c
+      - import urllib.request; urllib.request.urlopen('http://localhost:8092/health')
+      timeout: 5s
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    ports:
+    - 127.0.0.1:8092:8092
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+  postgres:
+    environment:
+      POSTGRES_DB: hsaai
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER:-hsaai}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?Required}
+      MIGRATION_DB_PASSWORD: ${MIGRATION_DB_PASSWORD:?Required}
+      KEYCLOAK_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?Required}
+      MLFLOW_DB_PASSWORD: ${MLFLOW_DB_PASSWORD:?Required}
+    healthcheck:
+      interval: 10s
+      retries: 10
+      start_period: 20s
+      test:
+      - CMD-SHELL
+      - pg_isready -U ${POSTGRES_USER:-hsaai} -d hsaai
+      timeout: 5s
+    image: postgres:16
+    ports:
+    - 127.0.0.1:5432:5432
+    restart: unless-stopped
+    volumes:
+    - postgres_data:/var/lib/postgresql/data
+    - ./infrastructure/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    - ./infrastructure/postgres/zz-runtime-roles.sh:/docker-entrypoint-initdb.d/zz-runtime-roles.sh:ro
+    networks:
+    - hsaai_private
+  precognition-engine:
+    build:
+      context: .
+      dockerfile: services/precognition_engine/Dockerfile
+    cap_drop:
+    - ALL
+    depends_on:
+    - redis
+    - consciousness-stream
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    env_file: .env
+    environment:
+      APP_ENV: production
+      AUTH_SERVICE_URL: http://auth-service:8010
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    ports:
+    - 127.0.0.1:8087:8087
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    profiles:
+    - extended
+  proactive-intelligence:
+    build:
+      context: .
+      dockerfile: services/proactive_intelligence/Dockerfile
+    cap_drop:
+    - ALL
+    depends_on:
+    - redis
+    - backend-core
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    env_file: .env
+    environment:
+      APP_ENV: production
+      AUTH_SERVICE_URL: http://auth-service:8010
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    ports:
+    - 127.0.0.1:8071:8071
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    profiles:
+    - extended
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    ports:
+    - 127.0.0.1:9090:9090
+    restart: unless-stopped
+    volumes:
+    - ./infrastructure/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    - ./infrastructure/monitoring/rules:/etc/prometheus/rules:ro
+    - prometheus_data:/prometheus
+    networks:
+    - hsaai_private
+    environment: {}
+  qdrant:
+    environment:
+      QDRANT__SERVICE__GRPC_PORT: '6334'
+    image: qdrant/qdrant:v1.12.1
+    ports:
+    - 127.0.0.1:6333:6333
+    - 127.0.0.1:6334:6334
+    restart: unless-stopped
+    volumes:
+    - qdrant_data:/qdrant/storage
+    networks:
+    - hsaai_private
+  quantum-decision-engine:
+    build:
+      context: .
+      dockerfile: services/quantum_decision_engine/Dockerfile
+    cap_drop:
+    - ALL
+    depends_on:
+    - redis
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    env_file: .env
+    environment:
+      APP_ENV: production
+      AUTH_SERVICE_URL: http://auth-service:8010
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    ports:
+    - 127.0.0.1:8086:8086
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    profiles:
+    - extended
+  rag-service:
+    build:
+      context: .
+      dockerfile: services/rag_engine/Dockerfile
+    cap_drop:
+    - ALL
+    depends_on:
+    - qdrant
+    - neo4j
+    - llm-gateway
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    environment:
+      APP_ENV: production
+      AUTH_SERVICE_URL: http://auth-service:8010
+      EMBEDDING_PROVIDER: sentence-transformers
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+      LLM_GATEWAY_URL: http://llm-gateway:8090
+      LOCAL_FILE_STORAGE: /data/local_uploads
+      NEO4J_URL: bolt://neo4j:7687
+      OLLAMA_BASE_URL: http://ollama:11434
+      QDRANT_URL: http://qdrant:6333
+      RAG_EVENT_DB: /data/rag_events.db
+      EMBEDDING_MODEL: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+      RAG_ANSWER_MODEL: ${LOCAL_LLM_MODEL:-qwen2.5:7b-instruct}
+      HF_HOME: /models
+      HF_HUB_OFFLINE: '1'
+      TRANSFORMERS_OFFLINE: '1'
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    volumes:
+    - documents_data:/data
+    - embedding_models:/models
+  redis:
+    command: redis-server --maxmemory 4gb --maxmemory-policy allkeys-lru
+    image: redis:7-alpine
+    networks:
+    - hsaai_private
+    ports:
+    - 127.0.0.1:6379:6379
+    restart: unless-stopped
+    volumes:
+    - redis_data:/data
+    environment: {}
+  reflection-engine:
+    build:
+      context: .
+      dockerfile: services/reflection_engine/Dockerfile
+    cap_drop:
+    - ALL
+    depends_on:
+    - redis
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    env_file: .env
+    environment:
+      APP_ENV: production
+      AUTH_SERVICE_URL: http://auth-service:8010
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    ports:
+    - 127.0.0.1:8082:8082
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    profiles:
+    - extended
+  singularity-engine:
+    build:
+      context: .
+      dockerfile: services/singularity_engine/Dockerfile
+    cap_drop:
+    - ALL
+    depends_on:
+    - redis
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    env_file: .env
+    environment:
+      APP_ENV: production
+      AUTH_SERVICE_URL: http://auth-service:8010
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    ports:
+    - 127.0.0.1:8095:8095
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    profiles:
+    - extended
+  tempo:
+    image: grafana/tempo:2.6.0
+    ports:
+    - 127.0.0.1:3200:3200
+    - 127.0.0.1:14250:14250
+    restart: unless-stopped
+    volumes:
+    - tempo_data:/var/tempo
+    networks:
+    - hsaai_private
+    environment: {}
+  thanos-compactor:
+    command:
+    - compact
+    - --data-dir=/data
+    - --objstore.config-file=/etc/thanos/objstore.yml
+    - --http-address=0.0.0.0:10902
+    - --retention.resolution-raw=365d
+    - --retention.resolution-5m=730d
+    - --retention.resolution-1h=1825d
+    container_name: hsaai-thanos-compactor
+    depends_on:
+    - minio
+    image: thanosio/thanos:v0.37.0
+    restart: unless-stopped
+    volumes:
+    - thanos_compactor_data:/data
+    - ./infrastructure/thanos/objstore.yml:/etc/thanos/objstore.yml:ro
+    networks:
+    - hsaai_private
+    environment: {}
+  thanos-query:
+    command:
+    - query
+    - --http-address=0.0.0.0:10902
+    - --grpc-address=0.0.0.0:10901
+    - --store=thanos-sidecar:10901
+    - --store=thanos-store:10901
+    - --query.replica-label=prometheus_replica
+    container_name: hsaai-thanos-query
+    depends_on:
+    - thanos-sidecar
+    - thanos-store
+    image: thanosio/thanos:v0.37.0
+    ports:
+    - 127.0.0.1:10922:10902
+    restart: unless-stopped
+    networks:
+    - hsaai_private
+    environment: {}
+  thanos-ruler:
+    command:
+    - rule
+    - --data-dir=/data
+    - --eval-interval=30s
+    - --rule-file=/etc/thanos/rules/*.yml
+    - --alertmanagers.url=http://alertmanager:9093
+    - --query=thanos-query:10902
+    - --http-address=0.0.0.0:10902
+    - --grpc-address=0.0.0.0:10901
+    container_name: hsaai-thanos-ruler
+    depends_on:
+    - thanos-query
+    image: thanosio/thanos:v0.37.0
+    restart: unless-stopped
+    volumes:
+    - thanos_ruler_data:/data
+    - ./infrastructure/thanos/rules:/etc/thanos/rules:ro
+    networks:
+    - hsaai_private
+    environment: {}
+  thanos-sidecar:
+    command:
+    - sidecar
+    - --tsdb.path=/prometheus
+    - --prometheus.url=http://prometheus:9090
+    - --objstore.config-file=/etc/thanos/objstore.yml
+    - --http-address=0.0.0.0:10902
+    - --grpc-address=0.0.0.0:10901
+    container_name: hsaai-thanos-sidecar
+    depends_on:
+    - prometheus
+    - minio
+    image: thanosio/thanos:v0.37.0
+    ports:
+    - 127.0.0.1:10902:10902
+    restart: unless-stopped
+    volumes:
+    - prometheus_data:/prometheus:ro
+    - ./infrastructure/thanos/objstore.yml:/etc/thanos/objstore.yml:ro
+    networks:
+    - hsaai_private
+    environment: {}
+  thanos-store:
+    command:
+    - store
+    - --data-dir=/data
+    - --objstore.config-file=/etc/thanos/objstore.yml
+    - --http-address=0.0.0.0:10902
+    - --grpc-address=0.0.0.0:10901
+    container_name: hsaai-thanos-store
+    depends_on:
+    - minio
+    image: thanosio/thanos:v0.37.0
+    ports:
+    - 127.0.0.1:10912:10902
+    restart: unless-stopped
+    volumes:
+    - thanos_store_data:/data
+    - ./infrastructure/thanos/objstore.yml:/etc/thanos/objstore.yml:ro
+    networks:
+    - hsaai_private
+    environment: {}
+  time-travel:
+    build:
+      context: .
+      dockerfile: services/time_travel/Dockerfile
+    cap_drop:
+    - ALL
+    depends_on:
+    - redis
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    env_file: .env
+    environment:
+      APP_ENV: production
+      AUTH_SERVICE_URL: http://auth-service:8010
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    ports:
+    - 127.0.0.1:8079:8079
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    profiles:
+    - extended
+  vault:
+    cap_add:
+    - IPC_LOCK
+    command: server
+    environment:
+      VAULT_LOCAL_CONFIG: 'ui = true
+
+        disable_mlock = false'
+    healthcheck:
+      interval: 30s
+      retries: 3
+      test:
+      - CMD
+      - vault
+      - status
+      timeout: 5s
+    image: hashicorp/vault:1.16.0
+    ports:
+    - 127.0.0.1:8200:8200
+    restart: unless-stopped
+    volumes:
+    - ./infrastructure/vault/vault.hcl:/vault/config/vault.hcl:ro
+    - vault_data:/vault/data
+    - vault_audit:/vault/audit
+    networks:
+    - hsaai_private
+  web:
+    build: apps/web
+    cap_drop:
+    - ALL
+    depends_on:
+      backend-core:
+        condition: service_started
+      keycloak:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+    environment:
+      API_GATEWAY_URL: http://api-gateway:8000
+      APP_PUBLIC_URL: ${APP_PUBLIC_URL:?Set HTTPS frontend URL}
+      AUTH_SERVICE_URL: http://auth-service:8010
+      BACKEND_URL: http://backend-core:8000
+      HSAAI_COOKIE_SECURE: 'true'
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-hsaai-frontend}
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+      KEYCLOAK_REALM: hsaai
+      KEYCLOAK_URL: http://keycloak:8080
+      NEXT_PUBLIC_KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-hsaai-frontend}
+      NEXT_PUBLIC_KEYCLOAK_REALM: hsaai
+      NODE_ENV: production
+      SESSION_SECRET: ${SESSION_SECRET:?Required set SESSION_SECRET}
+    healthcheck:
+      interval: 30s
+      retries: 3
+      start_period: 20s
+      test:
+      - CMD
+      - wget
+      - --no-verbose
+      - --tries=1
+      - --spider
+      - http://localhost:3000/api/health
+      timeout: 5s
+    pids_limit: 256
+    ports:
+    - 3000:3000
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    networks:
+    - hsaai_private
+  wisdom-marketplace:
+    build:
+      context: .
+      dockerfile: services/wisdom_marketplace/Dockerfile
+    cap_drop:
+    - ALL
+    depends_on:
+    - redis
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    env_file: .env
+    environment:
+      APP_ENV: production
+      AUTH_SERVICE_URL: http://auth-service:8010
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    ports:
+    - 127.0.0.1:8074:8074
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    profiles:
+    - extended
+  workflow-engine:
+    build:
+      context: .
+      dockerfile: services/workflow_engine/Dockerfile
+    cap_drop:
+    - ALL
+    depends_on:
+    - backend-core
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    environment:
+      APP_ENV: production
+      AUTH_SERVICE_URL: http://auth-service:8010
+      BACKEND_CORE_URL: http://backend-core:8000
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+      LLM_GATEWAY_URL: http://llm-gateway:8090
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      RAG_ENGINE_URL: http://rag-service:8030
+    healthcheck:
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      test:
+      - CMD
+      - python3
+      - -c
+      - import urllib.request; urllib.request.urlopen('http://localhost:8070/health')
+      timeout: 5s
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+    networks:
+    - hsaai_private
+    pids_limit: 256
+    ports:
+    - 127.0.0.1:8070:8070
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+  db-migrate:
+    build:
+      context: .
+      dockerfile: services/backend_core/Dockerfile
+    command:
+    - python
+    - -m
+    - alembic
+    - upgrade
+    - head
+    restart: 'no'
+    environment:
+      ALLOW_DEV_RBAC: 'false'
+      APP_ENV: production
+      AUTH_REQUIRED: 'true'
+      AUTH_SERVICE_URL: http://auth-service:8010
+      CORS_ALLOW_ORIGINS: ${APP_PUBLIC_URL:?Required}
+      DATABASE_URL: postgresql+psycopg://hsaai_admin:${MIGRATION_DB_PASSWORD:?Required}@postgres:5432/hsaai
+      KEYCLOAK_AUDIENCE: hsaai-api
+      KEYCLOAK_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/hsaai
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/hsaai/protocol/openid-connect/certs
+      KEYCLOAK_URL: http://keycloak:8080
+      LLM_GATEWAY_URL: http://llm-gateway:8090
+      LOCAL_FILE_STORAGE: /data/local_uploads
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      QDRANT_URL: http://qdrant:6333
+      RAG_ENGINE_URL: http://rag-service:8030
+      RAG_EVENT_DB: /data/rag_events.db
+      REDIS_URL: redis://redis:6379/0
+      EMBEDDING_PROVIDER: sentence-transformers
+      EMBEDDING_MODEL: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+      RAG_ANSWER_MODEL: ${LOCAL_LLM_MODEL:-qwen2.5:7b-instruct}
+      RUN_MIGRATIONS_ON_STARTUP: 'false'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      disable: true
+    cap_drop:
+    - ALL
+    security_opt:
+    - no-new-privileges:true
+    networks:
+    - hsaai_private
+version: '3.9'
+volumes:
+  documents_data: {}
+  grafana_data: null
+  kafka_data: null
+  keycloak_data: null
+  loki_data: null
+  minio_data: null
+  neo4j_data: null
+  ollama_data: null
+  postgres_data: null
+  prometheus_data: null
+  qdrant_data: null
+  redis_data: null
+  tempo_data: null
+  thanos_compactor_data: null
+  thanos_ruler_data: null
+  thanos_store_data: null
+  vault_audit: null
+  vault_data: null
+  embedding_models: {}

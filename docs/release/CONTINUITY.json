@@ -1,0 +1,8 @@
+{
+  "version": "4.0.0-rc.1",
+  "current_phase": "package validation and technical handover",
+  "original_archive": "HSAAI_v3_PRODUCTION_REVIEWED.zip",
+  "preserved_checkpoint": "HSAAI_work_checkpoint_20260912.zip",
+  "next_actions": "Only remaining acceptance gates in RELEASE_STATUS.json; preserve all source files and fixes",
+  "do_not_claim_production_approved": true
+}

@@ -1,0 +1,13 @@
+# Next.js web app dockerignore (context = apps/web)
+node_modules
+.next
+.git
+*.log
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+Dockerfile
+.dockerignore
+coverage
+vitest-results

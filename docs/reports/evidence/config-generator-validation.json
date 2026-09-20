@@ -1,0 +1,7 @@
+{
+  "new_config_exit": 0,
+  "overwrite_refusal_exit": 2,
+  "debug_false": true,
+  "encryption_key_generated": true,
+  "private_file_mode": "0o600"
+}

@@ -1,0 +1,686 @@
+[
+  {
+    "service": "agent-runtime",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/multi_agents/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "alignment-service",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": true,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/ai_alignment/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "api-gateway",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/api_gateway/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "auth-service",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/auth_service/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "backend-core",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": true,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/backend_core/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "collective-intelligence-engine",
+    "profile": [
+      "extended"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/collective_intelligence_engine/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "consciousness-stream",
+    "profile": [
+      "extended"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/consciousness_stream/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "digital-twin",
+    "profile": [
+      "extended"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/digital_twin/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "dream-engine",
+    "profile": [
+      "extended"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/dream_engine/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "empathy-engine",
+    "profile": [
+      "extended"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/empathy_engine/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "evolution-engine",
+    "profile": [
+      "extended"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/evolution_engine/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "federation-hub",
+    "profile": [
+      "extended"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/federation_hub/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "genealogy-service",
+    "profile": [
+      "extended"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/genealogy_service/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "governance-service",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": true,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/governance/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "grafana",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": null,
+    "image": "grafana/grafana:11.3.0",
+    "dockerfile": null,
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "imagination-engine",
+    "profile": [
+      "extended"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/imagination_engine/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "immune-system",
+    "profile": [
+      "extended"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/immune_system/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "intelligence-economy",
+    "profile": [
+      "extended"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/intelligence_economy/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "intuition-engine",
+    "profile": [
+      "extended"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/intuition_engine/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "kafka",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": null,
+    "image": "confluentinc/cp-kafka:7.7.1",
+    "dockerfile": null,
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "keycloak",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": null,
+    "image": "quay.io/keycloak/keycloak:25.0.6",
+    "dockerfile": null,
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "knowledge-genome-engine",
+    "profile": [
+      "extended"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/knowledge_genome_engine/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "llm-gateway",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/llm_gateway/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "loki",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": null,
+    "image": "grafana/loki:3.3.2",
+    "dockerfile": null,
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "mcp-server",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": true,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/mcp_server/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "minio",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": true,
+    "dockerfile_healthcheck": null,
+    "image": "minio/minio:RELEASE.2024-10-13T13-34-11Z",
+    "dockerfile": null,
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "minio-init",
+    "profile": [
+      "default"
+    ],
+    "oneshot": true,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": null,
+    "image": "minio/mc:RELEASE.2024-10-02T08-27-28Z",
+    "dockerfile": null,
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "mlflow",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": true,
+    "dockerfile_healthcheck": null,
+    "image": "ghcr.io/mlflow/mlflow:v2.18.0",
+    "dockerfile": null,
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "model-training",
+    "profile": [
+      "extended"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": true,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/model_training/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "narrative-engine",
+    "profile": [
+      "extended"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/narrative_engine/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "neo4j",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": null,
+    "image": "neo4j:5",
+    "dockerfile": null,
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "ollama",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": null,
+    "image": "ollama/ollama:0.4.7",
+    "dockerfile": null,
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "opa",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": null,
+    "image": "openpolicyagent/opa:0.68.0-static",
+    "dockerfile": null,
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "otel-collector",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": null,
+    "image": "otel/opentelemetry-collector-contrib:0.110.0",
+    "dockerfile": null,
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "pii-detector",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": true,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/pii_detector/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "postgres",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": true,
+    "dockerfile_healthcheck": null,
+    "image": "postgres:16",
+    "dockerfile": null,
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "precognition-engine",
+    "profile": [
+      "extended"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/precognition_engine/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "proactive-intelligence",
+    "profile": [
+      "extended"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/proactive_intelligence/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "prometheus",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": null,
+    "image": "prom/prometheus:v2.55.1",
+    "dockerfile": null,
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "qdrant",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": null,
+    "image": "qdrant/qdrant:v1.12.1",
+    "dockerfile": null,
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "quantum-decision-engine",
+    "profile": [
+      "extended"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/quantum_decision_engine/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "rag-service",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/rag_engine/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "redis",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": null,
+    "image": "redis:7-alpine",
+    "dockerfile": null,
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "reflection-engine",
+    "profile": [
+      "extended"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/reflection_engine/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "singularity-engine",
+    "profile": [
+      "extended"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/singularity_engine/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "tempo",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": null,
+    "image": "grafana/tempo:2.6.0",
+    "dockerfile": null,
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "thanos-compactor",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": null,
+    "image": "thanosio/thanos:v0.37.0",
+    "dockerfile": null,
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "thanos-query",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": null,
+    "image": "thanosio/thanos:v0.37.0",
+    "dockerfile": null,
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "thanos-ruler",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": null,
+    "image": "thanosio/thanos:v0.37.0",
+    "dockerfile": null,
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "thanos-sidecar",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": null,
+    "image": "thanosio/thanos:v0.37.0",
+    "dockerfile": null,
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "thanos-store",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": null,
+    "image": "thanosio/thanos:v0.37.0",
+    "dockerfile": null,
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "time-travel",
+    "profile": [
+      "extended"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/time_travel/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "vault",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": true,
+    "dockerfile_healthcheck": null,
+    "image": "hashicorp/vault:1.16.0",
+    "dockerfile": null,
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "web",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": true,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "apps/web/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "wisdom-marketplace",
+    "profile": [
+      "extended"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": false,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/wisdom_marketplace/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "workflow-engine",
+    "profile": [
+      "default"
+    ],
+    "oneshot": false,
+    "compose_healthcheck": true,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/workflow_engine/Dockerfile",
+    "runtime": "NOT TESTED"
+  },
+  {
+    "service": "db-migrate",
+    "profile": [
+      "default"
+    ],
+    "oneshot": true,
+    "compose_healthcheck": true,
+    "dockerfile_healthcheck": true,
+    "image": null,
+    "dockerfile": "services/backend_core/Dockerfile",
+    "runtime": "NOT TESTED"
+  }
+]

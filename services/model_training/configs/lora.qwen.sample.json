@@ -1,0 +1,12 @@
+{
+  "model_name": "hsaai-qwen-enterprise-v1",
+  "base_model": "/data/models/qwen2.5-7b-instruct",
+  "dataset": "/data/training/datasets/hsaai-sample.jsonl",
+  "training_method": "LoRA",
+  "gpu_target": "0",
+  "epochs": 3,
+  "batch_size": 4,
+  "learning_rate": 0.0002,
+  "max_seq_length": 2048,
+  "merge_adapter_after_training": false
+}

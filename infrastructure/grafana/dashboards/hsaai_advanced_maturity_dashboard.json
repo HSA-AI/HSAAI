@@ -1,0 +1,13 @@
+{
+  "title": "HSAAI Advanced Maturity Dashboard",
+  "uid": "hsaai-advanced-maturity",
+  "schemaVersion": 39,
+  "version": 1,
+  "tags": ["hsaai", "agents", "workflows", "connectors", "observability"],
+  "panels": [
+    {"type": "stat", "title": "Agent Invocations", "gridPos": {"x":0,"y":0,"w":6,"h":4}, "targets": [{"expr": "sum(hsaai_agent_invocations_total)"}]},
+    {"type": "stat", "title": "Workflow Executions", "gridPos": {"x":6,"y":0,"w":6,"h":4}, "targets": [{"expr": "sum(hsaai_workflow_executions_total)"}]},
+    {"type": "stat", "title": "Connector Errors", "gridPos": {"x":12,"y":0,"w":6,"h":4}, "targets": [{"expr": "sum(hsaai_connector_errors_total)"}]},
+    {"type": "timeseries", "title": "Latency p95", "gridPos": {"x":0,"y":5,"w":12,"h":8}, "targets": [{"expr": "histogram_quantile(0.95, sum(rate(hsaai_request_latency_seconds_bucket[5m])) by (le))"}]}
+  ]
+}

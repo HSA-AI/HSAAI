@@ -1,0 +1,218 @@
+[
+  {
+    "axis": "1",
+    "pdf_pages": "1–8",
+    "requirement": "تدقيق المصدر والبنية والأخطاء",
+    "status": "مراجعة وإصلاحات موثقة",
+    "evidence": "SOURCE_CHANGES.json؛ service-catalog.json",
+    "remaining": "اعتماد نتائج المراجعة من فريق الشركة"
+  },
+  {
+    "axis": "2",
+    "pdf_pages": "8–15",
+    "requirement": "الأمن والمصادقة وRBAC",
+    "status": "إصلاحات واختبارات محلية",
+    "evidence": "common/auth؛ backend_core/security؛ tests/release",
+    "remaining": "SSO فعلي، أدوار ومستخدمون، اختبار اختراق مستقل"
+  },
+  {
+    "axis": "2",
+    "pdf_pages": "8–15",
+    "requirement": "ترحيلات PostgreSQL والعزل",
+    "status": "سلسلة مصححة وترحيل 0006",
+    "evidence": "alembic/versions؛ verify_database.py",
+    "remaining": "اختبار الترقية على PostgreSQL16 ونسخة قديمة مع بيانات"
+  },
+  {
+    "axis": "2",
+    "pdf_pages": "8–15",
+    "requirement": "عزل طلبات RAG والذاكرة وcache",
+    "status": "إصلاحات برمجية واختبارات سلوك",
+    "evidence": "rag_engine؛ llm_gateway؛ common/wisdom",
+    "remaining": "اختبار مستأجرين بمستندات حقيقية وتزامن مرتفع"
+  },
+  {
+    "axis": "2",
+    "pdf_pages": "8–15",
+    "requirement": "الاختبارات والتغطية",
+    "status": "نجح نطاق محلي؛ التغطية دون 80%",
+    "evidence": "evidence؛ pytest.ini",
+    "remaining": "استكمال حد 80% دون تخفيض البوابة"
+  },
+  {
+    "axis": "2",
+    "pdf_pages": "8–15",
+    "requirement": "الاعتماديات والحاويات والأسرار",
+    "status": "إصلاح Dockerfiles وWeb dependencies",
+    "evidence": "Dockerfiles؛ audit؛ configure_production.py",
+    "remaining": "فحص تبعيات Python والصور بالكامل وSBOM وتوقيع الصور"
+  },
+  {
+    "axis": "3",
+    "pdf_pages": "15–25",
+    "requirement": "RAG عربي/OCR/استشهادات وبث",
+    "status": "مسارات مصححة؛ أوزان غير مرفقة",
+    "evidence": "services/rag_engine؛ OpenAPI",
+    "remaining": "دقة OCR ومصادر عربية وتقييم فعلي للنموذج"
+  },
+  {
+    "axis": "3",
+    "pdf_pages": "15–25",
+    "requirement": "توجيه النماذج والتكلفة",
+    "status": "توجيه نموذج مُعدّ وعزل cache ورفض فشل الميزانية",
+    "evidence": "services/llm_gateway",
+    "remaining": "حجز ميزانية ذري موزع وتقييم أداء الاستدلال"
+  },
+  {
+    "axis": "3",
+    "pdf_pages": "15–25",
+    "requirement": "وكلاء متخصصون وذاكرة",
+    "status": "تعريفات تخصصية محفوظة وموسعة",
+    "evidence": "multi_agents/prompts.v1.json؛ agents.py",
+    "remaining": "تقييم مهام الشركة ونقل الحالة المحلية لمخزن موزع"
+  },
+  {
+    "axis": "3",
+    "pdf_pages": "15–25",
+    "requirement": "تدريب/MLOps",
+    "status": "مسارات المصدر محفوظة؛ أخطاء استيراد مصححة",
+    "evidence": "services/model_training؛ MLflow",
+    "remaining": "بيانات معتمدة وGPU وتدريب وتقييم حقيقي"
+  },
+  {
+    "axis": "4",
+    "pdf_pages": "25–35",
+    "requirement": "Docker/Helm/Kubernetes",
+    "status": "إعدادات مصححة وفحوص تكوين",
+    "evidence": "docker-compose.production.yml؛ infrastructure",
+    "remaining": "بناء وتشغيل الصور والنشر على Cluster فعلي"
+  },
+  {
+    "axis": "4",
+    "pdf_pages": "25–35",
+    "requirement": "السحابة الخاصة/AWS/Azure/GCP",
+    "status": "مراجع وتصميم؛ لم يُنشأ نشر سحابي",
+    "evidence": "infrastructure؛ deployment",
+    "remaining": "حساب وموارد وDNS/TLS وصلاحيات معتمدة"
+  },
+  {
+    "axis": "4",
+    "pdf_pages": "25–35",
+    "requirement": "HA/DR/نسخ احتياطي",
+    "status": "إعدادات وخطوات استعادة معزولة",
+    "evidence": "restore_postgres_drill.sh؛ دليل القبول",
+    "remaining": "قياس RPO/RTO؛ نقل حالة RAG والوكلاء قبل التوسع"
+  },
+  {
+    "axis": "4",
+    "pdf_pages": "25–35",
+    "requirement": "CI/CD وسلسلة التوريد",
+    "status": "بوابات محفوظة وتصحيحات للمسارات والصور",
+    "evidence": ".github/workflows؛ production_release_gate.sh",
+    "remaining": "CI كامل وSAST وmypy وRuff الكامل والتغطية المطلوبة"
+  },
+  {
+    "axis": "4",
+    "pdf_pages": "25–35",
+    "requirement": "حمل 1,000/10,000 مستخدم",
+    "status": "لم ينفذ في هذه البيئة",
+    "evidence": "اختبارات الحمل الأصلية محفوظة",
+    "remaining": "اختبار معتمد بأجهزة ونموذج وحمل مماثل للإنتاج"
+  },
+  {
+    "axis": "5",
+    "pdf_pages": "35–44",
+    "requirement": "SaaS/فوترة/دفع/تسويق",
+    "status": "واجهات ومراجع؛ ليست منظومة دفع معتمدة",
+    "evidence": "وحدات السوق والاقتصاد ووثائق المصدر",
+    "remaining": "موفر دفع وفواتير وتسويات واختبارات منتج فعلية"
+  },
+  {
+    "axis": "5",
+    "pdf_pages": "35–44",
+    "requirement": "SAP/SharePoint/LDAP ودعم العملاء",
+    "status": "موصلات ومراجع محفوظة",
+    "evidence": "backend_core/enterprise_integrations؛ docs/integrations",
+    "remaining": "حسابات خدمة وشبكة وتجارب على أنظمة الشركة"
+  },
+  {
+    "axis": "6",
+    "pdf_pages": "45–55",
+    "requirement": "تدفقات وموافقات بشرية",
+    "status": "تنفيذ برمجي موجود ومحمي",
+    "evidence": "workflow_engine؛ approvals؛ multi_agents",
+    "remaining": "قبول سيناريوهات العمل ومنع الأثر الخارجي دون إذن"
+  },
+  {
+    "axis": "6",
+    "pdf_pages": "45–55",
+    "requirement": "Digital Twin/Software Factory/استقلال مؤسسي",
+    "status": "نماذج أولية محفوظة ضمن extended عند انطباقه",
+    "evidence": "digital_twin؛ enterprise_os؛ الوحدات المتقدمة",
+    "remaining": "ربط أحداث حقيقية ومحاكاة وتقييم مستقل"
+  },
+  {
+    "axis": "7",
+    "pdf_pages": "55–64",
+    "requirement": "بحث ونماذج متقدمة وتحسين ذاتي",
+    "status": "برنامج بحث؛ لا نتائج تدريب مثبتة",
+    "evidence": "model_training؛ evolution_engine؛ reflection_engine",
+    "remaining": "بيانات وتجارب وموارد وتقييم علمي ومراجعة بشرية"
+  },
+  {
+    "axis": "8",
+    "pdf_pages": "64–73",
+    "requirement": "بنية عالمية وEdge وسيادة البيانات",
+    "status": "تصميم ونماذج أولية",
+    "evidence": "federation_hub؛ infrastructure",
+    "remaining": "نشر متعدد المناطق واختبار عزل وإقامة بيانات"
+  },
+  {
+    "axis": "9",
+    "pdf_pages": "73–83",
+    "requirement": "اقتصاد وكلاء ومصنع وكلاء ومنظومة مستقلة",
+    "status": "نماذج أولية؛ لا معاملات مالية مستقلة",
+    "evidence": "intelligence_economy؛ wisdom_marketplace",
+    "remaining": "حوكمة ومقاييس وتكامل ومعاملات اختبار موثقة"
+  },
+  {
+    "axis": "10",
+    "pdf_pages": "83–90",
+    "requirement": "مخطط عالمي وخطة 10 سنوات والقرار البشري",
+    "status": "خارطة تنفيذ مرحلية",
+    "evidence": "ROADMAP_AR.md؛ constitution.md",
+    "remaining": "ملكية برنامج وميزانية وقرارات الإدارة؛ ليس قدرة عالمية مكتملة"
+  },
+  {
+    "axis": "11",
+    "pdf_pages": "90–100",
+    "requirement": "الهوية والألوان",
+    "status": "أُدخلت قيم PDF الأساسية",
+    "evidence": "apps/web/tailwind.config.ts؛ styles/globals.css",
+    "remaining": "مراجعة العلامة والتباين على المتصفحات"
+  },
+  {
+    "axis": "11",
+    "pdf_pages": "90–100",
+    "requirement": "الخطوط العربية والإنجليزية والبرمجية",
+    "status": "Inter محلي وترخيص؛ IBM Plex محفوظ",
+    "evidence": "apps/web/public/fonts؛ styles/fonts.css",
+    "remaining": "مراجعة ظهور الخطوط على أجهزة الشركة"
+  },
+  {
+    "axis": "11",
+    "pdf_pages": "90–100",
+    "requirement": "RTL/الوضعان/التجاوب/لوحة المفاتيح",
+    "status": "إصلاحات الشيفرة والاختبارات والبناء",
+    "evidence": "app-shell.tsx؛ ui/button؛ CSS",
+    "remaining": "مراجعة بصرية ومحمول وWCAG؛ لا اعتماد متصفح بصري هنا"
+  },
+  {
+    "axis": "11",
+    "pdf_pages": "90–100",
+    "requirement": "حالات AI والتحميل والمراجع",
+    "status": "إصلاحات حالات البث والفشل ومراجع المصدر",
+    "evidence": "RAG؛ Button aria-busy",
+    "remaining": "اختبار مستخدم بمخرجات عربية حقيقية وقارئ شاشة"
+  }
+]

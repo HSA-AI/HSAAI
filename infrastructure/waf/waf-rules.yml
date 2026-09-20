@@ -1,0 +1,152 @@
+# HSAAI WAF Configuration (v4.0)
+# Cloudflare/AWS WAF rules for HSAAI protection.
+
+# ═══════════════════════════════════════════════════════════════
+# AWS WAF Rules (applied via CloudFront or ALB)
+# ═══════════════════════════════════════════════════════════════
+
+# 1. SQL Injection Protection
+- name: SQLInjectionRule
+  priority: 1
+  action: block
+  statement:
+    sqli_match_statement:
+      text_transformations:
+        - type: URL_DECODE
+        - type: HTML_ENTITY_DECODE
+      field_to_match:
+        all_query_arguments: {}
+  visibility_config:
+    cloudwatch_metrics_enabled: true
+    metric_name: SQLInjection
+    sampled_requests_enabled: true
+
+# 2. XSS Protection
+- name: XSSRule
+  priority: 2
+  action: block
+  statement:
+    xss_match_statement:
+      text_transformations:
+        - type: URL_DECODE
+        - type: HTML_ENTITY_DECODE
+      field_to_match:
+        all_query_arguments: {}
+  visibility_config:
+    cloudwatch_metrics_enabled: true
+    metric_name: XSS
+    sampled_requests_enabled: true
+
+# 3. Prompt Injection Protection (HSAAI-specific)
+- name: PromptInjectionRule
+  priority: 3
+  action: block
+  statement:
+    regex_pattern_set:
+      arn: "arn:aws:wafv2:region:account:regexpatternset/prompt-injection"
+  visibility_config:
+    cloudwatch_metrics_enabled: true
+    metric_name: PromptInjection
+    sampled_requests_enabled: true
+
+# 4. Rate Limiting per IP (120 req/min)
+- name: RateLimitRule
+  priority: 4
+  action: block
+  statement:
+    rate_based_statement:
+      limit: 120
+      evaluation_window_sec: 60
+      aggregate_key_type: IP
+  visibility_config:
+    cloudwatch_metrics_enabled: true
+    metric_name: RateLimit
+    sampled_requests_enabled: true
+
+# 5. Geo-blocking (GCC countries only: SA, AE, QA, KW, BH, OM, YE)
+- name: GeoBlockRule
+  priority: 5
+  action: block
+  statement:
+    not_statement:
+      statement:
+        geo_match_statement:
+          country_codes:
+            - SA  # Saudi Arabia
+            - AE  # UAE
+            - QA  # Qatar
+            - KW  # Kuwait
+            - BH  # Bahrain
+            - OM  # Oman
+            - YE  # Yemen
+  visibility_config:
+    cloudwatch_metrics_enabled: true
+    metric_name: GeoBlock
+    sampled_requests_enabled: true
+
+# 6. Bot Protection (challenge suspicious requests)
+- name: BotProtectionRule
+  priority: 6
+  action: captcha
+  statement:
+    regex_match_statement:
+      regex_string: "(?i)(bot|crawler|spider|scraper)"
+      field_to_match:
+        single_header:
+          name: user-agent
+  visibility_config:
+    cloudwatch_metrics_enabled: true
+    metric_name: BotProtection
+    sampled_requests_enabled: true
+
+# 7. Path Traversal Protection
+- name: PathTraversalRule
+  priority: 7
+  action: block
+  statement:
+    regex_match_statement:
+      regex_string: "(\\.\\.(\\/|\\\\)|%2e%2e(%2f|%5c))"
+      field_to_match:
+        all_query_arguments: {}
+  visibility_config:
+    cloudwatch_metrics_enabled: true
+    metric_name: PathTraversal
+    sampled_requests_enabled: true
+
+# 8. Body Size Limit (block > 50MB — prevent DoS)
+- name: BodySizeLimitRule
+  priority: 8
+  action: block
+  statement:
+    size_constraint_statement:
+      field_to_match:
+        body: {}
+      comparison_operator: GT
+      size: 52428800  # 50MB
+  visibility_config:
+    cloudwatch_metrics_enabled: true
+    metric_name: BodySizeLimit
+    sampled_requests_enabled: true
+
+# ═══════════════════════════════════════════════════════════════
+# Nginx Rate Limiting (defense in depth — in addition to WAF)
+# ═══════════════════════════════════════════════════════════════
+
+# Add to infrastructure/nginx/nginx.conf:
+#
+# limit_req_zone $binary_remote_addr zone=general:10m rate=120r/m;
+# limit_req_zone $binary_remote_addr zone=auth:10m rate=5r/m;
+# limit_req_zone $binary_remote_addr zone=api:10m rate=300r/m;
+#
+# server {
+#   # General rate limit
+#   limit_req zone=general burst=20 nodelay;
+#
+#   location /api/auth/ {
+#     limit_req zone=auth burst=3 nodelay;
+#   }
+#
+#   location /api/ {
+#     limit_req zone=api burst=50 nodelay;
+#   }
+# }

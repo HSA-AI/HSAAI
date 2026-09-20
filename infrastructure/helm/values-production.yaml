@@ -1,0 +1,21 @@
+replicaCount: 2
+imagePullPolicy: IfNotPresent
+internalOnly: true
+localLLM:
+  provider: ollama
+  model: qwen2.5:7b-instruct
+security:
+  networkPolicy:
+    defaultDenyEgress: true
+  externalAI: false
+secrets:
+  postgresPassword: CHANGE_ME_WITH_HELM_SECRET
+  jwtSecret: CHANGE_ME_WITH_HELM_SECRET
+  keycloakAdminPassword: CHANGE_ME_WITH_HELM_SECRET
+resources:
+  backend:
+    requests: {cpu: "500m", memory: "512Mi"}
+    limits: {cpu: "2", memory: "2Gi"}
+  llmGateway:
+    requests: {cpu: "1", memory: "2Gi"}
+    limits: {cpu: "4", memory: "8Gi"}

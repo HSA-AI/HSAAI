@@ -1,0 +1,365 @@
+name: hsaai-production
+networks:
+  hsaai_internal:
+    driver: bridge
+services:
+  api_gateway:
+    # FIX B-15: Build from project root so Dockerfile can COPY both
+    # services/api_gateway/requirements.txt and packages/common/requirements.txt.
+    build:
+      context: ../..
+      dockerfile: services/api_gateway/Dockerfile
+    depends_on:
+      backend:
+        condition: service_healthy
+    env_file: .env.production
+    environment:
+      BACKEND_CORE_URL: http://backend:8000
+    healthcheck:
+      interval: 20s
+      retries: 10
+      test:
+      - CMD-SHELL
+      - python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8060/health',
+        timeout=5)"
+      timeout: 8s
+    networks:
+    - hsaai_internal
+    restart: unless-stopped
+    # FIX-MEDIUM-LOW-FINAL: production resource limits (cpus + memory) to prevent noisy-neighbour blast radius.
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+  backend:
+    build: ./services/backend_core
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file: .env.production
+    environment:
+      AI_ORCHESTRATOR_URL: http://ai_orchestrator:8020
+      ALLOW_DEV_RBAC: 'false'
+      APP_ENV: production
+      AUTH_REQUIRED: 'true'
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-hsaai}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-hsaai}
+      DIRECT_URL: postgresql+psycopg://${POSTGRES_USER:-hsaai}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-hsaai}
+      ENVIRONMENT: production
+      GRAPH_INGESTION_ENABLED: ${GRAPH_INGESTION_ENABLED:-true}
+      GRAPH_RAG_BRIDGE_ENABLED: ${GRAPH_RAG_BRIDGE_ENABLED:-true}
+      KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER}
+      KEYCLOAK_URL: http://keycloak:8080
+      KNOWLEDGE_GRAPH_ENABLED: ${KNOWLEDGE_GRAPH_ENABLED:-true}
+      NEO4J_PASSWORD: ${NEO4J_PASSWORD:?Required set NEO4J_PASSWORD env var}
+      NEO4J_URI: ${NEO4J_URI:-bolt://neo4j:7687}
+      NEO4J_USERNAME: ${NEO4J_USERNAME:-neo4j}
+      QDRANT_URL: http://qdrant:6333
+      RAG_ENGINE_URL: http://rag_engine:8030
+      REDIS_URL: redis://redis:6379/0
+      REQUIRE_QDRANT: 'true'
+    healthcheck:
+      interval: 20s
+      retries: 10
+      test:
+      - CMD-SHELL
+      - python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/ready',
+        timeout=5)"
+      timeout: 8s
+    networks:
+    - hsaai_internal
+    restart: unless-stopped
+    # FIX-MEDIUM-LOW-FINAL: production resource limits (cpus + memory) to prevent noisy-neighbour blast radius.
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+  frontend:
+    build: ./apps/web
+    depends_on:
+      api_gateway:
+        condition: service_healthy
+    environment:
+      NEXT_PUBLIC_API_URL: https://${DOMAIN_NAME}/api
+      NEXT_PUBLIC_KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
+      NEXT_PUBLIC_KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      NEXT_PUBLIC_KEYCLOAK_URL: https://${DOMAIN_NAME}/auth
+      NODE_ENV: production
+    healthcheck:
+      interval: 30s
+      retries: 10
+      test:
+      - CMD-SHELL
+      - node -e "fetch('http://127.0.0.1:3000').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      timeout: 10s
+    networks:
+    - hsaai_internal
+    restart: unless-stopped
+    # FIX-MEDIUM-LOW-FINAL: production resource limits (cpus + memory) to prevent noisy-neighbour blast radius.
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+  grafana:
+    depends_on:
+    - prometheus
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?set GRAFANA_ADMIN_PASSWORD}
+      GF_USERS_ALLOW_SIGN_UP: 'false'
+    image: grafana/grafana:11.3.0
+    networks:
+    - hsaai_internal
+    restart: unless-stopped
+    volumes:
+    - grafana_data:/var/lib/grafana
+    - ./infrastructure/grafana/provisioning:/etc/grafana/provisioning:ro
+    # FIX-MEDIUM-LOW-FINAL: production resource limits (cpus + memory) to prevent noisy-neighbour blast radius.
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+  keycloak:
+    command:
+    - start
+    - --optimized
+    - --hostname=${DOMAIN_NAME}
+    - --proxy-headers=xforwarded
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      KC_DB: postgres
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      KC_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-hsaai}
+      KC_DB_USERNAME: ${POSTGRES_USER:-hsaai}
+      KC_HTTP_ENABLED: 'true'
+      KC_PROXY_HEADERS: xforwarded
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?set KEYCLOAK_ADMIN_PASSWORD}
+    healthcheck:
+      interval: 30s
+      retries: 20
+      test:
+      - CMD-SHELL
+      - timeout 5 bash -c '</dev/tcp/127.0.0.1/8080' || exit 1
+      timeout: 10s
+    image: quay.io/keycloak/keycloak:25.0
+    networks:
+    - hsaai_internal
+    restart: unless-stopped
+    volumes:
+    - keycloak_data:/opt/keycloak/data
+    # FIX-MEDIUM-LOW-FINAL: production resource limits (cpus + memory) to prevent noisy-neighbour blast radius.
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+  llm_gateway:
+    build: ./services/llm_gateway
+    env_file: .env.production
+    environment:
+      ALLOW_EXTERNAL_AI: 'false'
+      INTERNAL_ONLY_MODE: 'true'
+    networks:
+    - hsaai_internal
+    restart: unless-stopped
+    # FIX-MEDIUM-LOW-FINAL: production resource limits (cpus + memory) to prevent noisy-neighbour blast radius.
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+  neo4j:
+    environment:
+      NEO4J_AUTH: ${NEO4J_USERNAME:-neo4j}/${NEO4J_PASSWORD:?Required set NEO4J_PASSWORD env var}
+      NEO4J_PLUGINS: '["apoc"]'
+    healthcheck:
+      interval: 20s
+      retries: 10
+      test:
+      - CMD-SHELL
+      - wget -qO- http://127.0.0.1:7474 || exit 1
+      timeout: 8s
+    image: neo4j:5-community
+    ports:
+    - 7474
+    - 7687
+    restart: unless-stopped
+    volumes:
+    - neo4j_data:/data
+    # FIX-MEDIUM-LOW-FINAL: production resource limits (cpus + memory) to prevent noisy-neighbour blast radius.
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+  nginx:
+    depends_on:
+      api_gateway:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+    environment:
+      BACKEND_PORT: ${BACKEND_PORT:-8080}
+      DOMAIN_NAME: ${DOMAIN_NAME}
+      FRONTEND_PORT: ${FRONTEND_PORT:-3000}
+    healthcheck:
+      interval: 20s
+      retries: 10
+      test:
+      - CMD-SHELL
+      - wget -qO- http://127.0.0.1/health | grep -q ok
+      timeout: 5s
+    image: nginx:1.27-alpine
+    networks:
+    - hsaai_internal
+    ports:
+    - 80:80
+    - 443:443
+    restart: unless-stopped
+    volumes:
+    - ./infrastructure/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    - ./certbot/conf:/etc/letsencrypt:ro
+    - ./certbot/www:/var/www/certbot:ro
+    # FIX-MEDIUM-LOW-FINAL: production resource limits (cpus + memory) to prevent noisy-neighbour blast radius.
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+  postgres:
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-hsaai}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER:-hsaai}
+    healthcheck:
+      interval: 20s
+      retries: 10
+      test:
+      - CMD-SHELL
+      - pg_isready -U ${POSTGRES_USER:-hsaai} -d ${POSTGRES_DB:-hsaai}
+      timeout: 5s
+    image: postgres:16
+    networks:
+    - hsaai_internal
+    restart: unless-stopped
+    volumes:
+    - postgres_data:/var/lib/postgresql/data
+    # FIX-MEDIUM-LOW-FINAL: production resource limits (cpus + memory) to prevent noisy-neighbour blast radius.
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+  prometheus:
+    command:
+    - --config.file=/etc/prometheus/prometheus.yml
+    - --storage.tsdb.path=/prometheus
+    depends_on:
+    - backend
+    - api_gateway
+    image: prom/prometheus:v2.55.1
+    networks:
+    - hsaai_internal
+    restart: unless-stopped
+    volumes:
+    - ./infrastructure/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    - prometheus_data:/prometheus
+    # FIX-MEDIUM-LOW-FINAL: production resource limits (cpus + memory) to prevent noisy-neighbour blast radius.
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+  qdrant:
+    environment:
+      QDRANT__SERVICE__API_KEY: ${QDRANT_API_KEY:-}
+    healthcheck:
+      interval: 20s
+      retries: 10
+      test:
+      - CMD-SHELL
+      - timeout 5 bash -c '</dev/tcp/127.0.0.1/6333' || exit 1
+      timeout: 5s
+    image: qdrant/qdrant:v1.11.5
+    networks:
+    - hsaai_internal
+    restart: unless-stopped
+    volumes:
+    - qdrant_data:/qdrant/storage
+    # FIX-MEDIUM-LOW-FINAL: production resource limits (cpus + memory) to prevent noisy-neighbour blast radius.
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+  rag_engine:
+    build: ./services/rag_engine
+    depends_on:
+      qdrant:
+        condition: service_healthy
+    env_file: .env.production
+    environment:
+      LLM_GATEWAY_URL: http://llm_gateway:8090
+      LOCAL_FILE_STORAGE: /data/local_uploads
+      QDRANT_API_KEY: ${QDRANT_API_KEY:-}
+      QDRANT_COLLECTION: ${QDRANT_COLLECTION:-hsaai_knowledge}
+      QDRANT_URL: http://qdrant:6333
+      REQUIRE_QDRANT: 'true'
+    networks:
+    - hsaai_internal
+    restart: unless-stopped
+    volumes:
+    - local_uploads:/data/local_uploads
+    # FIX-MEDIUM-LOW-FINAL: production resource limits (cpus + memory) to prevent noisy-neighbour blast radius.
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 2G
+  redis:
+    command:
+    - redis-server
+    - --appendonly
+    - 'yes'
+    healthcheck:
+      interval: 20s
+      retries: 10
+      test:
+      - CMD
+      - redis-cli
+      - ping
+      timeout: 5s
+    image: redis:7-alpine
+    networks:
+    - hsaai_internal
+    restart: unless-stopped
+    volumes:
+    - redis_data:/data
+    # FIX-MEDIUM-LOW-FINAL: production resource limits (cpus + memory) to prevent noisy-neighbour blast radius.
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+volumes:
+  grafana_data: {}
+  keycloak_data: {}
+  local_uploads: {}
+  neo4j_data: {}
+  postgres_data: {}
+  prometheus_data: {}
+  qdrant_data: {}
+  redis_data: {}

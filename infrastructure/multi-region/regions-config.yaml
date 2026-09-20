@@ -1,0 +1,108 @@
+# HSAAI Multi-Region Active-Active Architecture (Phase 3 — Scale)
+#
+# FIX v2.3 (Phase 3): Implements multi-region active-active deployment.
+# Each region runs a complete HSAAI stack with cross-region replication:
+#   - PostgreSQL: logical replication (publications + subscriptions)
+#   - Qdrant: cluster-level replication across regions
+#   - Redis: Redis CRDT (Conflict-free Replicated Data Types) for eventual consistency
+#   - MinIO: server-side bucket replication
+#   - Neo4j: causal cluster with cross-region routing
+#
+# Traffic is routed via global DNS (Latency-Based Routing + Health Checks).
+# Failover is automatic: if a region's health check fails, DNS removes it
+# from the pool within 60 seconds (TTL).
+#
+# Regions:
+#   - me-west-1 (Yemen/Saudi primary) — primary write region for Gulf tenants
+#   - me-south-1 (Mumbai) — primary write region for South Asia tenants
+#   - eu-west-1 (Frankfurt) — read replica + disaster recovery
+#
+# This directory contains:
+#   - regions/           — per-region K8s overlays + values
+#   - global-resolver/   — global traffic manager (DNS + health checks)
+#   - dns/               — Route53 / CloudDNS config
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hsaai-regions-config
+  namespace: hsaai
+  labels:
+    app.kubernetes.io/part-of: hsaai
+data:
+  regions.yaml: |
+    # Global region configuration — consumed by the global-resolver service.
+    regions:
+      me-west-1:
+        name: "Middle East West (Yemen/Saudi)"
+        geography: "Gulf"
+        dns_name: "me-west-1.hsaai.internal"
+        endpoint: "https://me-west-1.hsaai.internal"
+        health_check: "/health"
+        weight: 40  # 40% of traffic
+        is_write_primary: true  # for Gulf tenants
+        failover_priority: 1
+        postgres_host: "postgres.me-west-1.hsaai.internal"
+        qdrant_url: "http://qdrant.me-west-1.hsaai.internal:6333"
+        redis_url: "redis://redis.me-west-1.hsaai.internal:6379"
+        minio_endpoint: "minio.me-west-1.hsaai.internal:9000"
+        neo4j_url: "bolt://neo4j.me-west-1.hsaai.internal:7687"
+
+      me-south-1:
+        name: "Middle East South (Mumbai)"
+        geography: "South Asia"
+        dns_name: "me-south-1.hsaai.internal"
+        endpoint: "https://me-south-1.hsaai.internal"
+        health_check: "/health"
+        weight: 35  # 35% of traffic
+        is_write_primary: true  # for South Asia tenants
+        failover_priority: 2
+        postgres_host: "postgres.me-south-1.hsaai.internal"
+        qdrant_url: "http://qdrant.me-south-1.hsaai.internal:6333"
+        redis_url: "redis://redis.me-south-1.hsaai.internal:6379"
+        minio_endpoint: "minio.me-south-1.hsaai.internal:9000"
+        neo4j_url: "bolt://neo4j.me-south-1.hsaai.internal:7687"
+
+      eu-west-1:
+        name: "Europe West (Frankfurt)"
+        geography: "Europe"
+        dns_name: "eu-west-1.hsaai.internal"
+        endpoint: "https://eu-west-1.hsaai.internal"
+        health_check: "/health"
+        weight: 25  # 25% of traffic
+        is_write_primary: false  # read replica + DR
+        failover_priority: 3
+        postgres_host: "postgres.eu-west-1.hsaai.internal"
+        qdrant_url: "http://qdrant.eu-west-1.hsaai.internal:6333"
+        redis_url: "redis://redis.eu-west-1.hsaai.internal:6379"
+        minio_endpoint: "minio.eu-west-1.hsaai.internal:9000"
+        neo4j_url: "bolt://neo4j.eu-west-1.hsaai.internal:7687"
+
+    # Tenant-to-region routing preferences (overrides latency-based routing).
+    # Tenants can be pinned to a specific write-primary region.
+    tenant_routing:
+      hsa-foods: { write_primary: me-west-1, read_any: true }
+      hsa-retail: { write_primary: me-west-1, read_any: true }
+      hsa-packaging: { write_primary: me-west-1, read_any: true }
+      hsa-realestate: { write_primary: me-south-1, read_any: true }
+      hsa-logging: { write_primary: me-south-1, read_any: true }
+      hsa-corporate: { write_primary: me-west-1, read_any: true }
+
+    # Failover configuration.
+    failover:
+      health_check_interval_seconds: 10
+      health_check_timeout_seconds: 5
+      unhealthy_threshold: 3  # 3 consecutive failures = unhealthy
+      healthy_threshold: 2    # 2 consecutive successes = healthy
+      dns_ttl_seconds: 60     # DNS TTL for failover propagation
+      auto_failover: true
+      failback: true  # automatically fail back when primary region recovers
+
+    # Cross-region replication settings.
+    replication:
+      postgres_mode: "logical"  # logical (publications/subscriptions) — supports multi-writer
+      postgres_lag_threshold_mb: 100  # alert if replication lag exceeds 100MB
+      qdrant_mode: "cluster-level"  # cross-cluster replication
+      redis_mode: "crdt"  # Conflict-free Replicated Data Types
+      minio_mode: "server-side"  # bucket replication
+      neo4j_mode: "causal-cluster"  # causal consistency across regions

@@ -1,0 +1,2874 @@
+---
+# Source: hsaai-enterprise-os/templates/networkpolicies.yaml
+# Default deny all egress from HSAAI namespace
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-egress
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: hsaai  # FIX v2.1: was missing, selectors now match
+  policyTypes:
+    - Egress
+---
+# Source: hsaai-enterprise-os/templates/networkpolicies.yaml
+# Default deny all ingress to HSAAI namespace
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: hsaai
+  policyTypes:
+    - Ingress
+---
+# Source: hsaai-enterprise-os/templates/networkpolicies.yaml
+# Allow internal services to communicate (same namespace + part-of=hsaai label)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-internal-services
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: hsaai
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: hsaai
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: hsaai
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+---
+# Source: hsaai-enterprise-os/templates/networkpolicies.yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-data-services-and-ingress
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: hsaai
+  policyTypes: [Ingress, Egress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 3000
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: hsaai-data
+---
+# Source: hsaai-enterprise-os/templates/pdbs.yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: agent-runtime-pdb
+  namespace: default
+  labels:
+    app.kubernetes.io/name: agent-runtime
+    app.kubernetes.io/part-of: hsaai
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: agent-runtime  # FIX v2.1: matches Deployment label (was "hsaai-*")
+      app.kubernetes.io/part-of: hsaai
+---
+# Source: hsaai-enterprise-os/templates/pdbs.yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: alignment-service-pdb
+  namespace: default
+  labels:
+    app.kubernetes.io/name: alignment-service
+    app.kubernetes.io/part-of: hsaai
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: alignment-service  # FIX v2.1: matches Deployment label (was "hsaai-*")
+      app.kubernetes.io/part-of: hsaai
+---
+# Source: hsaai-enterprise-os/templates/pdbs.yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: api-gateway-pdb
+  namespace: default
+  labels:
+    app.kubernetes.io/name: api-gateway
+    app.kubernetes.io/part-of: hsaai
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: api-gateway  # FIX v2.1: matches Deployment label (was "hsaai-*")
+      app.kubernetes.io/part-of: hsaai
+---
+# Source: hsaai-enterprise-os/templates/pdbs.yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: auth-service-pdb
+  namespace: default
+  labels:
+    app.kubernetes.io/name: auth-service
+    app.kubernetes.io/part-of: hsaai
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: auth-service  # FIX v2.1: matches Deployment label (was "hsaai-*")
+      app.kubernetes.io/part-of: hsaai
+---
+# Source: hsaai-enterprise-os/templates/pdbs.yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: backend-core-pdb
+  namespace: default
+  labels:
+    app.kubernetes.io/name: backend-core
+    app.kubernetes.io/part-of: hsaai
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: backend-core  # FIX v2.1: matches Deployment label (was "hsaai-*")
+      app.kubernetes.io/part-of: hsaai
+---
+# Source: hsaai-enterprise-os/templates/pdbs.yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: frontend-pdb
+  namespace: default
+  labels:
+    app.kubernetes.io/name: frontend
+    app.kubernetes.io/part-of: hsaai
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: frontend  # FIX v2.1: matches Deployment label (was "hsaai-*")
+      app.kubernetes.io/part-of: hsaai
+---
+# Source: hsaai-enterprise-os/templates/pdbs.yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: governance-service-pdb
+  namespace: default
+  labels:
+    app.kubernetes.io/name: governance-service
+    app.kubernetes.io/part-of: hsaai
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: governance-service  # FIX v2.1: matches Deployment label (was "hsaai-*")
+      app.kubernetes.io/part-of: hsaai
+---
+# Source: hsaai-enterprise-os/templates/pdbs.yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: llm-gateway-pdb
+  namespace: default
+  labels:
+    app.kubernetes.io/name: llm-gateway
+    app.kubernetes.io/part-of: hsaai
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: llm-gateway  # FIX v2.1: matches Deployment label (was "hsaai-*")
+      app.kubernetes.io/part-of: hsaai
+---
+# Source: hsaai-enterprise-os/templates/pdbs.yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: mcp-server-pdb
+  namespace: default
+  labels:
+    app.kubernetes.io/name: mcp-server
+    app.kubernetes.io/part-of: hsaai
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mcp-server  # FIX v2.1: matches Deployment label (was "hsaai-*")
+      app.kubernetes.io/part-of: hsaai
+---
+# Source: hsaai-enterprise-os/templates/pdbs.yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: pii-detector-pdb
+  namespace: default
+  labels:
+    app.kubernetes.io/name: pii-detector
+    app.kubernetes.io/part-of: hsaai
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: pii-detector  # FIX v2.1: matches Deployment label (was "hsaai-*")
+      app.kubernetes.io/part-of: hsaai
+---
+# Source: hsaai-enterprise-os/templates/pdbs.yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: rag-service-pdb
+  namespace: default
+  labels:
+    app.kubernetes.io/name: rag-service
+    app.kubernetes.io/part-of: hsaai
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: rag-service  # FIX v2.1: matches Deployment label (was "hsaai-*")
+      app.kubernetes.io/part-of: hsaai
+---
+# Source: hsaai-enterprise-os/templates/pdbs.yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: workflow-engine-pdb
+  namespace: default
+  labels:
+    app.kubernetes.io/name: workflow-engine
+    app.kubernetes.io/part-of: hsaai
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: workflow-engine  # FIX v2.1: matches Deployment label (was "hsaai-*")
+      app.kubernetes.io/part-of: hsaai
+---
+# Source: hsaai-enterprise-os/templates/serviceaccounts.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: agent-runtime
+  namespace: default
+  labels:
+    app.kubernetes.io/name: agent-runtime
+    app.kubernetes.io/part-of: hsaai
+---
+# Source: hsaai-enterprise-os/templates/serviceaccounts.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: alignment-service
+  namespace: default
+  labels:
+    app.kubernetes.io/name: alignment-service
+    app.kubernetes.io/part-of: hsaai
+---
+# Source: hsaai-enterprise-os/templates/serviceaccounts.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: api-gateway
+  namespace: default
+  labels:
+    app.kubernetes.io/name: api-gateway
+    app.kubernetes.io/part-of: hsaai
+---
+# Source: hsaai-enterprise-os/templates/serviceaccounts.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: auth-service
+  namespace: default
+  labels:
+    app.kubernetes.io/name: auth-service
+    app.kubernetes.io/part-of: hsaai
+---
+# Source: hsaai-enterprise-os/templates/serviceaccounts.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: backend-core
+  namespace: default
+  labels:
+    app.kubernetes.io/name: backend-core
+    app.kubernetes.io/part-of: hsaai
+---
+# Source: hsaai-enterprise-os/templates/serviceaccounts.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: frontend
+  namespace: default
+  labels:
+    app.kubernetes.io/name: frontend
+    app.kubernetes.io/part-of: hsaai
+---
+# Source: hsaai-enterprise-os/templates/serviceaccounts.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: governance-service
+  namespace: default
+  labels:
+    app.kubernetes.io/name: governance-service
+    app.kubernetes.io/part-of: hsaai
+---
+# Source: hsaai-enterprise-os/templates/serviceaccounts.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: llm-gateway
+  namespace: default
+  labels:
+    app.kubernetes.io/name: llm-gateway
+    app.kubernetes.io/part-of: hsaai
+---
+# Source: hsaai-enterprise-os/templates/serviceaccounts.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mcp-server
+  namespace: default
+  labels:
+    app.kubernetes.io/name: mcp-server
+    app.kubernetes.io/part-of: hsaai
+---
+# Source: hsaai-enterprise-os/templates/serviceaccounts.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pii-detector
+  namespace: default
+  labels:
+    app.kubernetes.io/name: pii-detector
+    app.kubernetes.io/part-of: hsaai
+---
+# Source: hsaai-enterprise-os/templates/serviceaccounts.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: rag-service
+  namespace: default
+  labels:
+    app.kubernetes.io/name: rag-service
+    app.kubernetes.io/part-of: hsaai
+---
+# Source: hsaai-enterprise-os/templates/serviceaccounts.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: workflow-engine
+  namespace: default
+  labels:
+    app.kubernetes.io/name: workflow-engine
+    app.kubernetes.io/part-of: hsaai
+---
+# Source: hsaai-enterprise-os/templates/services.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-runtime
+  namespace: default
+  labels:
+    app.kubernetes.io/name: agent-runtime
+    app.kubernetes.io/part-of: hsaai
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: agent-runtime
+    app.kubernetes.io/part-of: hsaai
+  ports:
+    - name: http
+      port: 8040
+      targetPort: http
+      protocol: TCP
+---
+# Source: hsaai-enterprise-os/templates/services.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: alignment-service
+  namespace: default
+  labels:
+    app.kubernetes.io/name: alignment-service
+    app.kubernetes.io/part-of: hsaai
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: alignment-service
+    app.kubernetes.io/part-of: hsaai
+  ports:
+    - name: http
+      port: 8005
+      targetPort: http
+      protocol: TCP
+---
+# Source: hsaai-enterprise-os/templates/services.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway
+  namespace: default
+  labels:
+    app.kubernetes.io/name: api-gateway
+    app.kubernetes.io/part-of: hsaai
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: api-gateway
+    app.kubernetes.io/part-of: hsaai
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
+      protocol: TCP
+---
+# Source: hsaai-enterprise-os/templates/services.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: default
+  labels:
+    app.kubernetes.io/name: auth-service
+    app.kubernetes.io/part-of: hsaai
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: auth-service
+    app.kubernetes.io/part-of: hsaai
+  ports:
+    - name: http
+      port: 8010
+      targetPort: http
+      protocol: TCP
+---
+# Source: hsaai-enterprise-os/templates/services.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-core
+  namespace: default
+  labels:
+    app.kubernetes.io/name: backend-core
+    app.kubernetes.io/part-of: hsaai
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: backend-core
+    app.kubernetes.io/part-of: hsaai
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
+      protocol: TCP
+---
+# Source: hsaai-enterprise-os/templates/services.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: default
+  labels:
+    app.kubernetes.io/name: frontend
+    app.kubernetes.io/part-of: hsaai
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: frontend
+    app.kubernetes.io/part-of: hsaai
+  ports:
+    - name: http
+      port: 3000
+      targetPort: http
+      protocol: TCP
+---
+# Source: hsaai-enterprise-os/templates/services.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: governance-service
+  namespace: default
+  labels:
+    app.kubernetes.io/name: governance-service
+    app.kubernetes.io/part-of: hsaai
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: governance-service
+    app.kubernetes.io/part-of: hsaai
+  ports:
+    - name: http
+      port: 8011
+      targetPort: http
+      protocol: TCP
+---
+# Source: hsaai-enterprise-os/templates/services.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: llm-gateway
+  namespace: default
+  labels:
+    app.kubernetes.io/name: llm-gateway
+    app.kubernetes.io/part-of: hsaai
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: llm-gateway
+    app.kubernetes.io/part-of: hsaai
+  ports:
+    - name: http
+      port: 8090
+      targetPort: http
+      protocol: TCP
+---
+# Source: hsaai-enterprise-os/templates/services.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-server
+  namespace: default
+  labels:
+    app.kubernetes.io/name: mcp-server
+    app.kubernetes.io/part-of: hsaai
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: mcp-server
+    app.kubernetes.io/part-of: hsaai
+  ports:
+    - name: http
+      port: 8094
+      targetPort: http
+      protocol: TCP
+---
+# Source: hsaai-enterprise-os/templates/services.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: pii-detector
+  namespace: default
+  labels:
+    app.kubernetes.io/name: pii-detector
+    app.kubernetes.io/part-of: hsaai
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: pii-detector
+    app.kubernetes.io/part-of: hsaai
+  ports:
+    - name: http
+      port: 8092
+      targetPort: http
+      protocol: TCP
+---
+# Source: hsaai-enterprise-os/templates/services.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: rag-service
+  namespace: default
+  labels:
+    app.kubernetes.io/name: rag-service
+    app.kubernetes.io/part-of: hsaai
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: rag-service
+    app.kubernetes.io/part-of: hsaai
+  ports:
+    - name: http
+      port: 8030
+      targetPort: http
+      protocol: TCP
+---
+# Source: hsaai-enterprise-os/templates/services.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: workflow-engine
+  namespace: default
+  labels:
+    app.kubernetes.io/name: workflow-engine
+    app.kubernetes.io/part-of: hsaai
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: workflow-engine
+    app.kubernetes.io/part-of: hsaai
+  ports:
+    - name: http
+      port: 8070
+      targetPort: http
+      protocol: TCP
+---
+# Source: hsaai-enterprise-os/templates/deployments.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-runtime
+  namespace: default
+  labels:
+    app.kubernetes.io/name: agent-runtime
+    app.kubernetes.io/part-of: hsaai
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: hsaai-enterprise-os-4.0.0-rc.2
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: agent-runtime
+      app.kubernetes.io/part-of: hsaai
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: agent-runtime
+        app.kubernetes.io/part-of: hsaai
+    spec:
+      automountServiceAccountToken: false
+      serviceAccountName: agent-runtime
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: agent-runtime
+          image: "ghcr.io/REPLACE_ORGANIZATION/hsaai-agent-runtime:4.0.0-rc.2"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8040
+              name: http
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: hsaai-secrets
+          env:
+            - name: AI_ORCHESTRATOR_URL
+              value: "http://agent-runtime:8040"
+            - name: ALLOW_EXTERNAL_AI
+              value: "false"
+            - name: ALLOW_EXTERNAL_APIS
+              value: "false"
+            - name: ANALYTICS_URL
+              value: "http://backend-core:8000"
+            - name: API_GATEWAY_URL
+              value: "http://api-gateway:8000"
+            - name: APP_ENV
+              value: "production"
+            - name: APP_PUBLIC_URL
+              value: "https://ai.hsaai.example"
+            - name: AUTH_REQUIRED
+              value: "true"
+            - name: AUTH_SERVICE_URL
+              value: "http://auth-service:8010"
+            - name: BACKEND_CORE_URL
+              value: "http://backend-core:8000"
+            - name: BACKEND_URL
+              value: "http://backend-core:8000"
+            - name: CORS_ALLOW_ORIGINS
+              value: "https://ai.hsaai.example"
+            - name: EMBEDDING_MODEL
+              value: "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+            - name: EMBEDDING_PROVIDER
+              value: "sentence-transformers"
+            - name: HF_HOME
+              value: "/models"
+            - name: HF_HUB_OFFLINE
+              value: "1"
+            - name: HSAAI_COOKIE_SECURE
+              value: "true"
+            - name: INTERNAL_ONLY_MODE
+              value: "true"
+            - name: KEYCLOAK_AUDIENCE
+              value: "hsaai-api"
+            - name: KEYCLOAK_CLIENT_ID
+              value: "hsaai-frontend"
+            - name: KEYCLOAK_INTERNAL_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080"
+            - name: KEYCLOAK_ISSUER
+              value: "https://identity.hsaai.example/realms/hsaai"
+            - name: KEYCLOAK_JWKS_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080/realms/hsaai/protocol/openid-connect/certs"
+            - name: KEYCLOAK_REALM
+              value: "hsaai"
+            - name: KEYCLOAK_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080"
+            - name: LLM_GATEWAY_URL
+              value: "http://llm-gateway:8090"
+            - name: LOCAL_FILE_STORAGE
+              value: "/data/local_uploads"
+            - name: LOCAL_LLM_MODEL
+              value: "qwen2.5:7b-instruct"
+            - name: OLLAMA_BASE_URL
+              value: "http://ollama.hsaai-data.svc.cluster.local:11434"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://otel-collector.hsaai-data.svc.cluster.local:4317"
+            - name: QDRANT_URL
+              value: "http://qdrant.hsaai-data.svc.cluster.local:6333"
+            - name: RAG_ANSWER_MODEL
+              value: "qwen2.5:7b-instruct"
+            - name: RAG_ENGINE_URL
+              value: "http://rag-service:8030"
+            - name: RAG_EVENT_DB
+              value: "/data/rag_events.db"
+            - name: RUN_MIGRATIONS_ON_STARTUP
+              value: "false"
+            - name: TRANSFORMERS_OFFLINE
+              value: "1"
+            - name: USE_ALEMBIC
+              value: "true"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+            failureThreshold: 30  # allow up to 5 minutes for slow LLM warmup
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1Gi
+            requests:
+              cpu: 250m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false  # set true in production after /tmp volume mount
+            capabilities:
+              drop: ["ALL"]
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: agent-runtime
+---
+# Source: hsaai-enterprise-os/templates/deployments.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alignment-service
+  namespace: default
+  labels:
+    app.kubernetes.io/name: alignment-service
+    app.kubernetes.io/part-of: hsaai
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: hsaai-enterprise-os-4.0.0-rc.2
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: alignment-service
+      app.kubernetes.io/part-of: hsaai
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: alignment-service
+        app.kubernetes.io/part-of: hsaai
+    spec:
+      automountServiceAccountToken: false
+      serviceAccountName: alignment-service
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: alignment-service
+          image: "ghcr.io/REPLACE_ORGANIZATION/hsaai-alignment-service:4.0.0-rc.2"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8005
+              name: http
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: hsaai-secrets
+          env:
+            - name: AI_ORCHESTRATOR_URL
+              value: "http://agent-runtime:8040"
+            - name: ALLOW_EXTERNAL_AI
+              value: "false"
+            - name: ALLOW_EXTERNAL_APIS
+              value: "false"
+            - name: ANALYTICS_URL
+              value: "http://backend-core:8000"
+            - name: API_GATEWAY_URL
+              value: "http://api-gateway:8000"
+            - name: APP_ENV
+              value: "production"
+            - name: APP_PUBLIC_URL
+              value: "https://ai.hsaai.example"
+            - name: AUTH_REQUIRED
+              value: "true"
+            - name: AUTH_SERVICE_URL
+              value: "http://auth-service:8010"
+            - name: BACKEND_CORE_URL
+              value: "http://backend-core:8000"
+            - name: BACKEND_URL
+              value: "http://backend-core:8000"
+            - name: CORS_ALLOW_ORIGINS
+              value: "https://ai.hsaai.example"
+            - name: EMBEDDING_MODEL
+              value: "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+            - name: EMBEDDING_PROVIDER
+              value: "sentence-transformers"
+            - name: HF_HOME
+              value: "/models"
+            - name: HF_HUB_OFFLINE
+              value: "1"
+            - name: HSAAI_COOKIE_SECURE
+              value: "true"
+            - name: INTERNAL_ONLY_MODE
+              value: "true"
+            - name: KEYCLOAK_AUDIENCE
+              value: "hsaai-api"
+            - name: KEYCLOAK_CLIENT_ID
+              value: "hsaai-frontend"
+            - name: KEYCLOAK_INTERNAL_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080"
+            - name: KEYCLOAK_ISSUER
+              value: "https://identity.hsaai.example/realms/hsaai"
+            - name: KEYCLOAK_JWKS_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080/realms/hsaai/protocol/openid-connect/certs"
+            - name: KEYCLOAK_REALM
+              value: "hsaai"
+            - name: KEYCLOAK_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080"
+            - name: LLM_GATEWAY_URL
+              value: "http://llm-gateway:8090"
+            - name: LOCAL_FILE_STORAGE
+              value: "/data/local_uploads"
+            - name: LOCAL_LLM_MODEL
+              value: "qwen2.5:7b-instruct"
+            - name: OLLAMA_BASE_URL
+              value: "http://ollama.hsaai-data.svc.cluster.local:11434"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://otel-collector.hsaai-data.svc.cluster.local:4317"
+            - name: QDRANT_URL
+              value: "http://qdrant.hsaai-data.svc.cluster.local:6333"
+            - name: RAG_ANSWER_MODEL
+              value: "qwen2.5:7b-instruct"
+            - name: RAG_ENGINE_URL
+              value: "http://rag-service:8030"
+            - name: RAG_EVENT_DB
+              value: "/data/rag_events.db"
+            - name: RUN_MIGRATIONS_ON_STARTUP
+              value: "false"
+            - name: TRANSFORMERS_OFFLINE
+              value: "1"
+            - name: USE_ALEMBIC
+              value: "true"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+            failureThreshold: 30  # allow up to 5 minutes for slow LLM warmup
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1Gi
+            requests:
+              cpu: 250m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false  # set true in production after /tmp volume mount
+            capabilities:
+              drop: ["ALL"]
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: alignment-service
+---
+# Source: hsaai-enterprise-os/templates/deployments.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  namespace: default
+  labels:
+    app.kubernetes.io/name: api-gateway
+    app.kubernetes.io/part-of: hsaai
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: hsaai-enterprise-os-4.0.0-rc.2
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: api-gateway
+      app.kubernetes.io/part-of: hsaai
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: api-gateway
+        app.kubernetes.io/part-of: hsaai
+    spec:
+      automountServiceAccountToken: false
+      serviceAccountName: api-gateway
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: api-gateway
+          image: "ghcr.io/REPLACE_ORGANIZATION/hsaai-api-gateway:4.0.0-rc.2"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+              name: http
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: hsaai-secrets
+          env:
+            - name: AI_ORCHESTRATOR_URL
+              value: "http://agent-runtime:8040"
+            - name: ALLOW_EXTERNAL_AI
+              value: "false"
+            - name: ALLOW_EXTERNAL_APIS
+              value: "false"
+            - name: ANALYTICS_URL
+              value: "http://backend-core:8000"
+            - name: API_GATEWAY_URL
+              value: "http://api-gateway:8000"
+            - name: APP_ENV
+              value: "production"
+            - name: APP_PUBLIC_URL
+              value: "https://ai.hsaai.example"
+            - name: AUTH_REQUIRED
+              value: "true"
+            - name: AUTH_SERVICE_URL
+              value: "http://auth-service:8010"
+            - name: BACKEND_CORE_URL
+              value: "http://backend-core:8000"
+            - name: BACKEND_URL
+              value: "http://backend-core:8000"
+            - name: CORS_ALLOW_ORIGINS
+              value: "https://ai.hsaai.example"
+            - name: EMBEDDING_MODEL
+              value: "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+            - name: EMBEDDING_PROVIDER
+              value: "sentence-transformers"
+            - name: HF_HOME
+              value: "/models"
+            - name: HF_HUB_OFFLINE
+              value: "1"
+            - name: HSAAI_COOKIE_SECURE
+              value: "true"
+            - name: INTERNAL_ONLY_MODE
+              value: "true"
+            - name: KEYCLOAK_AUDIENCE
+              value: "hsaai-api"
+            - name: KEYCLOAK_CLIENT_ID
+              value: "hsaai-frontend"
+            - name: KEYCLOAK_INTERNAL_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080"
+            - name: KEYCLOAK_ISSUER
+              value: "https://identity.hsaai.example/realms/hsaai"
+            - name: KEYCLOAK_JWKS_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080/realms/hsaai/protocol/openid-connect/certs"
+            - name: KEYCLOAK_REALM
+              value: "hsaai"
+            - name: KEYCLOAK_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080"
+            - name: LLM_GATEWAY_URL
+              value: "http://llm-gateway:8090"
+            - name: LOCAL_FILE_STORAGE
+              value: "/data/local_uploads"
+            - name: LOCAL_LLM_MODEL
+              value: "qwen2.5:7b-instruct"
+            - name: OLLAMA_BASE_URL
+              value: "http://ollama.hsaai-data.svc.cluster.local:11434"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://otel-collector.hsaai-data.svc.cluster.local:4317"
+            - name: QDRANT_URL
+              value: "http://qdrant.hsaai-data.svc.cluster.local:6333"
+            - name: RAG_ANSWER_MODEL
+              value: "qwen2.5:7b-instruct"
+            - name: RAG_ENGINE_URL
+              value: "http://rag-service:8030"
+            - name: RAG_EVENT_DB
+              value: "/data/rag_events.db"
+            - name: RUN_MIGRATIONS_ON_STARTUP
+              value: "false"
+            - name: TRANSFORMERS_OFFLINE
+              value: "1"
+            - name: USE_ALEMBIC
+              value: "true"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+            failureThreshold: 30  # allow up to 5 minutes for slow LLM warmup
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1Gi
+            requests:
+              cpu: 250m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false  # set true in production after /tmp volume mount
+            capabilities:
+              drop: ["ALL"]
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: api-gateway
+---
+# Source: hsaai-enterprise-os/templates/deployments.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+  namespace: default
+  labels:
+    app.kubernetes.io/name: auth-service
+    app.kubernetes.io/part-of: hsaai
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: hsaai-enterprise-os-4.0.0-rc.2
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: auth-service
+      app.kubernetes.io/part-of: hsaai
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: auth-service
+        app.kubernetes.io/part-of: hsaai
+    spec:
+      automountServiceAccountToken: false
+      serviceAccountName: auth-service
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: auth-service
+          image: "ghcr.io/REPLACE_ORGANIZATION/hsaai-auth-service:4.0.0-rc.2"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8010
+              name: http
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: hsaai-secrets
+          env:
+            - name: AI_ORCHESTRATOR_URL
+              value: "http://agent-runtime:8040"
+            - name: ALLOW_EXTERNAL_AI
+              value: "false"
+            - name: ALLOW_EXTERNAL_APIS
+              value: "false"
+            - name: ANALYTICS_URL
+              value: "http://backend-core:8000"
+            - name: API_GATEWAY_URL
+              value: "http://api-gateway:8000"
+            - name: APP_ENV
+              value: "production"
+            - name: APP_PUBLIC_URL
+              value: "https://ai.hsaai.example"
+            - name: AUTH_REQUIRED
+              value: "true"
+            - name: AUTH_SERVICE_URL
+              value: "http://auth-service:8010"
+            - name: BACKEND_CORE_URL
+              value: "http://backend-core:8000"
+            - name: BACKEND_URL
+              value: "http://backend-core:8000"
+            - name: CORS_ALLOW_ORIGINS
+              value: "https://ai.hsaai.example"
+            - name: EMBEDDING_MODEL
+              value: "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+            - name: EMBEDDING_PROVIDER
+              value: "sentence-transformers"
+            - name: HF_HOME
+              value: "/models"
+            - name: HF_HUB_OFFLINE
+              value: "1"
+            - name: HSAAI_COOKIE_SECURE
+              value: "true"
+            - name: INTERNAL_ONLY_MODE
+              value: "true"
+            - name: KEYCLOAK_AUDIENCE
+              value: "hsaai-api"
+            - name: KEYCLOAK_CLIENT_ID
+              value: "hsaai-frontend"
+            - name: KEYCLOAK_INTERNAL_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080"
+            - name: KEYCLOAK_ISSUER
+              value: "https://identity.hsaai.example/realms/hsaai"
+            - name: KEYCLOAK_JWKS_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080/realms/hsaai/protocol/openid-connect/certs"
+            - name: KEYCLOAK_REALM
+              value: "hsaai"
+            - name: KEYCLOAK_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080"
+            - name: LLM_GATEWAY_URL
+              value: "http://llm-gateway:8090"
+            - name: LOCAL_FILE_STORAGE
+              value: "/data/local_uploads"
+            - name: LOCAL_LLM_MODEL
+              value: "qwen2.5:7b-instruct"
+            - name: OLLAMA_BASE_URL
+              value: "http://ollama.hsaai-data.svc.cluster.local:11434"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://otel-collector.hsaai-data.svc.cluster.local:4317"
+            - name: QDRANT_URL
+              value: "http://qdrant.hsaai-data.svc.cluster.local:6333"
+            - name: RAG_ANSWER_MODEL
+              value: "qwen2.5:7b-instruct"
+            - name: RAG_ENGINE_URL
+              value: "http://rag-service:8030"
+            - name: RAG_EVENT_DB
+              value: "/data/rag_events.db"
+            - name: RUN_MIGRATIONS_ON_STARTUP
+              value: "false"
+            - name: TRANSFORMERS_OFFLINE
+              value: "1"
+            - name: USE_ALEMBIC
+              value: "true"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+            failureThreshold: 30  # allow up to 5 minutes for slow LLM warmup
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1Gi
+            requests:
+              cpu: 250m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false  # set true in production after /tmp volume mount
+            capabilities:
+              drop: ["ALL"]
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: auth-service
+---
+# Source: hsaai-enterprise-os/templates/deployments.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-core
+  namespace: default
+  labels:
+    app.kubernetes.io/name: backend-core
+    app.kubernetes.io/part-of: hsaai
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: hsaai-enterprise-os-4.0.0-rc.2
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: backend-core
+      app.kubernetes.io/part-of: hsaai
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: backend-core
+        app.kubernetes.io/part-of: hsaai
+    spec:
+      automountServiceAccountToken: false
+      serviceAccountName: backend-core
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: backend-core
+          image: "ghcr.io/REPLACE_ORGANIZATION/hsaai-backend-core:4.0.0-rc.2"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+              name: http
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: hsaai-secrets
+          env:
+            - name: AI_ORCHESTRATOR_URL
+              value: "http://agent-runtime:8040"
+            - name: ALLOW_EXTERNAL_AI
+              value: "false"
+            - name: ALLOW_EXTERNAL_APIS
+              value: "false"
+            - name: ANALYTICS_URL
+              value: "http://backend-core:8000"
+            - name: API_GATEWAY_URL
+              value: "http://api-gateway:8000"
+            - name: APP_ENV
+              value: "production"
+            - name: APP_PUBLIC_URL
+              value: "https://ai.hsaai.example"
+            - name: AUTH_REQUIRED
+              value: "true"
+            - name: AUTH_SERVICE_URL
+              value: "http://auth-service:8010"
+            - name: BACKEND_CORE_URL
+              value: "http://backend-core:8000"
+            - name: BACKEND_URL
+              value: "http://backend-core:8000"
+            - name: CORS_ALLOW_ORIGINS
+              value: "https://ai.hsaai.example"
+            - name: EMBEDDING_MODEL
+              value: "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+            - name: EMBEDDING_PROVIDER
+              value: "sentence-transformers"
+            - name: HF_HOME
+              value: "/models"
+            - name: HF_HUB_OFFLINE
+              value: "1"
+            - name: HSAAI_COOKIE_SECURE
+              value: "true"
+            - name: INTERNAL_ONLY_MODE
+              value: "true"
+            - name: KEYCLOAK_AUDIENCE
+              value: "hsaai-api"
+            - name: KEYCLOAK_CLIENT_ID
+              value: "hsaai-frontend"
+            - name: KEYCLOAK_INTERNAL_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080"
+            - name: KEYCLOAK_ISSUER
+              value: "https://identity.hsaai.example/realms/hsaai"
+            - name: KEYCLOAK_JWKS_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080/realms/hsaai/protocol/openid-connect/certs"
+            - name: KEYCLOAK_REALM
+              value: "hsaai"
+            - name: KEYCLOAK_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080"
+            - name: LLM_GATEWAY_URL
+              value: "http://llm-gateway:8090"
+            - name: LOCAL_FILE_STORAGE
+              value: "/data/local_uploads"
+            - name: LOCAL_LLM_MODEL
+              value: "qwen2.5:7b-instruct"
+            - name: OLLAMA_BASE_URL
+              value: "http://ollama.hsaai-data.svc.cluster.local:11434"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://otel-collector.hsaai-data.svc.cluster.local:4317"
+            - name: QDRANT_URL
+              value: "http://qdrant.hsaai-data.svc.cluster.local:6333"
+            - name: RAG_ANSWER_MODEL
+              value: "qwen2.5:7b-instruct"
+            - name: RAG_ENGINE_URL
+              value: "http://rag-service:8030"
+            - name: RAG_EVENT_DB
+              value: "/data/rag_events.db"
+            - name: RUN_MIGRATIONS_ON_STARTUP
+              value: "false"
+            - name: TRANSFORMERS_OFFLINE
+              value: "1"
+            - name: USE_ALEMBIC
+              value: "true"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+            failureThreshold: 30  # allow up to 5 minutes for slow LLM warmup
+          resources:
+            limits:
+              cpu: "2"
+              memory: 2Gi
+            requests:
+              cpu: 500m
+              memory: 1Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false  # set true in production after /tmp volume mount
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: documents
+              mountPath: /data
+      volumes:
+        - name: documents
+          persistentVolumeClaim:
+            claimName: documents-data
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: backend-core
+---
+# Source: hsaai-enterprise-os/templates/deployments.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: default
+  labels:
+    app.kubernetes.io/name: frontend
+    app.kubernetes.io/part-of: hsaai
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: hsaai-enterprise-os-4.0.0-rc.2
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: frontend
+      app.kubernetes.io/part-of: hsaai
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: frontend
+        app.kubernetes.io/part-of: hsaai
+    spec:
+      automountServiceAccountToken: false
+      serviceAccountName: frontend
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: frontend
+          image: "ghcr.io/REPLACE_ORGANIZATION/hsaai-frontend:4.0.0-rc.2"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+              name: http
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: hsaai-secrets
+          env:
+            - name: AI_ORCHESTRATOR_URL
+              value: "http://agent-runtime:8040"
+            - name: ALLOW_EXTERNAL_AI
+              value: "false"
+            - name: ALLOW_EXTERNAL_APIS
+              value: "false"
+            - name: ANALYTICS_URL
+              value: "http://backend-core:8000"
+            - name: API_GATEWAY_URL
+              value: "http://api-gateway:8000"
+            - name: APP_ENV
+              value: "production"
+            - name: APP_PUBLIC_URL
+              value: "https://ai.hsaai.example"
+            - name: AUTH_REQUIRED
+              value: "true"
+            - name: AUTH_SERVICE_URL
+              value: "http://auth-service:8010"
+            - name: BACKEND_CORE_URL
+              value: "http://backend-core:8000"
+            - name: BACKEND_URL
+              value: "http://backend-core:8000"
+            - name: CORS_ALLOW_ORIGINS
+              value: "https://ai.hsaai.example"
+            - name: EMBEDDING_MODEL
+              value: "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+            - name: EMBEDDING_PROVIDER
+              value: "sentence-transformers"
+            - name: HF_HOME
+              value: "/models"
+            - name: HF_HUB_OFFLINE
+              value: "1"
+            - name: HSAAI_COOKIE_SECURE
+              value: "true"
+            - name: INTERNAL_ONLY_MODE
+              value: "true"
+            - name: KEYCLOAK_AUDIENCE
+              value: "hsaai-api"
+            - name: KEYCLOAK_CLIENT_ID
+              value: "hsaai-frontend"
+            - name: KEYCLOAK_INTERNAL_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080"
+            - name: KEYCLOAK_ISSUER
+              value: "https://identity.hsaai.example/realms/hsaai"
+            - name: KEYCLOAK_JWKS_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080/realms/hsaai/protocol/openid-connect/certs"
+            - name: KEYCLOAK_REALM
+              value: "hsaai"
+            - name: KEYCLOAK_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080"
+            - name: LLM_GATEWAY_URL
+              value: "http://llm-gateway:8090"
+            - name: LOCAL_FILE_STORAGE
+              value: "/data/local_uploads"
+            - name: LOCAL_LLM_MODEL
+              value: "qwen2.5:7b-instruct"
+            - name: OLLAMA_BASE_URL
+              value: "http://ollama.hsaai-data.svc.cluster.local:11434"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://otel-collector.hsaai-data.svc.cluster.local:4317"
+            - name: QDRANT_URL
+              value: "http://qdrant.hsaai-data.svc.cluster.local:6333"
+            - name: RAG_ANSWER_MODEL
+              value: "qwen2.5:7b-instruct"
+            - name: RAG_ENGINE_URL
+              value: "http://rag-service:8030"
+            - name: RAG_EVENT_DB
+              value: "/data/rag_events.db"
+            - name: RUN_MIGRATIONS_ON_STARTUP
+              value: "false"
+            - name: TRANSFORMERS_OFFLINE
+              value: "1"
+            - name: USE_ALEMBIC
+              value: "true"
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            periodSeconds: 10
+            failureThreshold: 30  # allow up to 5 minutes for slow LLM warmup
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1Gi
+            requests:
+              cpu: 250m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false  # set true in production after /tmp volume mount
+            capabilities:
+              drop: ["ALL"]
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: frontend
+---
+# Source: hsaai-enterprise-os/templates/deployments.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: governance-service
+  namespace: default
+  labels:
+    app.kubernetes.io/name: governance-service
+    app.kubernetes.io/part-of: hsaai
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: hsaai-enterprise-os-4.0.0-rc.2
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: governance-service
+      app.kubernetes.io/part-of: hsaai
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: governance-service
+        app.kubernetes.io/part-of: hsaai
+    spec:
+      automountServiceAccountToken: false
+      serviceAccountName: governance-service
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: governance-service
+          image: "ghcr.io/REPLACE_ORGANIZATION/hsaai-governance-service:4.0.0-rc.2"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8011
+              name: http
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: hsaai-secrets
+          env:
+            - name: AI_ORCHESTRATOR_URL
+              value: "http://agent-runtime:8040"
+            - name: ALLOW_EXTERNAL_AI
+              value: "false"
+            - name: ALLOW_EXTERNAL_APIS
+              value: "false"
+            - name: ANALYTICS_URL
+              value: "http://backend-core:8000"
+            - name: API_GATEWAY_URL
+              value: "http://api-gateway:8000"
+            - name: APP_ENV
+              value: "production"
+            - name: APP_PUBLIC_URL
+              value: "https://ai.hsaai.example"
+            - name: AUTH_REQUIRED
+              value: "true"
+            - name: AUTH_SERVICE_URL
+              value: "http://auth-service:8010"
+            - name: BACKEND_CORE_URL
+              value: "http://backend-core:8000"
+            - name: BACKEND_URL
+              value: "http://backend-core:8000"
+            - name: CORS_ALLOW_ORIGINS
+              value: "https://ai.hsaai.example"
+            - name: EMBEDDING_MODEL
+              value: "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+            - name: EMBEDDING_PROVIDER
+              value: "sentence-transformers"
+            - name: HF_HOME
+              value: "/models"
+            - name: HF_HUB_OFFLINE
+              value: "1"
+            - name: HSAAI_COOKIE_SECURE
+              value: "true"
+            - name: INTERNAL_ONLY_MODE
+              value: "true"
+            - name: KEYCLOAK_AUDIENCE
+              value: "hsaai-api"
+            - name: KEYCLOAK_CLIENT_ID
+              value: "hsaai-frontend"
+            - name: KEYCLOAK_INTERNAL_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080"
+            - name: KEYCLOAK_ISSUER
+              value: "https://identity.hsaai.example/realms/hsaai"
+            - name: KEYCLOAK_JWKS_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080/realms/hsaai/protocol/openid-connect/certs"
+            - name: KEYCLOAK_REALM
+              value: "hsaai"
+            - name: KEYCLOAK_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080"
+            - name: LLM_GATEWAY_URL
+              value: "http://llm-gateway:8090"
+            - name: LOCAL_FILE_STORAGE
+              value: "/data/local_uploads"
+            - name: LOCAL_LLM_MODEL
+              value: "qwen2.5:7b-instruct"
+            - name: OLLAMA_BASE_URL
+              value: "http://ollama.hsaai-data.svc.cluster.local:11434"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://otel-collector.hsaai-data.svc.cluster.local:4317"
+            - name: QDRANT_URL
+              value: "http://qdrant.hsaai-data.svc.cluster.local:6333"
+            - name: RAG_ANSWER_MODEL
+              value: "qwen2.5:7b-instruct"
+            - name: RAG_ENGINE_URL
+              value: "http://rag-service:8030"
+            - name: RAG_EVENT_DB
+              value: "/data/rag_events.db"
+            - name: RUN_MIGRATIONS_ON_STARTUP
+              value: "false"
+            - name: TRANSFORMERS_OFFLINE
+              value: "1"
+            - name: USE_ALEMBIC
+              value: "true"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+            failureThreshold: 30  # allow up to 5 minutes for slow LLM warmup
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1Gi
+            requests:
+              cpu: 250m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false  # set true in production after /tmp volume mount
+            capabilities:
+              drop: ["ALL"]
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: governance-service
+---
+# Source: hsaai-enterprise-os/templates/deployments.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llm-gateway
+  namespace: default
+  labels:
+    app.kubernetes.io/name: llm-gateway
+    app.kubernetes.io/part-of: hsaai
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: hsaai-enterprise-os-4.0.0-rc.2
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: llm-gateway
+      app.kubernetes.io/part-of: hsaai
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: llm-gateway
+        app.kubernetes.io/part-of: hsaai
+    spec:
+      automountServiceAccountToken: false
+      serviceAccountName: llm-gateway
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: llm-gateway
+          image: "ghcr.io/REPLACE_ORGANIZATION/hsaai-llm-gateway:4.0.0-rc.2"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8090
+              name: http
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: hsaai-secrets
+          env:
+            - name: AI_ORCHESTRATOR_URL
+              value: "http://agent-runtime:8040"
+            - name: ALLOW_EXTERNAL_AI
+              value: "false"
+            - name: ALLOW_EXTERNAL_APIS
+              value: "false"
+            - name: ANALYTICS_URL
+              value: "http://backend-core:8000"
+            - name: API_GATEWAY_URL
+              value: "http://api-gateway:8000"
+            - name: APP_ENV
+              value: "production"
+            - name: APP_PUBLIC_URL
+              value: "https://ai.hsaai.example"
+            - name: AUTH_REQUIRED
+              value: "true"
+            - name: AUTH_SERVICE_URL
+              value: "http://auth-service:8010"
+            - name: BACKEND_CORE_URL
+              value: "http://backend-core:8000"
+            - name: BACKEND_URL
+              value: "http://backend-core:8000"
+            - name: CORS_ALLOW_ORIGINS
+              value: "https://ai.hsaai.example"
+            - name: EMBEDDING_MODEL
+              value: "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+            - name: EMBEDDING_PROVIDER
+              value: "sentence-transformers"
+            - name: HF_HOME
+              value: "/models"
+            - name: HF_HUB_OFFLINE
+              value: "1"
+            - name: HSAAI_COOKIE_SECURE
+              value: "true"
+            - name: INTERNAL_ONLY_MODE
+              value: "true"
+            - name: KEYCLOAK_AUDIENCE
+              value: "hsaai-api"
+            - name: KEYCLOAK_CLIENT_ID
+              value: "hsaai-frontend"
+            - name: KEYCLOAK_INTERNAL_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080"
+            - name: KEYCLOAK_ISSUER
+              value: "https://identity.hsaai.example/realms/hsaai"
+            - name: KEYCLOAK_JWKS_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080/realms/hsaai/protocol/openid-connect/certs"
+            - name: KEYCLOAK_REALM
+              value: "hsaai"
+            - name: KEYCLOAK_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080"
+            - name: LLM_GATEWAY_URL
+              value: "http://llm-gateway:8090"
+            - name: LOCAL_FILE_STORAGE
+              value: "/data/local_uploads"
+            - name: LOCAL_LLM_MODEL
+              value: "qwen2.5:7b-instruct"
+            - name: OLLAMA_BASE_URL
+              value: "http://ollama.hsaai-data.svc.cluster.local:11434"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://otel-collector.hsaai-data.svc.cluster.local:4317"
+            - name: QDRANT_URL
+              value: "http://qdrant.hsaai-data.svc.cluster.local:6333"
+            - name: RAG_ANSWER_MODEL
+              value: "qwen2.5:7b-instruct"
+            - name: RAG_ENGINE_URL
+              value: "http://rag-service:8030"
+            - name: RAG_EVENT_DB
+              value: "/data/rag_events.db"
+            - name: RUN_MIGRATIONS_ON_STARTUP
+              value: "false"
+            - name: TRANSFORMERS_OFFLINE
+              value: "1"
+            - name: USE_ALEMBIC
+              value: "true"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+            failureThreshold: 30  # allow up to 5 minutes for slow LLM warmup
+          resources:
+            limits:
+              cpu: "4"
+              memory: 4Gi
+            requests:
+              cpu: 1
+              memory: 2Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false  # set true in production after /tmp volume mount
+            capabilities:
+              drop: ["ALL"]
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: llm-gateway
+---
+# Source: hsaai-enterprise-os/templates/deployments.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-server
+  namespace: default
+  labels:
+    app.kubernetes.io/name: mcp-server
+    app.kubernetes.io/part-of: hsaai
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: hsaai-enterprise-os-4.0.0-rc.2
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mcp-server
+      app.kubernetes.io/part-of: hsaai
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mcp-server
+        app.kubernetes.io/part-of: hsaai
+    spec:
+      automountServiceAccountToken: false
+      serviceAccountName: mcp-server
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: mcp-server
+          image: "ghcr.io/REPLACE_ORGANIZATION/hsaai-mcp-server:4.0.0-rc.2"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8094
+              name: http
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: hsaai-secrets
+          env:
+            - name: AI_ORCHESTRATOR_URL
+              value: "http://agent-runtime:8040"
+            - name: ALLOW_EXTERNAL_AI
+              value: "false"
+            - name: ALLOW_EXTERNAL_APIS
+              value: "false"
+            - name: ANALYTICS_URL
+              value: "http://backend-core:8000"
+            - name: API_GATEWAY_URL
+              value: "http://api-gateway:8000"
+            - name: APP_ENV
+              value: "production"
+            - name: APP_PUBLIC_URL
+              value: "https://ai.hsaai.example"
+            - name: AUTH_REQUIRED
+              value: "true"
+            - name: AUTH_SERVICE_URL
+              value: "http://auth-service:8010"
+            - name: BACKEND_CORE_URL
+              value: "http://backend-core:8000"
+            - name: BACKEND_URL
+              value: "http://backend-core:8000"
+            - name: CORS_ALLOW_ORIGINS
+              value: "https://ai.hsaai.example"
+            - name: EMBEDDING_MODEL
+              value: "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+            - name: EMBEDDING_PROVIDER
+              value: "sentence-transformers"
+            - name: HF_HOME
+              value: "/models"
+            - name: HF_HUB_OFFLINE
+              value: "1"
+            - name: HSAAI_COOKIE_SECURE
+              value: "true"
+            - name: INTERNAL_ONLY_MODE
+              value: "true"
+            - name: KEYCLOAK_AUDIENCE
+              value: "hsaai-api"
+            - name: KEYCLOAK_CLIENT_ID
+              value: "hsaai-frontend"
+            - name: KEYCLOAK_INTERNAL_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080"
+            - name: KEYCLOAK_ISSUER
+              value: "https://identity.hsaai.example/realms/hsaai"
+            - name: KEYCLOAK_JWKS_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080/realms/hsaai/protocol/openid-connect/certs"
+            - name: KEYCLOAK_REALM
+              value: "hsaai"
+            - name: KEYCLOAK_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080"
+            - name: LLM_GATEWAY_URL
+              value: "http://llm-gateway:8090"
+            - name: LOCAL_FILE_STORAGE
+              value: "/data/local_uploads"
+            - name: LOCAL_LLM_MODEL
+              value: "qwen2.5:7b-instruct"
+            - name: OLLAMA_BASE_URL
+              value: "http://ollama.hsaai-data.svc.cluster.local:11434"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://otel-collector.hsaai-data.svc.cluster.local:4317"
+            - name: QDRANT_URL
+              value: "http://qdrant.hsaai-data.svc.cluster.local:6333"
+            - name: RAG_ANSWER_MODEL
+              value: "qwen2.5:7b-instruct"
+            - name: RAG_ENGINE_URL
+              value: "http://rag-service:8030"
+            - name: RAG_EVENT_DB
+              value: "/data/rag_events.db"
+            - name: RUN_MIGRATIONS_ON_STARTUP
+              value: "false"
+            - name: TRANSFORMERS_OFFLINE
+              value: "1"
+            - name: USE_ALEMBIC
+              value: "true"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+            failureThreshold: 30  # allow up to 5 minutes for slow LLM warmup
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1Gi
+            requests:
+              cpu: 250m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false  # set true in production after /tmp volume mount
+            capabilities:
+              drop: ["ALL"]
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: mcp-server
+---
+# Source: hsaai-enterprise-os/templates/deployments.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pii-detector
+  namespace: default
+  labels:
+    app.kubernetes.io/name: pii-detector
+    app.kubernetes.io/part-of: hsaai
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: hsaai-enterprise-os-4.0.0-rc.2
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: pii-detector
+      app.kubernetes.io/part-of: hsaai
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: pii-detector
+        app.kubernetes.io/part-of: hsaai
+    spec:
+      automountServiceAccountToken: false
+      serviceAccountName: pii-detector
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: pii-detector
+          image: "ghcr.io/REPLACE_ORGANIZATION/hsaai-pii-detector:4.0.0-rc.2"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8092
+              name: http
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: hsaai-secrets
+          env:
+            - name: AI_ORCHESTRATOR_URL
+              value: "http://agent-runtime:8040"
+            - name: ALLOW_EXTERNAL_AI
+              value: "false"
+            - name: ALLOW_EXTERNAL_APIS
+              value: "false"
+            - name: ANALYTICS_URL
+              value: "http://backend-core:8000"
+            - name: API_GATEWAY_URL
+              value: "http://api-gateway:8000"
+            - name: APP_ENV
+              value: "production"
+            - name: APP_PUBLIC_URL
+              value: "https://ai.hsaai.example"
+            - name: AUTH_REQUIRED
+              value: "true"
+            - name: AUTH_SERVICE_URL
+              value: "http://auth-service:8010"
+            - name: BACKEND_CORE_URL
+              value: "http://backend-core:8000"
+            - name: BACKEND_URL
+              value: "http://backend-core:8000"
+            - name: CORS_ALLOW_ORIGINS
+              value: "https://ai.hsaai.example"
+            - name: EMBEDDING_MODEL
+              value: "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+            - name: EMBEDDING_PROVIDER
+              value: "sentence-transformers"
+            - name: HF_HOME
+              value: "/models"
+            - name: HF_HUB_OFFLINE
+              value: "1"
+            - name: HSAAI_COOKIE_SECURE
+              value: "true"
+            - name: INTERNAL_ONLY_MODE
+              value: "true"
+            - name: KEYCLOAK_AUDIENCE
+              value: "hsaai-api"
+            - name: KEYCLOAK_CLIENT_ID
+              value: "hsaai-frontend"
+            - name: KEYCLOAK_INTERNAL_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080"
+            - name: KEYCLOAK_ISSUER
+              value: "https://identity.hsaai.example/realms/hsaai"
+            - name: KEYCLOAK_JWKS_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080/realms/hsaai/protocol/openid-connect/certs"
+            - name: KEYCLOAK_REALM
+              value: "hsaai"
+            - name: KEYCLOAK_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080"
+            - name: LLM_GATEWAY_URL
+              value: "http://llm-gateway:8090"
+            - name: LOCAL_FILE_STORAGE
+              value: "/data/local_uploads"
+            - name: LOCAL_LLM_MODEL
+              value: "qwen2.5:7b-instruct"
+            - name: OLLAMA_BASE_URL
+              value: "http://ollama.hsaai-data.svc.cluster.local:11434"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://otel-collector.hsaai-data.svc.cluster.local:4317"
+            - name: QDRANT_URL
+              value: "http://qdrant.hsaai-data.svc.cluster.local:6333"
+            - name: RAG_ANSWER_MODEL
+              value: "qwen2.5:7b-instruct"
+            - name: RAG_ENGINE_URL
+              value: "http://rag-service:8030"
+            - name: RAG_EVENT_DB
+              value: "/data/rag_events.db"
+            - name: RUN_MIGRATIONS_ON_STARTUP
+              value: "false"
+            - name: TRANSFORMERS_OFFLINE
+              value: "1"
+            - name: USE_ALEMBIC
+              value: "true"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+            failureThreshold: 30  # allow up to 5 minutes for slow LLM warmup
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1Gi
+            requests:
+              cpu: 250m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false  # set true in production after /tmp volume mount
+            capabilities:
+              drop: ["ALL"]
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: pii-detector
+---
+# Source: hsaai-enterprise-os/templates/deployments.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rag-service
+  namespace: default
+  labels:
+    app.kubernetes.io/name: rag-service
+    app.kubernetes.io/part-of: hsaai
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: hsaai-enterprise-os-4.0.0-rc.2
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: rag-service
+      app.kubernetes.io/part-of: hsaai
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: rag-service
+        app.kubernetes.io/part-of: hsaai
+    spec:
+      automountServiceAccountToken: false
+      serviceAccountName: rag-service
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: rag-service
+          image: "ghcr.io/REPLACE_ORGANIZATION/hsaai-rag-service:4.0.0-rc.2"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8030
+              name: http
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: hsaai-secrets
+          env:
+            - name: AI_ORCHESTRATOR_URL
+              value: "http://agent-runtime:8040"
+            - name: ALLOW_EXTERNAL_AI
+              value: "false"
+            - name: ALLOW_EXTERNAL_APIS
+              value: "false"
+            - name: ANALYTICS_URL
+              value: "http://backend-core:8000"
+            - name: API_GATEWAY_URL
+              value: "http://api-gateway:8000"
+            - name: APP_ENV
+              value: "production"
+            - name: APP_PUBLIC_URL
+              value: "https://ai.hsaai.example"
+            - name: AUTH_REQUIRED
+              value: "true"
+            - name: AUTH_SERVICE_URL
+              value: "http://auth-service:8010"
+            - name: BACKEND_CORE_URL
+              value: "http://backend-core:8000"
+            - name: BACKEND_URL
+              value: "http://backend-core:8000"
+            - name: CORS_ALLOW_ORIGINS
+              value: "https://ai.hsaai.example"
+            - name: EMBEDDING_MODEL
+              value: "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+            - name: EMBEDDING_PROVIDER
+              value: "sentence-transformers"
+            - name: HF_HOME
+              value: "/models"
+            - name: HF_HUB_OFFLINE
+              value: "1"
+            - name: HSAAI_COOKIE_SECURE
+              value: "true"
+            - name: INTERNAL_ONLY_MODE
+              value: "true"
+            - name: KEYCLOAK_AUDIENCE
+              value: "hsaai-api"
+            - name: KEYCLOAK_CLIENT_ID
+              value: "hsaai-frontend"
+            - name: KEYCLOAK_INTERNAL_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080"
+            - name: KEYCLOAK_ISSUER
+              value: "https://identity.hsaai.example/realms/hsaai"
+            - name: KEYCLOAK_JWKS_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080/realms/hsaai/protocol/openid-connect/certs"
+            - name: KEYCLOAK_REALM
+              value: "hsaai"
+            - name: KEYCLOAK_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080"
+            - name: LLM_GATEWAY_URL
+              value: "http://llm-gateway:8090"
+            - name: LOCAL_FILE_STORAGE
+              value: "/data/local_uploads"
+            - name: LOCAL_LLM_MODEL
+              value: "qwen2.5:7b-instruct"
+            - name: OLLAMA_BASE_URL
+              value: "http://ollama.hsaai-data.svc.cluster.local:11434"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://otel-collector.hsaai-data.svc.cluster.local:4317"
+            - name: QDRANT_URL
+              value: "http://qdrant.hsaai-data.svc.cluster.local:6333"
+            - name: RAG_ANSWER_MODEL
+              value: "qwen2.5:7b-instruct"
+            - name: RAG_ENGINE_URL
+              value: "http://rag-service:8030"
+            - name: RAG_EVENT_DB
+              value: "/data/rag_events.db"
+            - name: RUN_MIGRATIONS_ON_STARTUP
+              value: "false"
+            - name: TRANSFORMERS_OFFLINE
+              value: "1"
+            - name: USE_ALEMBIC
+              value: "true"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+            failureThreshold: 30  # allow up to 5 minutes for slow LLM warmup
+          resources:
+            limits:
+              cpu: "2"
+              memory: 2Gi
+            requests:
+              cpu: 500m
+              memory: 1Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false  # set true in production after /tmp volume mount
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: documents
+              mountPath: /data
+            - name: embedding-models
+              mountPath: /models
+              readOnly: true
+      volumes:
+        - name: documents
+          persistentVolumeClaim:
+            claimName: documents-data
+        - name: embedding-models
+          persistentVolumeClaim:
+            claimName: embedding-models
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: rag-service
+---
+# Source: hsaai-enterprise-os/templates/deployments.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workflow-engine
+  namespace: default
+  labels:
+    app.kubernetes.io/name: workflow-engine
+    app.kubernetes.io/part-of: hsaai
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: hsaai-enterprise-os-4.0.0-rc.2
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: workflow-engine
+      app.kubernetes.io/part-of: hsaai
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: workflow-engine
+        app.kubernetes.io/part-of: hsaai
+    spec:
+      automountServiceAccountToken: false
+      serviceAccountName: workflow-engine
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: workflow-engine
+          image: "ghcr.io/REPLACE_ORGANIZATION/hsaai-workflow-engine:4.0.0-rc.2"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8070
+              name: http
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: hsaai-secrets
+          env:
+            - name: AI_ORCHESTRATOR_URL
+              value: "http://agent-runtime:8040"
+            - name: ALLOW_EXTERNAL_AI
+              value: "false"
+            - name: ALLOW_EXTERNAL_APIS
+              value: "false"
+            - name: ANALYTICS_URL
+              value: "http://backend-core:8000"
+            - name: API_GATEWAY_URL
+              value: "http://api-gateway:8000"
+            - name: APP_ENV
+              value: "production"
+            - name: APP_PUBLIC_URL
+              value: "https://ai.hsaai.example"
+            - name: AUTH_REQUIRED
+              value: "true"
+            - name: AUTH_SERVICE_URL
+              value: "http://auth-service:8010"
+            - name: BACKEND_CORE_URL
+              value: "http://backend-core:8000"
+            - name: BACKEND_URL
+              value: "http://backend-core:8000"
+            - name: CORS_ALLOW_ORIGINS
+              value: "https://ai.hsaai.example"
+            - name: EMBEDDING_MODEL
+              value: "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+            - name: EMBEDDING_PROVIDER
+              value: "sentence-transformers"
+            - name: HF_HOME
+              value: "/models"
+            - name: HF_HUB_OFFLINE
+              value: "1"
+            - name: HSAAI_COOKIE_SECURE
+              value: "true"
+            - name: INTERNAL_ONLY_MODE
+              value: "true"
+            - name: KEYCLOAK_AUDIENCE
+              value: "hsaai-api"
+            - name: KEYCLOAK_CLIENT_ID
+              value: "hsaai-frontend"
+            - name: KEYCLOAK_INTERNAL_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080"
+            - name: KEYCLOAK_ISSUER
+              value: "https://identity.hsaai.example/realms/hsaai"
+            - name: KEYCLOAK_JWKS_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080/realms/hsaai/protocol/openid-connect/certs"
+            - name: KEYCLOAK_REALM
+              value: "hsaai"
+            - name: KEYCLOAK_URL
+              value: "http://keycloak.hsaai-data.svc.cluster.local:8080"
+            - name: LLM_GATEWAY_URL
+              value: "http://llm-gateway:8090"
+            - name: LOCAL_FILE_STORAGE
+              value: "/data/local_uploads"
+            - name: LOCAL_LLM_MODEL
+              value: "qwen2.5:7b-instruct"
+            - name: OLLAMA_BASE_URL
+              value: "http://ollama.hsaai-data.svc.cluster.local:11434"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://otel-collector.hsaai-data.svc.cluster.local:4317"
+            - name: QDRANT_URL
+              value: "http://qdrant.hsaai-data.svc.cluster.local:6333"
+            - name: RAG_ANSWER_MODEL
+              value: "qwen2.5:7b-instruct"
+            - name: RAG_ENGINE_URL
+              value: "http://rag-service:8030"
+            - name: RAG_EVENT_DB
+              value: "/data/rag_events.db"
+            - name: RUN_MIGRATIONS_ON_STARTUP
+              value: "false"
+            - name: TRANSFORMERS_OFFLINE
+              value: "1"
+            - name: USE_ALEMBIC
+              value: "true"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+            failureThreshold: 30  # allow up to 5 minutes for slow LLM warmup
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1Gi
+            requests:
+              cpu: 250m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false  # set true in production after /tmp volume mount
+            capabilities:
+              drop: ["ALL"]
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: workflow-engine
+---
+# Source: hsaai-enterprise-os/templates/hpas.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: api-gateway
+  namespace: default
+  labels:
+    app.kubernetes.io/name: api-gateway
+    app.kubernetes.io/part-of: hsaai
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: api-gateway  # FIX v2.1: matches Deployment name (was hardcoded "backend-core")
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 25
+          periodSeconds: 60
+---
+# Source: hsaai-enterprise-os/templates/hpas.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: auth-service
+  namespace: default
+  labels:
+    app.kubernetes.io/name: auth-service
+    app.kubernetes.io/part-of: hsaai
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: auth-service  # FIX v2.1: matches Deployment name (was hardcoded "backend-core")
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 25
+          periodSeconds: 60
+---
+# Source: hsaai-enterprise-os/templates/hpas.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: backend-core
+  namespace: default
+  labels:
+    app.kubernetes.io/name: backend-core
+    app.kubernetes.io/part-of: hsaai
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: backend-core  # FIX v2.1: matches Deployment name (was hardcoded "backend-core")
+  minReplicas: 3
+  maxReplicas: 15
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 65
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 25
+          periodSeconds: 60
+---
+# Source: hsaai-enterprise-os/templates/hpas.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: frontend
+  namespace: default
+  labels:
+    app.kubernetes.io/name: frontend
+    app.kubernetes.io/part-of: hsaai
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: frontend  # FIX v2.1: matches Deployment name (was hardcoded "backend-core")
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 25
+          periodSeconds: 60
+---
+# Source: hsaai-enterprise-os/templates/hpas.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: llm-gateway
+  namespace: default
+  labels:
+    app.kubernetes.io/name: llm-gateway
+    app.kubernetes.io/part-of: hsaai
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: llm-gateway  # FIX v2.1: matches Deployment name (was hardcoded "backend-core")
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 75
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 25
+          periodSeconds: 60
+---
+# Source: hsaai-enterprise-os/templates/hpas.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: workflow-engine
+  namespace: default
+  labels:
+    app.kubernetes.io/name: workflow-engine
+    app.kubernetes.io/part-of: hsaai
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: workflow-engine  # FIX v2.1: matches Deployment name (was hardcoded "backend-core")
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 25
+          periodSeconds: 60
+---
+# Source: hsaai-enterprise-os/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hsaai-ingress
+  namespace: default
+  labels:
+    app.kubernetes.io/part-of: hsaai
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - "ai.hsaai.example"
+      secretName: hsaai-tls
+  rules:
+    - host: "ai.hsaai.example"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  name: http

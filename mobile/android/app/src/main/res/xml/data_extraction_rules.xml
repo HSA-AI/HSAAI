@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  HSAAI Mobile — Data Extraction Rules (Android 12+, API 31+)
+  ============================================================
+  OWASP MASVS Controls Addressed:
+    - MASVS-STORAGE-1 : No sensitive app data is extracted via adb backup,
+                        cloud backup, or device-to-device transfer.
+    - MASVS-STORAGE-3 : No sensitive data is written to local backups.
+
+  Notes:
+    - This file is referenced from AndroidManifest.xml via
+      android:dataExtractionRules="@xml/data_extraction_rules" and is only
+      honored on Android 12+ (the legacy android:fullBackupContent is
+      honored on Android <= 11 and is set to "false" in the manifest).
+    - We use <cloud-backup> and <device-transfer> with no <include> rules
+      and an explicit <exclude domain="root" /> so NO app data leaves the
+      device under any backup or transfer path.
+    - If a future feature requires backing up a non-sensitive preferences
+      file (e.g. user-selected language), add a narrow <include> rule with
+      path="shared_prefs/hsaai_settings.xml" rather than widening the
+      default.
+-->
+<data-extraction-rules>
+  <cloud-backup>
+    <!-- Deny everything by default -->
+    <exclude domain="root" />
+    <exclude domain="database" />
+    <exclude domain="sharedprefs" />
+    <exclude domain="external" />
+    <exclude domain="file" />
+  </cloud-backup>
+
+  <device-transfer>
+    <!-- Deny everything by default for Android device-to-device migration -->
+    <exclude domain="root" />
+    <exclude domain="database" />
+    <exclude domain="sharedprefs" />
+    <exclude domain="external" />
+    <exclude domain="file" />
+  </device-transfer>
+</data-extraction-rules>

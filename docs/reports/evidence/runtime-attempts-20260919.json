@@ -1,0 +1,55 @@
+{
+  "date": "2026-09-19",
+  "checks": [
+    {
+      "command": [
+        "docker",
+        "version"
+      ],
+      "exit_code": 127,
+      "stderr": "executable unavailable"
+    },
+    {
+      "command": [
+        "docker",
+        "compose",
+        "version"
+      ],
+      "exit_code": 127,
+      "stderr": "executable unavailable"
+    },
+    {
+      "command": [
+        "docker",
+        "info"
+      ],
+      "exit_code": 127,
+      "stderr": "executable unavailable"
+    },
+    {
+      "command": [
+        "kubectl",
+        "cluster-info"
+      ],
+      "exit_code": 127,
+      "stderr": "executable unavailable"
+    },
+    {
+      "command": [
+        "nvidia-smi"
+      ],
+      "exit_code": 127,
+      "stderr": "executable unavailable"
+    },
+    {
+      "command": [
+        "git",
+        "status",
+        "--short"
+      ],
+      "exit_code": 128,
+      "stdout": "",
+      "stderr": "fatal: not a git repository (or any of the parent directories): .git\n"
+    }
+  ]
+}

@@ -1,0 +1,335 @@
+openapi: 3.1.0
+info:
+  title: HSAAI LLM Gateway API
+  version: 1.0.0
+  description: |
+    Production LLM serving via vLLM with continuous batching,
+    semantic caching, and per-tenant token budgets.
+
+    ## Authentication
+    All endpoints require a Bearer JWT obtained from Keycloak:
+    ```
+    Authorization: Bearer <jwt>
+    ```
+
+    ## Rate Limits
+    - 50 requests/minute per tenant for /generate
+    - 100 requests/minute per tenant for /budget
+
+    ## Deprecation Policy
+    API versioned via URL prefix (/v1/). Breaking changes require new version.
+    Deprecated endpoints marked with `deprecated: true` and removed after 6 months.
+  contact:
+    name: HSAAI Engineering
+    email: engineering@hsaai.internal
+  license:
+    name: HSA Internal Use Only
+
+servers:
+  - url: https://hsaai.internal/api/v1/llm
+    description: Production
+  - url: https://staging.hsaai.internal/api/v1/llm
+    description: Staging
+  - url: http://localhost:8090
+    description: Local development
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Generation
+    description: LLM text generation
+  - name: Budget
+    description: Token budget management
+  - name: Health
+    description: Service health checks
+
+paths:
+  /generate:
+    post:
+      tags: [Generation]
+      summary: Generate text via LLM
+      description: |
+        Sends a prompt to the LLM and returns the generated text.
+        Uses vLLM with continuous batching for high throughput.
+        Semantic cache reduces cost 30-60% on repeated queries.
+        Falls back to OpenAI GPT-4o when vLLM unavailable.
+      operationId: generateText
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateRequest'
+            examples:
+              simple:
+                summary: Simple prompt
+                value:
+                  prompt: "Summarize this contract..."
+                  max_tokens: 512
+                  tenant_id: hsa-foods
+              arabic:
+                summary: Arabic prompt
+                value:
+                  prompt: "لخص العقد التالي..."
+                  max_tokens: 256
+                  temperature: 0.3
+                  tenant_id: hsa-foods
+      responses:
+        '200':
+          description: Successful generation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateResponse'
+              examples:
+                success:
+                  value:
+                    text: "This contract establishes..."
+                    tokens_used: 248
+                    model: "Qwen/Qwen2.5-7B-Instruct"
+                    backend: "vllm"
+                    cache_hit: false
+                    latency_ms: 1240
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+      parameters:
+        - $ref: '#/components/parameters/XRequestId'
+
+  /budget/{tenantId}:
+    get:
+      tags: [Budget]
+      summary: Get remaining token budget for a tenant
+      operationId: getBudget
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: hsa-foods
+        - $ref: '#/components/parameters/XRequestId'
+      responses:
+        '200':
+          description: Budget info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BudgetResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /health:
+    get:
+      tags: [Health]
+      summary: Service health check
+      security: []
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /metrics:
+    get:
+      tags: [Health]
+      summary: Prometheus metrics
+      security: []
+      responses:
+        '200':
+          description: Prometheus-format metrics
+          content:
+            text/plain:
+              schema:
+                type: string
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT obtained from Keycloak. Must include `tenant_id`, `roles`, `sub` claims.
+
+  parameters:
+    XRequestId:
+      name: X-Request-Id
+      in: header
+      required: false
+      schema:
+        type: string
+        format: uuid
+      description: Correlation ID for distributed tracing
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            errors:
+              - code: VALIDATION_ERROR
+                message: "Field 'prompt' is required"
+                field: prompt
+    Unauthorized:
+      description: Missing or invalid token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            errors:
+              - code: UNAUTHORIZED
+                message: "Missing or invalid JWT"
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            errors:
+              - code: FORBIDDEN
+                message: "Role 'employee' cannot access this resource"
+    RateLimited:
+      description: Rate limit exceeded
+      headers:
+        X-RateLimit-Limit:
+          schema: { type: integer }
+        X-RateLimit-Remaining:
+          schema: { type: integer }
+        X-RateLimit-Reset:
+          schema: { type: integer, format: unix timestamp }
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            errors:
+              - code: RATE_LIMITED
+                message: "Rate limit exceeded. Retry after 60 seconds."
+    ServiceUnavailable:
+      description: No LLM backend available
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            errors:
+              - code: NO_LLM_BACKEND
+                message: "vLLM unavailable and no OpenAI fallback configured"
+
+  schemas:
+    GenerateRequest:
+      type: object
+      required: [prompt]
+      properties:
+        prompt:
+          type: string
+          minLength: 1
+          maxLength: 32000
+          description: The input prompt
+          example: "Summarize this contract..."
+        max_tokens:
+          type: integer
+          minimum: 1
+          maximum: 8192
+          default: 512
+          description: Maximum tokens to generate
+        temperature:
+          type: number
+          minimum: 0.0
+          maximum: 2.0
+          default: 0.7
+          description: Sampling temperature (lower = more deterministic)
+        top_p:
+          type: number
+          minimum: 0.0
+          maximum: 1.0
+          default: 0.9
+          description: Nucleus sampling probability
+        tenant_id:
+          type: string
+          maxLength: 64
+          default: default
+          description: Tenant identifier for budget tracking
+        use_cache:
+          type: boolean
+          default: true
+          description: Whether to use semantic cache
+
+    GenerateResponse:
+      type: object
+      properties:
+        text:
+          type: string
+          description: Generated text
+        tokens_used:
+          type: integer
+          description: Tokens consumed (0 if cache hit)
+        model:
+          type: string
+          description: Model used (e.g., Qwen/Qwen2.5-7B-Instruct)
+        backend:
+          type: string
+          enum: [vllm, openai-fallback, cache]
+          description: Which backend served the request
+        cache_hit:
+          type: boolean
+          description: Whether response came from cache
+        latency_ms:
+          type: integer
+          description: End-to-end latency in milliseconds
+
+    BudgetResponse:
+      type: object
+      properties:
+        tenant_id:
+          type: string
+        remaining_tokens:
+          type: integer
+        daily_limit:
+          type: integer
+          default: 1000000
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok, degraded, down]
+        vllm_enabled:
+          type: boolean
+        cache_enabled:
+          type: boolean
+
+    Error:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              code:
+                type: string
+                description: Machine-readable error code
+              message:
+                type: string
+                description: Human-readable error message
+              field:
+                type: string
+                description: Field that caused the error (if applicable)

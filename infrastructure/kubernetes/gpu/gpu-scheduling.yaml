@@ -1,0 +1,266 @@
+# HSAAI GPU Scheduling — MIG + NVIDIA Device Plugin (Phase 3 — Scale)
+#
+# FIX v2.3 (Phase 3): Enables GPU scheduling with MIG (Multi-Instance GPU)
+# for efficient GPU sharing. A single A100 GPU can be partitioned into
+# up to 7 independent instances, each with dedicated memory + compute.
+# This allows multiple model_training jobs or inference services to share
+# one physical GPU without interference.
+#
+# Prerequisites:
+#   1. GPU nodes must have NVIDIA drivers + MIG-enabled firmware
+#   2. Install NVIDIA GPU Operator:
+#      helm repo add nvidia https://nvidia.github.io/gpu-operator
+#      helm install gpu-operator nvidia/gpu-operator -n gpu-operator --create-namespace
+#   3. Label GPU nodes:
+#      kubectl label nodes <gpu-node-name> workload=gpu nvidia.com/gpu.product=A100-SXM4-40GB
+#
+# Architecture:
+#   ┌─────────────────────────────────────────┐
+#   │           Physical GPU (A100)           │
+#   │  ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐  │
+#   │  │ MIG  │ │ MIG  │ │ MIG  │ │ MIG  │  │
+#   │  │  1g  │ │  1g  │ │  2g  │ │  3g  │  │
+#   │  │ 5gb  │ │ 5gb  │ │ 10gb │ │ 20gb │  │
+#   │  └──────┘ └──────┘ └──────┘ └──────┘  │
+#   └─────────────────────────────────────────┘
+#      ↓        ↓        ↓        ↓
+#   training  infer   training  inference
+#   job #1    service  job #2   (large model)
+
+# ═══════════════════════════════════════════════════════════════
+# NVIDIA Device Plugin with MIG support
+# ═══════════════════════════════════════════════════════════════
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nvidia-device-plugin
+  namespace: gpu-operator
+  labels:
+    app.kubernetes.io/name: nvidia-device-plugin
+    app.kubernetes.io/part-of: hsaai
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: nvidia-device-plugin
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: nvidia-device-plugin
+    spec:
+      nodeSelector:
+        workload: gpu
+        nvidia.com/gpu.present: "true"
+      tolerations:
+        - key: nvidia.com/gpu
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: nvidia-device-plugin
+          image: nvcr.io/nvidia/k8s-device-plugin:v0.16.0
+          env:
+            # Enable MIG strategy: single mode exposes each MIG instance
+            # as a separate GPU resource (nvidia.com/mig-1g.5gb, etc.)
+            - name: NVIDIA_MIG_STRATEGY
+              value: "single"
+            # Fail on init if MIG is not configured on the GPU.
+            - name: NVIDIA_FAIL_ON_INIT_ERROR
+              value: "true"
+            # Config name for GPU feature discovery
+            - name: NVIDIA_GPU_FEATURE_DISCOVERY
+              value: "true"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: device-plugin
+              mountPath: /var/lib/kubelet/device-plugins
+            - name: dev
+              mountPath: /dev
+      volumes:
+        - name: device-plugin
+          hostPath:
+            path: /var/lib/kubelet/device-plugins
+        - name: dev
+          hostPath:
+            path: /dev
+---
+# ═══════════════════════════════════════════════════════════════
+# MIG Configuration — partition A100 into 7 instances
+# ═══════════════════════════════════════════════════════════════
+apiVersion: nvidia.com/v1
+kind: MIGConfig
+metadata:
+  name: hsaai-mig-config
+  namespace: gpu-operator
+  labels:
+    app.kubernetes.io/part-of: hsaai
+spec:
+  # A100-SXM4-40GB: 40GB HBM, can be partitioned into:
+  #   - 7x 1g.5gb (7 instances, 5GB each — for small model inference)
+  #   - 3x 2g.10gb + 1x 1g.5gb (mixed — for training + inference)
+  #   - 2x 3g.20gb (2 instances, 20GB each — for large model training)
+  config:
+    name: "hsaai-mixed-mig"
+    devices:
+      - name: "all"  # apply to all GPUs on the node
+        mig: "enabled"
+        migInstances:
+          # Mixed partitioning: 2 small (inference) + 1 medium (fine-tuning) + 1 large (training)
+          1g.5gb: 2    # 2 instances × 5GB — for Qwen 7B inference
+          2g.10gb: 1   # 1 instance × 10GB — for LoRA fine-tuning
+          3g.20gb: 1   # 1 instance × 20GB — for QLoRA training of larger models
+---
+# ═══════════════════════════════════════════════════════════════
+# GPU Node Pool — autoscaling GPU nodes
+# ═══════════════════════════════════════════════════════════════
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llm-gateway-gpu
+  namespace: hsaai
+  labels:
+    app: llm-gateway
+    app.kubernetes.io/part-of: hsaai
+    gpu-enabled: "true"
+spec:
+  replicas: 1  # scale based on GPU queue depth
+  selector:
+    matchLabels:
+      app: llm-gateway
+      gpu-enabled: "true"
+  template:
+    metadata:
+      labels:
+        app: llm-gateway
+        app.kubernetes.io/part-of: hsaai
+        gpu-enabled: "true"
+    spec:
+      nodeSelector:
+        workload: gpu
+      tolerations:
+        - key: nvidia.com/gpu
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: llm-gateway
+          image: ghcr.io/hsaai/llm-gateway:4.3.0-gpu
+          resources:
+            limits:
+              # Request a MIG 1g.5gb instance (5GB GPU memory)
+              # For larger models, use nvidia.com/mig-2g.10gb or mig-3g.20gb
+              nvidia.com/mig-1g.5gb: 1
+            requests:
+              cpu: 2
+              memory: 8Gi
+          env:
+            - name: CUDA_VISIBLE_DEVICES
+              value: "0"
+            - name: OLLAMA_GPU_LAYERS
+              value: "35"  # offload 35 layers to GPU
+          ports:
+            - containerPort: 8090
+              name: http
+---
+# ═══════════════════════════════════════════════════════════════
+# GPU Cluster Autoscaler — scale GPU nodes based on demand
+# ═══════════════════════════════════════════════════════════════
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: llm-gateway-gpu-hpa
+  namespace: hsaai
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: llm-gateway-gpu
+  minReplicas: 1
+  maxReplicas: 7  # max 7 MIG instances per A100
+  metrics:
+    # Scale based on GPU memory utilization
+    - type: Resource
+      resource:
+        name: nvidia.com/mig-1g.5gb
+        target:
+          type: Utilization
+          averageUtilization: 80
+    # Also scale based on request queue depth
+    - type: Pods
+      pods:
+        metric:
+          name: hsaai_llm_queue_depth
+        target:
+          type: AverageValue
+          averageValue: "5"  # scale up if >5 queued requests per pod
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Pods
+          value: 1  # add 1 GPU pod at a time (GPUs are expensive)
+          periodSeconds: 120
+    scaleDown:
+      stabilizationWindowSeconds: 600  # 10 min — don't scale down GPUs quickly
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 300
+---
+# ═══════════════════════════════════════════════════════════════
+# GPU Monitoring — DCGM Exporter for Prometheus metrics
+# ═══════════════════════════════════════════════════════════════
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: dcgm-exporter
+  namespace: gpu-operator
+  labels:
+    app: dcgm-exporter
+    app.kubernetes.io/part-of: hsaai
+spec:
+  selector:
+    matchLabels:
+      app: dcgm-exporter
+  template:
+    metadata:
+      labels:
+        app: dcgm-exporter
+    spec:
+      nodeSelector:
+        workload: gpu
+      tolerations:
+        - key: nvidia.com/gpu
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: dcgm-exporter
+          image: nvcr.io/nvidia/k8s/dcgm-exporter:3.3.0-ubuntu22.04
+          ports:
+            - containerPort: 9400
+              name: metrics
+          securityContext:
+            capabilities:
+              add: ["SYS_ADMIN"]
+          env:
+            - name: DCGM_EXPORTER_LISTEN
+              value: ":9400"
+            - name: DCGM_EXPORTER_KUBERNETES
+              value: "true"
+---
+# ServiceMonitor for GPU metrics (Prometheus Operator)
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: gpu-metrics
+  namespace: gpu-operator
+  labels:
+    app.kubernetes.io/part-of: hsaai
+spec:
+  selector:
+    matchLabels:
+      app: dcgm-exporter
+  endpoints:
+    - port: metrics
+      interval: 15s
+      path: /metrics

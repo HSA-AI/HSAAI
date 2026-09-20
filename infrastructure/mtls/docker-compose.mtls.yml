@@ -1,0 +1,96 @@
+# HSAAI Docker Compose — mTLS Overlay
+# Usage: docker compose -f docker-compose.production.yml -f docker-compose.mtls.yml up
+#
+# This overlay adds mTLS volumes and environment variables
+# to all services. Certificates must be generated first:
+#   ./infrastructure/mtls/generate-certs.sh ./certs
+
+services:
+  backend_core:
+    volumes:
+      - ./certs/services/backend_core:/certs:ro
+      - ./certs/ca:/certs/ca:ro
+    environment:
+      MTLS_ENABLED: "true"
+      MTLS_CERTS_DIR: /certs
+      MTLS_CA_PATH: /certs/ca/trust-bundle.crt
+      MTLS_CERT_PATH: /certs/tls.crt
+      MTLS_KEY_PATH: /certs/tls.key
+      MTLS_STRICT: "true"
+
+  api_gateway:
+    volumes:
+      - ./certs/services/api_gateway:/certs:ro
+      - ./certs/ca:/certs/ca:ro
+    environment:
+      MTLS_ENABLED: "true"
+      MTLS_CERTS_DIR: /certs
+      MTLS_CA_PATH: /certs/ca/trust-bundle.crt
+      MTLS_CERT_PATH: /certs/tls.crt
+      MTLS_KEY_PATH: /certs/tls.key
+
+  auth_service:
+    volumes:
+      - ./certs/services/auth_service:/certs:ro
+      - ./certs/ca:/certs/ca:ro
+    environment:
+      MTLS_ENABLED: "true"
+      MTLS_CERTS_DIR: /certs
+      MTLS_CA_PATH: /certs/ca/trust-bundle.crt
+      MTLS_CERT_PATH: /certs/tls.crt
+      MTLS_KEY_PATH: /certs/tls.key
+
+  rag_engine:
+    volumes:
+      - ./certs/services/rag_engine:/certs:ro
+      - ./certs/ca:/certs/ca:ro
+    environment:
+      MTLS_ENABLED: "true"
+      MTLS_CERTS_DIR: /certs
+      MTLS_CA_PATH: /certs/ca/trust-bundle.crt
+      MTLS_CERT_PATH: /certs/tls.crt
+      MTLS_KEY_PATH: /certs/tls.key
+
+  llm_gateway:
+    volumes:
+      - ./certs/services/llm_gateway:/certs:ro
+      - ./certs/ca:/certs/ca:ro
+    environment:
+      MTLS_ENABLED: "true"
+      MTLS_CERTS_DIR: /certs
+      MTLS_CA_PATH: /certs/ca/trust-bundle.crt
+      MTLS_CERT_PATH: /certs/tls.crt
+      MTLS_KEY_PATH: /certs/tls.key
+
+  ai_orchestrator:
+    volumes:
+      - ./certs/services/multi_agents:/certs:ro
+      - ./certs/ca:/certs/ca:ro
+    environment:
+      MTLS_ENABLED: "true"
+      MTLS_CERTS_DIR: /certs
+      MTLS_CA_PATH: /certs/ca/trust-bundle.crt
+      MTLS_CERT_PATH: /certs/tls.crt
+      MTLS_KEY_PATH: /certs/tls.key
+
+  multi_agents:
+    volumes:
+      - ./certs/services/multi_agents:/certs:ro
+      - ./certs/ca:/certs/ca:ro
+    environment:
+      MTLS_ENABLED: "true"
+      MTLS_CERTS_DIR: /certs
+      MTLS_CA_PATH: /certs/ca/trust-bundle.crt
+      MTLS_CERT_PATH: /certs/tls.crt
+      MTLS_KEY_PATH: /certs/tls.key
+
+  frontend:
+    volumes:
+      - ./certs/services/frontend:/certs:ro
+      - ./certs/ca:/certs/ca:ro
+    environment:
+      MTLS_ENABLED: "true"
+      MTLS_CERTS_DIR: /certs
+      MTLS_CA_PATH: /certs/ca/trust-bundle.crt
+      MTLS_CERT_PATH: /certs/tls.crt
+      MTLS_KEY_PATH: /certs/tls.key

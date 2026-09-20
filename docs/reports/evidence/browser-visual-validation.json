@@ -1,0 +1,65 @@
+{
+  "pages": [
+    {
+      "rtl": "rtl",
+      "overflow": false,
+      "fonts": "loaded",
+      "title": "HSAAI | منصة التشغيل الذكي المؤسسية — HSA Group",
+      "width": 1440,
+      "status": 200,
+      "errors": [],
+      "http_errors": [
+        {
+          "status": 500,
+          "url": "http://127.0.0.1:13000/v1/keycloak/config"
+        },
+        {
+          "status": 500,
+          "url": "http://127.0.0.1:13000/v1/auth/me"
+        }
+      ]
+    },
+    {
+      "rtl": "rtl",
+      "overflow": false,
+      "fonts": "loaded",
+      "title": "HSAAI | منصة التشغيل الذكي المؤسسية — HSA Group",
+      "width": 768,
+      "status": 200,
+      "errors": [],
+      "http_errors": [
+        {
+          "status": 500,
+          "url": "http://127.0.0.1:13000/v1/keycloak/config"
+        },
+        {
+          "status": 500,
+          "url": "http://127.0.0.1:13000/v1/auth/me"
+        }
+      ]
+    },
+    {
+      "rtl": "rtl",
+      "overflow": false,
+      "fonts": "loaded",
+      "title": "HSAAI | منصة التشغيل الذكي المؤسسية — HSA Group",
+      "width": 390,
+      "status": 200,
+      "errors": [],
+      "http_errors": [
+        {
+          "status": 500,
+          "url": "http://127.0.0.1:13000/v1/keycloak/config"
+        },
+        {
+          "status": 500,
+          "url": "http://127.0.0.1:13000/v1/auth/me"
+        }
+      ]
+    }
+  ],
+  "health_http_samples": 30,
+  "health_mean_ms": 5.320083466665437,
+  "health_p95_ms": 10.008141999946929,
+  "scope": "Real Chromium + production Next.js; public UI only. Backend/identity requests remain unavailable; no full-stack claim."
+}

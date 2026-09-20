@@ -1,0 +1,37 @@
+{
+  "findings": [
+    {
+      "id": "MAN-H01",
+      "severity": "High",
+      "status": "OPEN",
+      "finding": "Global CoE/FinOps/catalogue data lacks complete tenant/workspace ownership and scoped queries",
+      "evidence": "services/backend_core/enterprise_os/models.py: AICoEProject, AIPolicy, AIRisk, AITraining, CostRecord, Integration; router.py: coe_projects, coe_policies, coe_risks, coe_training, finops_usage",
+      "action": "Design and migrate ownership for legacy rows; scope reads/writes and test two tenants. No exception or multi-tenant production approval granted."
+    },
+    {
+      "id": "MAN-M01",
+      "severity": "Medium",
+      "status": "OPEN",
+      "finding": "Shared HTTP rate limiter permits requests after a Redis pipeline failure and retains unbounded fallback identities",
+      "evidence": "packages/common/security/rate_limit.py: SlidingWindowRateLimiter.check",
+      "action": "Bound fallback storage and enforce an explicit production failure policy; add Redis outage/load acceptance. Separate tenant_limiter.py already defaults fail-closed."
+    },
+    {
+      "id": "MAN-M02",
+      "severity": "Medium",
+      "status": "OPEN",
+      "finding": "Some Phase 5 connector errors still return raw exception text",
+      "evidence": "services/backend_core/enterprise_integrations/phase5_connectors.py",
+      "action": "Sanitize provider error responses and logs across all additional connectors; the primary real_connectors.py helpers are already sanitized."
+    },
+    {
+      "id": "MAN-M03",
+      "severity": "Medium",
+      "status": "OPEN",
+      "finding": "Image tags and model names are not fully pinned to verified immutable digests/revisions",
+      "evidence": "Dockerfiles; Compose; model configuration",
+      "action": "Resolve/pin image and model provenance on the build host, generate full image SBOM and scan/sign the actual artifacts."
+    }
+  ],
+  "scope": "Code review findings; no production penetration test or formal risk waiver."
+}

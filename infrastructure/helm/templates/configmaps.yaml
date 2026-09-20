@@ -1,0 +1,17 @@
+{{- range $name, $svc := .Values.services }}
+{{- if and $svc.enabled $svc.config }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $name }}-config
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ $name }}
+    app.kubernetes.io/part-of: hsaai
+data:
+  {{- range $key, $val := $svc.config }}
+  {{ $key }}: {{ $val | quote }}
+  {{- end }}
+{{- end }}
+{{- end }}

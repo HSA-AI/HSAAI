@@ -1,0 +1,9 @@
+fastapi==0.141.1
+uvicorn[standard]==0.52.4
+httpx==0.28.1
+pydantic==2.13.5
+
+# v0.1.0: Accurate token counting
+tiktoken>=0.7.0
+
+PyJWT[crypto]==2.13.0

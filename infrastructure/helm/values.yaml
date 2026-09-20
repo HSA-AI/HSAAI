@@ -1,0 +1,378 @@
+global:
+  imagePullPolicy: IfNotPresent
+  defaultResources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: '1'
+      memory: 1Gi
+backend:
+  replicas: 2
+  image:
+    repository: backend
+    tag: ''
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: '1'
+      memory: 1Gi
+  env:
+    KEYCLOAK_ISSUER: http://keycloak:8080/realms/hsaai
+    REQUIRE_QDRANT: 'true'
+    FIELD_ENCRYPTION_ENABLED: 'true'
+  secrets:
+    JWT_SECRET: ''
+    DATA_ENCRYPTION_KEY: ''
+    DATABASE_URL: ''
+ragEngine:
+  replicas: 2
+  image:
+    repository: rag-engine
+    tag: ''
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: '2'
+      memory: 2Gi
+  persistence:
+    uploadsSize: 50Gi
+    eventsSize: 10Gi
+llmGateway:
+  replicas: 2
+  image:
+    repository: llm-gateway
+    tag: ''
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: '1'
+      memory: 1Gi
+apiGateway:
+  replicas: 2
+  image:
+    repository: api-gateway
+    tag: ''
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+frontend:
+  replicas: 2
+  image:
+    repository: frontend
+    tag: ''
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+postgresql:
+  enabled: true
+  auth:
+    username: hsaai
+    database: hsaai
+  primary:
+    persistence:
+      size: 50Gi
+  readReplicas:
+    replicaCount: 1
+qdrant:
+  enabled: true
+  persistence:
+    size: 100Gi
+redis:
+  enabled: true
+  auth:
+    enabled: true
+  master:
+    persistence:
+      enabled: true
+      size: 5Gi
+keycloak:
+  enabled: true
+  auth:
+    adminUser: admin
+  postgresql:
+    enabled: true
+ingress:
+  enabled: true
+  className: nginx
+  tls: true
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  host: ai.hsaai.example
+  certManager:
+    issuer: ''
+  tlsSecret: hsaai-tls
+monitoring:
+  prometheus:
+    enabled: true
+  grafana:
+    enabled: true
+    adminPassword: ''
+services:
+  api-gateway:
+    enabled: true
+    image:
+      repository: ghcr.io/REPLACE_ORGANIZATION/hsaai-api-gateway
+      tag: 4.0.0-rc.2
+    port: 8000
+    replicas: 2
+    env: {}
+    hpa:
+      minReplicas: 2
+      maxReplicas: 10
+      cpuTarget: 70
+    pdb:
+      minAvailable: 1
+    healthPath: /health
+    readyPath: /ready
+  auth-service:
+    enabled: true
+    image:
+      repository: ghcr.io/REPLACE_ORGANIZATION/hsaai-auth-service
+      tag: 4.0.0-rc.2
+    port: 8010
+    replicas: 2
+    env: {}
+    hpa:
+      minReplicas: 2
+      maxReplicas: 6
+    pdb:
+      minAvailable: 1
+    healthPath: /health
+    readyPath: /ready
+  backend-core:
+    enabled: true
+    image:
+      repository: ghcr.io/REPLACE_ORGANIZATION/hsaai-backend-core
+      tag: 4.0.0-rc.2
+    port: 8000
+    replicas: 3
+    env: {}
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: '2'
+        memory: 2Gi
+    hpa:
+      minReplicas: 3
+      maxReplicas: 15
+      cpuTarget: 65
+    pdb:
+      minAvailable: 2
+    healthPath: /health
+    readyPath: /ready
+  rag-service:
+    enabled: true
+    image:
+      repository: ghcr.io/REPLACE_ORGANIZATION/hsaai-rag-service
+      tag: 4.0.0-rc.2
+    port: 8030
+    replicas: 1
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: '2'
+        memory: 2Gi
+    hpa: null
+    pdb:
+      minAvailable: 1
+    healthPath: /health
+    readyPath: /ready
+    env: {}
+  llm-gateway:
+    enabled: true
+    image:
+      repository: ghcr.io/REPLACE_ORGANIZATION/hsaai-llm-gateway
+      tag: 4.0.0-rc.2
+    port: 8090
+    replicas: 2
+    resources:
+      requests:
+        cpu: 1
+        memory: 2Gi
+      limits:
+        cpu: '4'
+        memory: 4Gi
+    hpa:
+      minReplicas: 2
+      maxReplicas: 6
+      cpuTarget: 75
+    pdb:
+      minAvailable: 1
+    healthPath: /health
+    readyPath: /ready
+    env: {}
+  agent-runtime:
+    enabled: true
+    image:
+      repository: ghcr.io/REPLACE_ORGANIZATION/hsaai-agent-runtime
+      tag: 4.0.0-rc.2
+    port: 8040
+    replicas: 1
+    hpa: null
+    pdb:
+      minAvailable: 1
+    healthPath: /health
+    readyPath: /health
+    env: {}
+  workflow-engine:
+    enabled: true
+    image:
+      repository: ghcr.io/REPLACE_ORGANIZATION/hsaai-workflow-engine
+      tag: 4.0.0-rc.2
+    port: 8070
+    replicas: 2
+    hpa:
+      minReplicas: 2
+      maxReplicas: 6
+    pdb:
+      minAvailable: 1
+    healthPath: /health
+    readyPath: /health
+    env: {}
+  alignment-service:
+    enabled: true
+    image:
+      repository: ghcr.io/REPLACE_ORGANIZATION/hsaai-alignment-service
+      tag: 4.0.0-rc.2
+    port: 8005
+    replicas: 2
+    pdb:
+      minAvailable: 1
+    healthPath: /health
+    readyPath: /health
+    env: {}
+  governance-service:
+    enabled: true
+    image:
+      repository: ghcr.io/REPLACE_ORGANIZATION/hsaai-governance-service
+      tag: 4.0.0-rc.2
+    port: 8011
+    replicas: 2
+    pdb:
+      minAvailable: 1
+    healthPath: /health
+    readyPath: /health
+    env: {}
+  mcp-server:
+    enabled: true
+    image:
+      repository: ghcr.io/REPLACE_ORGANIZATION/hsaai-mcp-server
+      tag: 4.0.0-rc.2
+    port: 8094
+    replicas: 2
+    pdb:
+      minAvailable: 1
+    healthPath: /health
+    readyPath: /health
+    env: {}
+  pii-detector:
+    enabled: true
+    image:
+      repository: ghcr.io/REPLACE_ORGANIZATION/hsaai-pii-detector
+      tag: 4.0.0-rc.2
+    port: 8092
+    replicas: 2
+    pdb:
+      minAvailable: 1
+    healthPath: /health
+    readyPath: /health
+    env: {}
+  model-training:
+    enabled: false
+    image:
+      repository: ghcr.io/REPLACE_ORGANIZATION/hsaai-model-training
+      tag: 4.0.0-rc.2
+    port: 8090
+    replicas: 1
+    nodeSelector:
+      workload: gpu
+    resources:
+      requests:
+        cpu: 2
+        memory: 4Gi
+        nvidia.com/gpu: 1
+      limits:
+        cpu: 8
+        memory: 16Gi
+        nvidia.com/gpu: 1
+    healthPath: /health
+    readyPath: /health
+    env: {}
+  frontend:
+    enabled: true
+    image:
+      repository: ghcr.io/REPLACE_ORGANIZATION/hsaai-frontend
+      tag: 4.0.0-rc.2
+    port: 3000
+    replicas: 2
+    hpa:
+      minReplicas: 2
+      maxReplicas: 10
+    pdb:
+      minAvailable: 1
+    healthPath: /api/health
+    readyPath: /api/health
+    env: {}
+networkPolicies:
+  enabled: true
+commonEnv:
+  APP_ENV: production
+  AUTH_SERVICE_URL: http://auth-service:8010
+  BACKEND_URL: http://backend-core:8000
+  BACKEND_CORE_URL: http://backend-core:8000
+  RAG_ENGINE_URL: http://rag-service:8030
+  LLM_GATEWAY_URL: http://llm-gateway:8090
+  AI_ORCHESTRATOR_URL: http://agent-runtime:8040
+  ANALYTICS_URL: http://backend-core:8000
+  API_GATEWAY_URL: http://api-gateway:8000
+  KEYCLOAK_URL: http://keycloak.hsaai-data.svc.cluster.local:8080
+  KEYCLOAK_INTERNAL_URL: http://keycloak.hsaai-data.svc.cluster.local:8080
+  KEYCLOAK_JWKS_URL: http://keycloak.hsaai-data.svc.cluster.local:8080/realms/hsaai/protocol/openid-connect/certs
+  KEYCLOAK_ISSUER: https://identity.hsaai.example/realms/hsaai
+  KEYCLOAK_AUDIENCE: hsaai-api
+  KEYCLOAK_CLIENT_ID: hsaai-frontend
+  KEYCLOAK_REALM: hsaai
+  APP_PUBLIC_URL: https://ai.hsaai.example
+  CORS_ALLOW_ORIGINS: https://ai.hsaai.example
+  HSAAI_COOKIE_SECURE: 'true'
+  INTERNAL_ONLY_MODE: 'true'
+  ALLOW_EXTERNAL_AI: 'false'
+  ALLOW_EXTERNAL_APIS: 'false'
+  QDRANT_URL: http://qdrant.hsaai-data.svc.cluster.local:6333
+  OLLAMA_BASE_URL: http://ollama.hsaai-data.svc.cluster.local:11434
+  LOCAL_LLM_MODEL: qwen2.5:7b-instruct
+  EMBEDDING_PROVIDER: sentence-transformers
+  EMBEDDING_MODEL: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+  LOCAL_FILE_STORAGE: /data/local_uploads
+  RAG_EVENT_DB: /data/rag_events.db
+  AUTH_REQUIRED: 'true'
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector.hsaai-data.svc.cluster.local:4317
+  USE_ALEMBIC: 'true'
+  RUN_MIGRATIONS_ON_STARTUP: 'false'
+  HF_HOME: /models
+  HF_HUB_OFFLINE: '1'
+  TRANSFORMERS_OFFLINE: '1'
+  RAG_ANSWER_MODEL: qwen2.5:7b-instruct
+existingSecret: hsaai-secrets
+documentsClaim: documents-data
+embeddingModelsClaim: embedding-models
+secrets: {}

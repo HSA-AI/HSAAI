@@ -1,0 +1,1685 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hsaai
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hsaai-config
+data:
+  APP_ENV: production
+  AUTH_SERVICE_URL: http://auth-service:8010
+  BACKEND_URL: http://backend-core:8000
+  BACKEND_CORE_URL: http://backend-core:8000
+  RAG_ENGINE_URL: http://rag-service:8030
+  LLM_GATEWAY_URL: http://llm-gateway:8090
+  AI_ORCHESTRATOR_URL: http://agent-runtime:8040
+  ANALYTICS_URL: http://backend-core:8000
+  API_GATEWAY_URL: http://api-gateway:8000
+  KEYCLOAK_URL: http://keycloak.hsaai-data.svc.cluster.local:8080
+  KEYCLOAK_INTERNAL_URL: http://keycloak.hsaai-data.svc.cluster.local:8080
+  KEYCLOAK_JWKS_URL: http://keycloak.hsaai-data.svc.cluster.local:8080/realms/hsaai/protocol/openid-connect/certs
+  KEYCLOAK_ISSUER: https://identity.hsaai.example/realms/hsaai
+  KEYCLOAK_AUDIENCE: hsaai-api
+  KEYCLOAK_CLIENT_ID: hsaai-frontend
+  KEYCLOAK_REALM: hsaai
+  APP_PUBLIC_URL: https://ai.hsaai.example
+  CORS_ALLOW_ORIGINS: https://ai.hsaai.example
+  HSAAI_COOKIE_SECURE: 'true'
+  INTERNAL_ONLY_MODE: 'true'
+  ALLOW_EXTERNAL_AI: 'false'
+  ALLOW_EXTERNAL_APIS: 'false'
+  QDRANT_URL: http://qdrant.hsaai-data.svc.cluster.local:6333
+  OLLAMA_BASE_URL: http://ollama.hsaai-data.svc.cluster.local:11434
+  LOCAL_LLM_MODEL: qwen2.5:7b-instruct
+  EMBEDDING_PROVIDER: sentence-transformers
+  EMBEDDING_MODEL: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+  LOCAL_FILE_STORAGE: /data/local_uploads
+  RAG_EVENT_DB: /data/rag_events.db
+  AUTH_REQUIRED: 'true'
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector.hsaai-data.svc.cluster.local:4317
+  USE_ALEMBIC: 'true'
+  RUN_MIGRATIONS_ON_STARTUP: 'false'
+  HF_HOME: /models
+  HF_HUB_OFFLINE: '1'
+  TRANSFORMERS_OFFLINE: '1'
+  RAG_ANSWER_MODEL: qwen2.5:7b-instruct
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: documents-data
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  labels: &id001
+    app.kubernetes.io/name: api-gateway
+    app.kubernetes.io/part-of: hsaai
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels: *id001
+  template:
+    metadata:
+      labels: *id001
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      terminationGracePeriodSeconds: 60
+      containers:
+      - name: api-gateway
+        image: ghcr.io/REPLACE_ORGANIZATION/hsaai-api-gateway:4.0.0-rc.2
+        ports:
+        - name: http
+          containerPort: 8000
+        envFrom:
+        - configMapRef:
+            name: hsaai-config
+        - secretRef:
+            name: hsaai-secrets
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: '2'
+            memory: 2Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        startupProbe:
+          httpGet:
+            path: /health
+            port: http
+          periodSeconds: 10
+          failureThreshold: 30
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          periodSeconds: 30
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http
+          periodSeconds: 10
+          timeoutSeconds: 12
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: documents-data
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels: *id001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway
+spec:
+  selector:
+    app.kubernetes.io/name: api-gateway
+    app.kubernetes.io/part-of: hsaai
+  ports:
+  - port: 8000
+    targetPort: http
+    name: http
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: api-gateway
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: api-gateway
+      app.kubernetes.io/part-of: hsaai
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: api-gateway
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: api-gateway
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+  labels: &id001
+    app.kubernetes.io/name: auth-service
+    app.kubernetes.io/part-of: hsaai
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels: *id001
+  template:
+    metadata:
+      labels: *id001
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      terminationGracePeriodSeconds: 60
+      containers:
+      - name: auth-service
+        image: ghcr.io/REPLACE_ORGANIZATION/hsaai-auth-service:4.0.0-rc.2
+        ports:
+        - name: http
+          containerPort: 8010
+        envFrom:
+        - configMapRef:
+            name: hsaai-config
+        - secretRef:
+            name: hsaai-secrets
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: '2'
+            memory: 2Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        startupProbe:
+          httpGet:
+            path: /health
+            port: http
+          periodSeconds: 10
+          failureThreshold: 30
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          periodSeconds: 30
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http
+          periodSeconds: 10
+          timeoutSeconds: 12
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: documents-data
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels: *id001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+spec:
+  selector:
+    app.kubernetes.io/name: auth-service
+    app.kubernetes.io/part-of: hsaai
+  ports:
+  - port: 8010
+    targetPort: http
+    name: http
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: auth-service
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: auth-service
+      app.kubernetes.io/part-of: hsaai
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: auth-service
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: auth-service
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-core
+  labels: &id001
+    app.kubernetes.io/name: backend-core
+    app.kubernetes.io/part-of: hsaai
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels: *id001
+  template:
+    metadata:
+      labels: *id001
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      terminationGracePeriodSeconds: 60
+      containers:
+      - name: backend-core
+        image: ghcr.io/REPLACE_ORGANIZATION/hsaai-backend-core:4.0.0-rc.2
+        ports:
+        - name: http
+          containerPort: 8000
+        envFrom:
+        - configMapRef:
+            name: hsaai-config
+        - secretRef:
+            name: hsaai-secrets
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: '2'
+            memory: 2Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        startupProbe:
+          httpGet:
+            path: /health
+            port: http
+          periodSeconds: 10
+          failureThreshold: 30
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          periodSeconds: 30
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http
+          periodSeconds: 10
+          timeoutSeconds: 12
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: documents-data
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels: *id001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-core
+spec:
+  selector:
+    app.kubernetes.io/name: backend-core
+    app.kubernetes.io/part-of: hsaai
+  ports:
+  - port: 8000
+    targetPort: http
+    name: http
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: backend-core
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: backend-core
+      app.kubernetes.io/part-of: hsaai
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: backend-core
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: backend-core
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rag-service
+  labels: &id001
+    app.kubernetes.io/name: rag-service
+    app.kubernetes.io/part-of: hsaai
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels: *id001
+  template:
+    metadata:
+      labels: *id001
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      terminationGracePeriodSeconds: 60
+      containers:
+      - name: rag-service
+        image: ghcr.io/REPLACE_ORGANIZATION/hsaai-rag-service:4.0.0-rc.2
+        ports:
+        - name: http
+          containerPort: 8030
+        envFrom:
+        - configMapRef:
+            name: hsaai-config
+        - secretRef:
+            name: hsaai-secrets
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: '2'
+            memory: 2Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        startupProbe:
+          httpGet:
+            path: /health
+            port: http
+          periodSeconds: 10
+          failureThreshold: 30
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          periodSeconds: 30
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http
+          periodSeconds: 10
+          timeoutSeconds: 12
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: data
+          mountPath: /data
+        - name: embedding-models
+          mountPath: /models
+          readOnly: true
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: documents-data
+      - name: embedding-models
+        persistentVolumeClaim:
+          claimName: embedding-models
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels: *id001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rag-service
+spec:
+  selector:
+    app.kubernetes.io/name: rag-service
+    app.kubernetes.io/part-of: hsaai
+  ports:
+  - port: 8030
+    targetPort: http
+    name: http
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: rag-service
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: rag-service
+      app.kubernetes.io/part-of: hsaai
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: rag-service
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: rag-service
+  minReplicas: 1
+  maxReplicas: 1
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llm-gateway
+  labels: &id001
+    app.kubernetes.io/name: llm-gateway
+    app.kubernetes.io/part-of: hsaai
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels: *id001
+  template:
+    metadata:
+      labels: *id001
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      terminationGracePeriodSeconds: 60
+      containers:
+      - name: llm-gateway
+        image: ghcr.io/REPLACE_ORGANIZATION/hsaai-llm-gateway:4.0.0-rc.2
+        ports:
+        - name: http
+          containerPort: 8090
+        envFrom:
+        - configMapRef:
+            name: hsaai-config
+        - secretRef:
+            name: hsaai-secrets
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: '2'
+            memory: 2Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        startupProbe:
+          httpGet:
+            path: /health
+            port: http
+          periodSeconds: 10
+          failureThreshold: 30
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          periodSeconds: 30
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http
+          periodSeconds: 10
+          timeoutSeconds: 12
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: documents-data
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels: *id001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: llm-gateway
+spec:
+  selector:
+    app.kubernetes.io/name: llm-gateway
+    app.kubernetes.io/part-of: hsaai
+  ports:
+  - port: 8090
+    targetPort: http
+    name: http
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: llm-gateway
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: llm-gateway
+      app.kubernetes.io/part-of: hsaai
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: llm-gateway
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: llm-gateway
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-runtime
+  labels: &id001
+    app.kubernetes.io/name: agent-runtime
+    app.kubernetes.io/part-of: hsaai
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels: *id001
+  template:
+    metadata:
+      labels: *id001
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      terminationGracePeriodSeconds: 60
+      containers:
+      - name: agent-runtime
+        image: ghcr.io/REPLACE_ORGANIZATION/hsaai-agent-runtime:4.0.0-rc.2
+        ports:
+        - name: http
+          containerPort: 8040
+        envFrom:
+        - configMapRef:
+            name: hsaai-config
+        - secretRef:
+            name: hsaai-secrets
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: '2'
+            memory: 2Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        startupProbe:
+          httpGet:
+            path: /health
+            port: http
+          periodSeconds: 10
+          failureThreshold: 30
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          periodSeconds: 30
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          periodSeconds: 10
+          timeoutSeconds: 12
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: documents-data
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels: *id001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-runtime
+spec:
+  selector:
+    app.kubernetes.io/name: agent-runtime
+    app.kubernetes.io/part-of: hsaai
+  ports:
+  - port: 8040
+    targetPort: http
+    name: http
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: agent-runtime
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: agent-runtime
+      app.kubernetes.io/part-of: hsaai
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: agent-runtime
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: agent-runtime
+  minReplicas: 1
+  maxReplicas: 1
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workflow-engine
+  labels: &id001
+    app.kubernetes.io/name: workflow-engine
+    app.kubernetes.io/part-of: hsaai
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels: *id001
+  template:
+    metadata:
+      labels: *id001
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      terminationGracePeriodSeconds: 60
+      containers:
+      - name: workflow-engine
+        image: ghcr.io/REPLACE_ORGANIZATION/hsaai-workflow-engine:4.0.0-rc.2
+        ports:
+        - name: http
+          containerPort: 8070
+        envFrom:
+        - configMapRef:
+            name: hsaai-config
+        - secretRef:
+            name: hsaai-secrets
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: '2'
+            memory: 2Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        startupProbe:
+          httpGet:
+            path: /health
+            port: http
+          periodSeconds: 10
+          failureThreshold: 30
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          periodSeconds: 30
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          periodSeconds: 10
+          timeoutSeconds: 12
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: documents-data
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels: *id001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: workflow-engine
+spec:
+  selector:
+    app.kubernetes.io/name: workflow-engine
+    app.kubernetes.io/part-of: hsaai
+  ports:
+  - port: 8070
+    targetPort: http
+    name: http
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: workflow-engine
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: workflow-engine
+      app.kubernetes.io/part-of: hsaai
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: workflow-engine
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: workflow-engine
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pii-detector
+  labels: &id001
+    app.kubernetes.io/name: pii-detector
+    app.kubernetes.io/part-of: hsaai
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels: *id001
+  template:
+    metadata:
+      labels: *id001
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      terminationGracePeriodSeconds: 60
+      containers:
+      - name: pii-detector
+        image: ghcr.io/REPLACE_ORGANIZATION/hsaai-pii-detector:4.0.0-rc.2
+        ports:
+        - name: http
+          containerPort: 8092
+        envFrom:
+        - configMapRef:
+            name: hsaai-config
+        - secretRef:
+            name: hsaai-secrets
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: '2'
+            memory: 2Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        startupProbe:
+          httpGet:
+            path: /health
+            port: http
+          periodSeconds: 10
+          failureThreshold: 30
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          periodSeconds: 30
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          periodSeconds: 10
+          timeoutSeconds: 12
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: documents-data
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels: *id001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pii-detector
+spec:
+  selector:
+    app.kubernetes.io/name: pii-detector
+    app.kubernetes.io/part-of: hsaai
+  ports:
+  - port: 8092
+    targetPort: http
+    name: http
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: pii-detector
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: pii-detector
+      app.kubernetes.io/part-of: hsaai
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: pii-detector
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: pii-detector
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alignment-service
+  labels: &id001
+    app.kubernetes.io/name: alignment-service
+    app.kubernetes.io/part-of: hsaai
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels: *id001
+  template:
+    metadata:
+      labels: *id001
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      terminationGracePeriodSeconds: 60
+      containers:
+      - name: alignment-service
+        image: ghcr.io/REPLACE_ORGANIZATION/hsaai-alignment-service:4.0.0-rc.2
+        ports:
+        - name: http
+          containerPort: 8005
+        envFrom:
+        - configMapRef:
+            name: hsaai-config
+        - secretRef:
+            name: hsaai-secrets
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: '2'
+            memory: 2Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        startupProbe:
+          httpGet:
+            path: /health
+            port: http
+          periodSeconds: 10
+          failureThreshold: 30
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          periodSeconds: 30
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          periodSeconds: 10
+          timeoutSeconds: 12
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: documents-data
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels: *id001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: alignment-service
+spec:
+  selector:
+    app.kubernetes.io/name: alignment-service
+    app.kubernetes.io/part-of: hsaai
+  ports:
+  - port: 8005
+    targetPort: http
+    name: http
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: alignment-service
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: alignment-service
+      app.kubernetes.io/part-of: hsaai
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: alignment-service
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: alignment-service
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: governance-service
+  labels: &id001
+    app.kubernetes.io/name: governance-service
+    app.kubernetes.io/part-of: hsaai
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels: *id001
+  template:
+    metadata:
+      labels: *id001
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      terminationGracePeriodSeconds: 60
+      containers:
+      - name: governance-service
+        image: ghcr.io/REPLACE_ORGANIZATION/hsaai-governance-service:4.0.0-rc.2
+        ports:
+        - name: http
+          containerPort: 8011
+        envFrom:
+        - configMapRef:
+            name: hsaai-config
+        - secretRef:
+            name: hsaai-secrets
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: '2'
+            memory: 2Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        startupProbe:
+          httpGet:
+            path: /health
+            port: http
+          periodSeconds: 10
+          failureThreshold: 30
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          periodSeconds: 30
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          periodSeconds: 10
+          timeoutSeconds: 12
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: documents-data
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels: *id001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: governance-service
+spec:
+  selector:
+    app.kubernetes.io/name: governance-service
+    app.kubernetes.io/part-of: hsaai
+  ports:
+  - port: 8011
+    targetPort: http
+    name: http
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: governance-service
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: governance-service
+      app.kubernetes.io/part-of: hsaai
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: governance-service
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: governance-service
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-server
+  labels: &id001
+    app.kubernetes.io/name: mcp-server
+    app.kubernetes.io/part-of: hsaai
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels: *id001
+  template:
+    metadata:
+      labels: *id001
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      terminationGracePeriodSeconds: 60
+      containers:
+      - name: mcp-server
+        image: ghcr.io/REPLACE_ORGANIZATION/hsaai-mcp-server:4.0.0-rc.2
+        ports:
+        - name: http
+          containerPort: 8094
+        envFrom:
+        - configMapRef:
+            name: hsaai-config
+        - secretRef:
+            name: hsaai-secrets
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: '2'
+            memory: 2Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        startupProbe:
+          httpGet:
+            path: /health
+            port: http
+          periodSeconds: 10
+          failureThreshold: 30
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          periodSeconds: 30
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          periodSeconds: 10
+          timeoutSeconds: 12
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: documents-data
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels: *id001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-server
+spec:
+  selector:
+    app.kubernetes.io/name: mcp-server
+    app.kubernetes.io/part-of: hsaai
+  ports:
+  - port: 8094
+    targetPort: http
+    name: http
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: mcp-server
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mcp-server
+      app.kubernetes.io/part-of: hsaai
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: mcp-server
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: mcp-server
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  labels: &id001
+    app.kubernetes.io/name: frontend
+    app.kubernetes.io/part-of: hsaai
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels: *id001
+  template:
+    metadata:
+      labels: *id001
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      terminationGracePeriodSeconds: 60
+      containers:
+      - name: frontend
+        image: ghcr.io/REPLACE_ORGANIZATION/hsaai-frontend:4.0.0-rc.2
+        ports:
+        - name: http
+          containerPort: 3000
+        envFrom:
+        - configMapRef:
+            name: hsaai-config
+        - secretRef:
+            name: hsaai-secrets
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: '2'
+            memory: 2Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        startupProbe:
+          httpGet:
+            path: /api/health
+            port: http
+          periodSeconds: 10
+          failureThreshold: 30
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: http
+          periodSeconds: 30
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: http
+          periodSeconds: 10
+          timeoutSeconds: 12
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: documents-data
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels: *id001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+spec:
+  selector:
+    app.kubernetes.io/name: frontend
+    app.kubernetes.io/part-of: hsaai
+  ports:
+  - port: 3000
+    targetPort: http
+    name: http
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: frontend
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: frontend
+      app.kubernetes.io/part-of: hsaai
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: frontend
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: frontend
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hsaai
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 25m
+    nginx.ingress.kubernetes.io/proxy-read-timeout: '180'
+    nginx.ingress.kubernetes.io/ssl-redirect: 'true'
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - ai.hsaai.example
+    secretName: hsaai-tls
+  rules:
+  - host: ai.hsaai.example
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend
+            port:
+              number: 3000
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: hsaai-private-egress
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+  - to:
+    - podSelector: {}
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: hsaai-data

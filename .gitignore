@@ -1,0 +1,11 @@
+.env
+.env.*
+node_modules/
+__pycache__/
+*.pyc
+*.log
+coverage/
+dist/
+build/
+.vscode/
+.idea/

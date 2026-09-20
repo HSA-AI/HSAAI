@@ -1,0 +1,11 @@
+{
+  "scope": "HTTP/SSR only; no browser visual or SSO acceptance",
+  "checks": {
+    "health_200": true,
+    "login_200": true,
+    "csp_header": true,
+    "anonymous_page_redirects_to_login": true,
+    "inter_font_served": true
+  },
+  "status": "passed"
+}

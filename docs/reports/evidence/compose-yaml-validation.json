@@ -1,0 +1,77 @@
+[
+  {
+    "file": "docker-compose.gpu.yml",
+    "yaml": "PASS",
+    "services": 1
+  },
+  {
+    "file": "docker-compose.yml",
+    "yaml": "PASS",
+    "services": 56
+  },
+  {
+    "file": "docker-compose.production.yml",
+    "yaml": "PASS",
+    "services": 57
+  },
+  {
+    "file": "infrastructure/mtls/docker-compose.mtls.yml",
+    "yaml": "PASS",
+    "services": 8
+  },
+  {
+    "file": "infrastructure/monitoring/docker-compose.monitoring.yml",
+    "yaml": "PASS",
+    "services": 6
+  },
+  {
+    "file": "infrastructure/loki/docker-compose.logging.yml",
+    "yaml": "PASS",
+    "services": 2
+  },
+  {
+    "file": "infrastructure/redis-sentinel/docker-compose.sentinel.yml",
+    "yaml": "PASS",
+    "services": 6
+  },
+  {
+    "file": "infrastructure/opa/docker-compose.opa.yml",
+    "yaml": "PASS",
+    "services": 1
+  },
+  {
+    "file": "infrastructure/qdrant-cluster/docker-compose.cluster.yml",
+    "yaml": "PASS",
+    "services": 4
+  },
+  {
+    "file": "infrastructure/patroni/docker-compose.ha.yml",
+    "yaml": "PASS",
+    "services": 9
+  },
+  {
+    "file": "infrastructure/docker/docker-compose.production.yml",
+    "yaml": "PASS",
+    "services": 13
+  },
+  {
+    "file": "infrastructure/docker/docker-compose.dev.yml",
+    "yaml": "PASS",
+    "services": 16
+  },
+  {
+    "file": "infrastructure/docker/docker-compose.hsa-internal.yml",
+    "yaml": "PASS",
+    "services": 18
+  },
+  {
+    "file": "infrastructure/vault/docker-compose.vault.yml",
+    "yaml": "PASS",
+    "services": 2
+  },
+  {
+    "file": "services/model_training/docker-compose.yml",
+    "yaml": "PASS",
+    "services": 4
+  }
+]

@@ -1,0 +1,23 @@
+# RELEASE_MANIFEST
+
+- Project: HSAAI — Enterprise Artificial Intelligence Operating System.
+- Client: Hail Saeed Anam & Co. — هائل سعيد أنعم وشركاه.
+- Archive: HSAAI_v1.zip (owner-requested filename; no version rollback).
+- Source release: 4.0.0-rc.2; Python distribution 4.0.0rc2; status Beta/candidate.
+- Release date: 2026-09-14 UTC. Evidence timestamp: 2026-09-14T13:42:54.401651+00:00.
+- Classification: **B – PRODUCTION CANDIDATE – BLOCKERS REMAIN**.
+- Git commit: NOT AVAILABLE — source is not a Git checkout.
+- Environment: Linux-6.18.44-x86_64-with-glibc2.39; Python 3.12.14, Node/npm recorded in build tooling. No Docker daemon, Kubernetes cluster or validated GPU runtime.
+- Services: 33 Python services + Next.js frontend; production Compose 57 entries = 33 required persistent services +22 extended-profile +2 jobs. Full inventory: docs/reports/evidence/production-service-inventory.json.
+- Databases/storage: PostgreSQL, Redis, Qdrant, Neo4j, MinIO; service stores for Keycloak/MLflow and local SQLite/event artifacts. Kafka is the configured message broker.
+- AI: LLM Gateway, RAG/embeddings/vector search, multi-agent/workflows/approvals, local Ollama models, model training/registry, knowledge and connector modules. Actual full AI runtime not validated.
+- Tests: Backend 598 PASS /0 FAIL /0 SKIP; Frontend 38 PASS /0 FAIL /0 SKIP; E2E 2 PASS /0 FAIL /11 SKIP; native Redis 9/9 PASS.
+- Coverage: 41.92% historical → 54.78% Python statements; ≥80% gate FAIL.
+- Docker: Build BLOCKED; Runtime BLOCKED; 0/33 required long-running services observed healthy.
+- Kubernetes: Helm/static PASS; server dry-run BLOCKED; real deployment NOT AVAILABLE.
+- Security: NOT APPROVED; observed Critical0 /High1 /Medium55 /Low57; untested image/runtime/DAST scope.
+- PDF: all100 pages retained; 5/1482 requirement clauses PASS, 864 PARTIAL,510 FAIL,103 BLOCKED;58 context rows excluded from requirement denominator.
+- Provenance/preservation: docs/release/SOURCE_CHANGES.json; original/checkpoint file unions verified during packaging. Every included file except the checksum list itself has a SHA-256 in SHA256SUMS.txt.
+- Archive integrity: external HSAAI_v1.zip.sha256. The archive digest is external to avoid a self-referential hash.
+- Exclusions: dependencies/build caches, Python caches, generated private configuration, runtime temporary data and nonessential binary artifacts. No required source code is intentionally excluded.
+- Known limitations: coverage, mandatory PDF implementations, Docker/Kubernetes/runtime, identity/model/DB/monitoring, open High CoE/FinOps tenant-scope finding, durable orchestration/HA, load and restore acceptance. Details in FINAL_PRODUCTION_READINESS_REPORT.md.

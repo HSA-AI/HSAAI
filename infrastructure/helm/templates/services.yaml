@@ -1,0 +1,23 @@
+{{- range $name, $svc := .Values.services }}
+{{- if $svc.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ $name }}
+    app.kubernetes.io/part-of: hsaai
+spec:
+  type: {{ $svc.serviceType | default "ClusterIP" }}
+  selector:
+    app.kubernetes.io/name: {{ $name }}
+    app.kubernetes.io/part-of: hsaai
+  ports:
+    - name: http
+      port: {{ $svc.port }}
+      targetPort: http
+      protocol: TCP
+{{- end }}
+{{- end }}

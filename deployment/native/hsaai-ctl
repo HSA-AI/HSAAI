@@ -1,0 +1,190 @@
+#!/usr/bin/env bash
+# hsaai-ctl (v2, portable) — service manager for the native (dockerless) HSAAI deployment
+# Works from BOTH layouts:
+#   <root>/deployment/native/hsaai-ctl   (packaged tree)
+#   <parent>/scripts/hsaai-ctl           (live sandbox, project at <parent>/hsaai)
+# Usage: hsaai-ctl {start|stop|restart|status} [all|idp|postgres|redis|qdrant|backend|web|desktop|gateway]
+set -uo pipefail
+
+SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# --- locate project root (dir containing VERSION) ---
+if [ -f "$SELF_DIR/../../VERSION" ]; then
+  HSAAI="$(cd "$SELF_DIR/../.." && pwd)"
+elif [ -f "$SELF_DIR/../hsaai/VERSION" ]; then
+  HSAAI="$(cd "$SELF_DIR/../hsaai" && pwd)"
+else
+  HSAAI="${HSAAI_DIR:-$SELF_DIR/../hsaai}"
+fi
+# --- locate hsaai-env.sh (runtime paths) ---
+if [ -f "$SELF_DIR/hsaai-env.sh" ]; then
+  source "$SELF_DIR/hsaai-env.sh"
+elif [ -f "$SELF_DIR/../../scripts/hsaai-env.sh" ]; then
+  source "$SELF_DIR/../../scripts/hsaai-env.sh"
+else
+  echo "hsaai-ctl: hsaai-env.sh not found — run setup-runtime.sh first" >&2; exit 1
+fi
+export PATH=$ROOTFS/usr/lib/postgresql/17/bin:$ROOTFS/usr/bin:$PATH
+export LD_LIBRARY_PATH=$ROOTFS/usr/lib/x86_64-linux-gnu:$ROOTFS/usr/lib:${LD_LIBRARY_PATH:-}
+
+LOGS=$HSAOI_LOGS
+PGDATA=$HSAOI_DATA/pgdata
+export HSAAI_HOME=$HSAAI
+# --- v3: secrets externalized — optional <project>/.env.native (never commit it to Git) ---
+_envfile="$HSAAI/.env.native"
+if [ -f "$_envfile" ]; then set -a; . "$_envfile"; set +a; fi
+# SECURITY FIX (audit P1-3): hardcoded fallback credentials removed — the old
+# defaults (HsaaiLocal_2026 / hsaai-demo-secret-2026) were committed to Git and
+# silently used whenever .env.native was missing. hsaai-ctl now FAILS CLOSED
+# unless secrets are provided, with an explicit demo escape hatch.
+export HSAAI_DB_PASSWORD="${HSAAI_DB_PASSWORD:-${POSTGRES_PASSWORD:-}}"
+export HSAAI_CLIENT_SECRET="${HSAAI_CLIENT_SECRET:-${KEYCLOAK_CLIENT_SECRET:-}}"
+export HSAAI_APP_ENV="${HSAAI_APP_ENV:-development}"
+if [ -z "$HSAAI_DB_PASSWORD" ] || [ -z "$HSAAI_CLIENT_SECRET" ]; then
+  if [ "${HSAAI_ALLOW_INSECURE_DEMO:-0}" = "1" ]; then
+    echo "!! WARNING: insecure demo fallback secrets in use (HSAAI_ALLOW_INSECURE_DEMO=1)." >&2
+    echo "!! NEVER enable this outside an isolated demo VM." >&2
+    export HSAAI_DB_PASSWORD="${HSAAI_DB_PASSWORD:-HsaaiLocal_2026}"
+    export HSAAI_CLIENT_SECRET="${HSAAI_CLIENT_SECRET:-hsaai-demo-secret-2026}"
+  else
+    echo "ERROR: HSAAI_DB_PASSWORD / HSAAI_CLIENT_SECRET are not set." >&2
+    echo "       Create $HSAAI/.env.native from deployment/native/env.native.example and set real secrets," >&2
+    echo "       or export HSAAI_ALLOW_INSECURE_DEMO=1 for an isolated local demo." >&2
+    exit 1
+  fi
+fi
+export DATABASE_URL="postgresql+psycopg://hsaai:${HSAAI_DB_PASSWORD}@127.0.0.1:5432/hsaai"
+export REDIS_URL="redis://127.0.0.1:6379/0"
+export QDRANT_URL="http://127.0.0.1:6333"
+export APP_ENV="$HSAAI_APP_ENV" USE_ALEMBIC=true
+export PYTHONPATH="$HSAAI:$HSAAI/services"
+# --- Demo Identity Provider (local mock Keycloak, OIDC/PKCE) ---
+export KEYCLOAK_URL="http://127.0.0.1:9080"
+export KEYCLOAK_REALM="hsaai"
+export KEYCLOAK_CLIENT_ID="hsaai-frontend"
+export KEYCLOAK_CLIENT_SECRET="$HSAAI_CLIENT_SECRET"
+export KEYCLOAK_ISSUER="http://127.0.0.1:9080/realms/hsaai"
+
+is_up() {
+  case "$1" in
+    postgres) pg_isready -h 127.0.0.1 -p 5432 -q ;;
+    redis)    redis-cli -h 127.0.0.1 -p 6379 ping 2>/dev/null | grep -q PONG ;;
+    qdrant)   curl -sf -m 3 http://127.0.0.1:6333/healthz >/dev/null ;;
+    backend)  curl -sf -m 3 http://127.0.0.1:8000/health >/dev/null ;;
+    web)      curl -sf -m 3 -o /dev/null http://127.0.0.1:3000/login ;;
+    gateway)  curl -sf -m 3 http://127.0.0.1:8600/health >/dev/null ;;
+    idp)      curl -sf -m 3 http://127.0.0.1:9080/health >/dev/null ;;
+    desktop)  [ -f "$HSAOI_DATA/../desktop/default/pids/xvfb.pid" ] && \
+              kill -0 "$(cat "$HSAOI_DATA/../desktop/default/pids/xvfb.pid")" 2>/dev/null ;;
+  esac
+}
+
+start_one() {
+  case "$1" in
+    postgres)
+      is_up postgres && { echo "postgres: already up"; return; }
+      pg_ctl -D $PGDATA -l $LOGS/postgres.log \
+        -o "-p 5432 -c listen_addresses=127.0.0.1 -c unix_socket_directories=$HSAOI_DATA/sockets" start
+      ;;
+    redis)
+      is_up redis && { echo "redis: already up"; return; }
+      redis-server --port 6379 --bind 127.0.0.1 --dir $HSAOI_DATA/redis --daemonize yes \
+        --pidfile $HSAOI_DATA/redis/redis.pid --logfile $LOGS/redis.log --appendonly yes --appendfsync everysec
+      ;;
+    qdrant)
+      is_up qdrant && { echo "qdrant: already up"; return; }
+      (cd $RUNTIME/qdrant && QDRANT__SERVICE__HTTP_PORT=6333 QDRANT__SERVICE__GRPC_PORT=6334 \
+        QDRANT__STORAGE__STORAGE_PATH=$HSAOI_DATA/qdrant_storage \
+        setsid ./qdrant > $LOGS/qdrant.log 2>&1 &)
+      ;;
+    backend)
+      is_up backend && { echo "backend: already up"; return; }
+      # SECURITY FIX (audit P1-7): bind to loopback — the demo shim previously
+      # listened on 0.0.0.0, exposing an OIDC-terminating backend to the LAN.
+      (cd $HSAAI && setsid .venv-backend/bin/python -m uvicorn _demo_oidc_shim:app \
+        --host 127.0.0.1 --port 8000 > $LOGS/backend-core.log 2>&1 &)
+      ;;
+    web)
+      is_up web && { echo "web: already up"; return; }
+      SRV=$(ls "$HSAAI/apps/web/.next/standalone/server.js" \
+              "$HSAAI/apps/web/.next/standalone/my-project/hsaai/apps/web/server.js" 2>/dev/null | head -1)
+      [ -z "$SRV" ] && { echo "web: standalone server.js not found — run next build"; return 1; }
+      BASE=$(dirname "$SRV")
+      [ -d "$BASE/.next/static" ] || cp -r "$HSAAI/apps/web/.next/static" "$BASE/.next/static"
+      [ -d "$BASE/public" ] || cp -r "$HSAAI/apps/web/public" "$BASE/public"
+      setsid env PORT=3000 HOSTNAME=0.0.0.0 NODE_OPTIONS="--max-old-space-size=1024" \
+        node "$SRV" > $LOGS/next-web.log 2>&1 &
+      ;;
+    desktop)
+      is_up desktop && { echo "desktop: already up"; return; }
+      bash "$SELF_DIR/desktop-session.sh" default start
+      ;;
+    gateway)
+      is_up gateway && { echo "gateway: already up"; return; }
+      # Fix (V3): pin gateway to a known token file so clients can authenticate
+      TOK_FILE="$RUNTIME/desktop-gateway-token.txt"
+      if [ ! -s "$TOK_FILE" ]; then
+        (umask 077 && python3 -c "import secrets; print(secrets.token_hex(16))" > "$TOK_FILE")
+      fi
+      (cd "$SELF_DIR" && DESKTOP_API_TOKEN="$(cat "$TOK_FILE" | tr -d '\n')" \
+        setsid python3 desktop_gateway.py > $LOGS/desktop-gateway.log 2>&1 &)
+      ;;
+    idp)
+      is_up idp && { echo "idp: already up"; return; }
+      (cd "$SELF_DIR" && HSAAI_DATA_DIR="$HSAOI_DATA" setsid node mock-keycloak.js > $LOGS/demo-idp.log 2>&1 &)
+      ;;
+  esac
+}
+
+stop_one() {
+  case "$1" in
+    postgres) is_up postgres && pg_ctl -D $PGDATA stop -m fast || true ;;
+    redis)    redis-cli -h 127.0.0.1 -p 6379 shutdown 2>/dev/null || true ;;
+    qdrant)   pkill -f "qdrant --" 2>/dev/null || pkill -x qdrant 2>/dev/null || true ;;
+    backend)  pkill -f "uvicorn _demo_oidc_shim" 2>/dev/null || pkill -f "uvicorn backend_core.main" 2>/dev/null || true ;;
+    web)      pkill -f "next-server" 2>/dev/null || pkill -f ".next/standalone/server.js" 2>/dev/null || true ;;
+    desktop)  bash "$SELF_DIR/desktop-session.sh" default stop ;;
+    gateway)  pkill -f desktop_gateway.py 2>/dev/null || true ;;
+    idp)      pkill -f mock-keycloak.js 2>/dev/null || true ;;
+  esac
+}
+
+SERVICES="idp postgres redis qdrant backend web desktop gateway"
+
+case "${1:-status}" in
+  start)
+    ORDER="${2:-all}"
+    if [ "$ORDER" = "all" ]; then
+      for s in $SERVICES; do start_one "$s"; sleep 1; done
+      echo "waiting for services to settle..."; sleep 6
+      bash "$0" status
+    else
+      start_one "$ORDER"
+    fi ;;
+  stop)
+    ORDER="${2:-all}"
+    if [ "$ORDER" = "all" ]; then
+      for s in idp desktop gateway web backend qdrant redis postgres; do stop_one "$s"; done
+      echo "all services stopped"
+    else
+      stop_one "$ORDER"
+    fi ;;
+  restart)
+    bash "$0" stop "${2:-all}" 2>/dev/null; sleep 2; bash "$0" start "${2:-all}" ;;
+  status)
+    printf "%-10s %-8s %s\n" "SERVICE" "STATE" "ENDPOINT"
+    for s in $SERVICES; do
+      if is_up "$s"; then st="UP"; else st="DOWN"; fi
+      case "$s" in
+        postgres) ep="127.0.0.1:5432/hsaai";;
+        redis) ep="127.0.0.1:6379";;
+        qdrant) ep="127.0.0.1:6333";;
+        backend) ep="http://127.0.0.1:8000";;
+        web) ep="http://127.0.0.1:3000";;
+        desktop) ep=":99 -> VNC 5999 / noVNC 6080";;
+        gateway) ep="http://127.0.0.1:8600";;
+        idp) ep="http://127.0.0.1:9080 (demo IdP)";;
+      esac
+      printf "%-10s %-8s %s\n" "$s" "$st" "$ep"
+    done ;;
+  *) echo "Usage: hsaai-ctl {start|stop|restart|status} [all|idp|postgres|redis|qdrant|backend|web|desktop|gateway]"; exit 1 ;;
+esac

@@ -1,0 +1,286 @@
+openapi: 3.1.0
+info:
+  title: HSAAI Agents API
+  version: 4.0.0
+  description: |
+    FIX D-12: This OpenAPI spec previously documented three endpoints that
+    DO NOT EXIST in the multi_agents service:
+      - POST /execute
+      - GET  /executions/{id}
+      - POST /executions/{id}/cancel
+
+    The actual multi_agents service (services/multi_agents/main.py) only
+    exposes two routes:
+
+      - GET  /health   — liveness / topology probe
+      - POST /v1/run   — route a message through the SupervisorAgent and
+                          run the selected agent to completion
+
+    This file now matches the real implementation. The phantom
+    `/execute`, `/executions/{id}` and `/executions/{id}/cancel` paths
+    have been removed so that generated clients and external integrators
+    do not call endpoints that 404.
+
+    The service uses actor-model supervision internally (SupervisorAgent
+    routes to one of the registered agents in `AGENTS`) but the public
+    surface is intentionally minimal: one synchronous run endpoint. There
+    is no async execution, no execution-id tracking, and no cancellation
+    endpoint — if those become needed they will be added to BOTH the
+    service AND this spec together.
+servers:
+  - url: https://hsaai.internal/api/agents
+    description: Production (via api-gateway)
+  - url: http://localhost:8002
+    description: Local development (direct service port)
+security:
+  - bearerAuth: []
+  - serviceAuth: []
+tags:
+  - name: Health
+    description: Liveness and topology probes
+  - name: Execution
+    description: Synchronous agent execution
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Liveness probe + agent topology
+      operationId: getHealth
+      description: |
+        Returns the service status and the list of registered agents
+        available for routing. Used by k8s readiness probes and by the
+        api-gateway to discover the agent topology.
+      security: []   # health check is unauthenticated
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              example:
+                status: ok
+                service: multi_agents
+                agents: ["planner", "researcher", "coder", "reviewer", "critic", "memory", "self_improvement"]
+                runtime: supervisor+tools+memory-ready
+        '503':
+          description: Service is starting up or in a degraded state
+  /v1/run:
+    post:
+      tags: [Execution]
+      summary: Route a message through the SupervisorAgent and execute it
+      operationId: runAgent
+      description: |
+        Synchronously routes the incoming `message` to the best-fit agent
+        via the SupervisorAgent, executes the agent with the supplied
+        context and recent memory, and returns the agent's result.
+
+        The endpoint is synchronous — the HTTP connection is held open
+        until the agent finishes. There is NO async execution path, NO
+        execution-id, and NO cancellation endpoint. (If long-running
+        async execution is added later it will be a NEW endpoint, not a
+        modification of this one — see ADR-006 if/when it lands.)
+
+        Authentication: the caller must present a valid service-auth
+        token (X-Service-Token header) or a user JWT (Authorization:
+        Bearer ...). The service rejects unauthenticated requests with
+        HTTP 401 / 503 (when the auth module itself is unavailable).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RunRequest'
+            example:
+              message: "Analyse this procurement contract for compliance"
+              context: "contract_id=C-2026-0042"
+              tenant_id: "hsa-foods"
+              workspace_id: "procurement"
+      responses:
+        '200':
+          description: Agent executed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunResponse'
+              example:
+                route:
+                  agent: "researcher"
+                  confidence: 0.87
+                  reason: "matched research keyword"
+                result:
+                  agent: "researcher"
+                  answer: "Contract C-2026-0042 is compliant with..."
+                  confidence: 0.87
+                  tools_called: ["knowledge_search", "policy_lookup"]
+                  tokens_used: 412
+                tenant_id: "hsa-foods"
+                workspace_id: "procurement"
+        '400':
+          description: Invalid request body (missing `message`, etc.)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: "field required: message"
+        '401':
+          description: Authentication missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: |
+            Service auth module unavailable — the service cannot accept
+            requests until auth is restored. Returned instead of allowing
+            an unauthenticated request through.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: "Authentication module unavailable. Service cannot accept requests."
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: User JWT issued by the auth service.
+    serviceAuth:
+      type: apiKey
+      in: header
+      name: X-Service-Token
+      description: |
+        Shared service-to-service token. Required when the multi_agents
+        service is called by another backend service (e.g. the
+        api-gateway or the orchestrator) rather than by a user-facing
+        client.
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status, service, agents, runtime]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+          example: ok
+        service:
+          type: string
+          enum: [multi_agents]
+          example: multi_agents
+        agents:
+          type: array
+          description: |
+            Keys of the agents registered with the SupervisorAgent.
+            Used by callers that need to know the topology before
+            issuing a /v1/run.
+          items:
+            type: string
+          example: ["planner", "researcher", "coder", "reviewer", "critic", "memory", "self_improvement"]
+        runtime:
+          type: string
+          description: Build tag of the runtime — used to detect stale
+            deployments in smoke tests.
+          example: supervisor+tools+memory-ready
+    RunRequest:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+          minLength: 1
+          description: The user message to route and execute.
+          example: "Analyse this procurement contract for compliance"
+        context:
+          type: string
+          description: |
+            Free-form context string passed verbatim to the selected
+            agent. Empty by default.
+          default: ""
+          example: "contract_id=C-2026-0042"
+        tenant_id:
+          type: string
+          description: |
+            Tenant identifier for memory scoping and per-tenant agent
+            routing. Defaults to "default" for backward compatibility.
+          default: default
+          example: hsa-foods
+        workspace_id:
+          type: string
+          description: |
+            Workspace identifier within the tenant for finer-grained
+            memory scoping. Defaults to "default".
+          default: default
+          example: procurement
+    RunResponse:
+      type: object
+      required: [route, result, tenant_id, workspace_id]
+      properties:
+        route:
+          type: object
+          description: SupervisorAgent routing decision.
+          required: [agent]
+          properties:
+            agent:
+              type: string
+              description: Key of the agent the supervisor selected.
+              example: researcher
+            confidence:
+              type: number
+              format: float
+              minimum: 0
+              maximum: 1
+              description: Routing confidence score in [0, 1].
+              example: 0.87
+            reason:
+              type: string
+              description: Human-readable explanation of the routing choice.
+              example: matched research keyword
+        result:
+          type: object
+          description: The selected agent's execution result.
+          required: [agent]
+          properties:
+            agent:
+              type: string
+              description: Key of the agent that produced this result.
+              example: researcher
+            answer:
+              type: string
+              description: The agent's textual answer.
+              example: "Contract C-2026-0042 is compliant with..."
+            confidence:
+              type: number
+              format: float
+              minimum: 0
+              maximum: 1
+              example: 0.87
+            tools_called:
+              type: array
+              items:
+                type: string
+              description: Tools invoked by the agent during execution.
+              example: ["knowledge_search", "policy_lookup"]
+            tokens_used:
+              type: integer
+              minimum: 0
+              description: Total tokens consumed by this run.
+              example: 412
+        tenant_id:
+          type: string
+          description: Echo of the request tenant_id.
+          example: hsa-foods
+        workspace_id:
+          type: string
+          description: Echo of the request workspace_id.
+          example: procurement
+    ErrorResponse:
+      type: object
+      required: [detail]
+      properties:
+        detail:
+          type: string
+          description: Human-readable error description.
+          example: "field required: message"

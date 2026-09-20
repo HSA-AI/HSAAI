@@ -1,0 +1,148 @@
+{
+  "release": "4.0.0-rc.2",
+  "package": "HSAAI_v1.zip",
+  "date": "2026-09-19",
+  "classification": "B – PRODUCTION CANDIDATE – BLOCKERS REMAIN",
+  "production_approved": false,
+  "backend": {
+    "passed": 690,
+    "failed": 0,
+    "skipped": 0,
+    "date": "2026-09-19",
+    "scope": "all tests except tests/e2e; coverage gate exit 1"
+  },
+  "frontend": {
+    "passed": 38,
+    "failed": 0,
+    "skipped": 0,
+    "date": "2026-09-14",
+    "rerun_this_round": false
+  },
+  "e2e": {
+    "passed": 2,
+    "failed": 0,
+    "skipped": 11,
+    "scope": "public browser checks; full authenticated stack pending",
+    "date": "2026-09-14",
+    "rerun_this_round": false
+  },
+  "integration": {
+    "contract_test_passed": 1,
+    "contract_test_failed": 0,
+    "live_full_stack_passed": 0,
+    "live_full_stack_failed": 0,
+    "live_full_stack_status": "NOT TESTED"
+  },
+  "coverage": {
+    "previous": 41.92,
+    "final": 56.56,
+    "covered": 9656,
+    "statements": 17071,
+    "gate": "FAIL",
+    "target": 80,
+    "prior_candidate": 54.78,
+    "missing": 7415,
+    "additional_needed": 4001,
+    "scope": "Python statements; backend regression, E2E not rerun"
+  },
+  "pdf": {
+    "pages": 100,
+    "rows": 1540,
+    "requirements": 1482,
+    "statuses": {
+      "PARTIAL": 864,
+      "NOT APPLICABLE": 58,
+      "BLOCKED": 103,
+      "PASS": 5,
+      "FAIL": 510
+    },
+    "source_reconstruction": "PASS for all 100 pages",
+    "pdf_sha256": "168147a6d5c31cf48986acbf65fb60d176bcd19a3f83dcbf00cb235a69ee93b5"
+  },
+  "security": {
+    "critical_observed": 0,
+    "high_observed": 3,
+    "medium_observed": 53,
+    "low_observed": 57,
+    "bandit": {
+      "LOW": 57,
+      "MEDIUM": 52
+    },
+    "manual_high": 3,
+    "manual_medium": 1,
+    "approved": false,
+    "scope": "SAST plus manual open findings; CoE mitigation pending PostgreSQL/legacy ownership acceptance; two additional RAG findings. No runtime/image approval."
+  },
+  "docker": {
+    "build": "BLOCKED",
+    "runtime": "BLOCKED",
+    "healthy_observed": 0,
+    "required_long_running": 33,
+    "extended_long_running": 22,
+    "oneshot_jobs": 2
+  },
+  "kubernetes": {
+    "static_helm": "PASS",
+    "server_validation": "BLOCKED",
+    "real_deployment": "NOT AVAILABLE"
+  },
+  "blockers": [
+    {
+      "id": "BL-01",
+      "status": "FAIL",
+      "requirement": "Coverage 56.56% < 80%",
+      "evidence": "9656/17071 statements; at least 4001 additional statements need coverage",
+      "action": "Additional meaningful tests and root-cause fixes. This is engineering work, not an external environment excuse."
+    },
+    {
+      "id": "BL-02",
+      "status": "BLOCKED",
+      "requirement": "Docker build and runtime",
+      "evidence": "docker/daemon unavailable; actual commands exit 127",
+      "action": "Execute build/up, inspect every required service, fix build/runtime issues, then repeat a clean --no-cache build."
+    },
+    {
+      "id": "BL-03",
+      "status": "BLOCKED",
+      "requirement": "Actual Kubernetes deployment",
+      "evidence": "No kubectl/cluster access; Helm/static validation only",
+      "action": "Server dry-run plus real cluster deployment, probes, persistence, recovery and network-policy checks."
+    },
+    {
+      "id": "BL-04",
+      "status": "BLOCKED",
+      "requirement": "Full database/identity/AI/monitoring/E2E chain",
+      "evidence": "2 public browser tests; 11 authenticated E2E skipped; local Redis and SQLite only",
+      "action": "Provision Keycloak accounts/scopes, databases, local model/embeddings, monitoring and complete end-to-end acceptance."
+    },
+    {
+      "id": "BL-05",
+      "status": "FAIL",
+      "requirement": "Mandatory PDF capabilities remain incomplete",
+      "evidence": "5/1482 requirement clauses PASS; 510 FAIL, 864 PARTIAL, 103 BLOCKED",
+      "action": "Implement/validate every mandatory clause. SaaS/billing, research/global/federation programs are not waived as impossible."
+    },
+    {
+      "id": "BL-06",
+      "status": "FAIL",
+      "requirement": "Open security findings and incomplete runtime scope",
+      "evidence": "MAN-H01 PARTIAL (legacy ownership and PostgreSQL validation); MAN-H02 PII rejection swallowed; MAN-H03 RAG ACL/delete scope",
+      "action": "Close RAG findings, validate ownership migration and PostgreSQL RLS, then perform image/runtime/DAST acceptance"
+    },
+    {
+      "id": "BL-07",
+      "status": "PARTIAL",
+      "requirement": "Durable orchestration and business execution",
+      "evidence": "workflow_engine uses process-local execution state; legacy Enterprise OS only routes/records approvals; marketplace and some events use global files",
+      "action": "Implement durable resume/idempotency and multi-replica ownership/locking; prove no duplicate tool execution after failure."
+    },
+    {
+      "id": "BL-08",
+      "status": "NOT TESTED",
+      "requirement": "Production failure/recovery, HA and performance",
+      "evidence": "Only native Redis recovery and public Next.js health latency are measured",
+      "action": "Run PostgreSQL/vector/AI/backend fault tests, restore drills, concurrency, resource sizing and PDF load targets."
+    }
+  ],
+  "evidence_generated_utc": "2026-09-19"
+}

@@ -1,0 +1,20 @@
+# FIX B-15: Shared service dependencies.
+#
+# Three services (api_gateway, multi_agents, workflow_engine) previously
+# maintained byte-identical copies of these dependencies, which led to drift
+# (one service would get a security pin bumped while the others lagged).
+# This file is the single source of truth for the shared dep set; each
+# service's requirements.txt references it via:
+#
+#     -r ../../packages/common/requirements.txt
+#
+# Service-specific additions should be appended in the service's own
+# requirements.txt below the `-r` line.
+fastapi==0.141.1
+uvicorn[standard]==0.52.4
+pydantic==2.13.5
+httpx==0.28.1
+prometheus-client==0.26.0
+python-multipart==0.0.32
+
+PyJWT[crypto]==2.13.0

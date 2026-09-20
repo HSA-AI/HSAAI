@@ -1,0 +1,338 @@
+openapi: 3.1.0
+info:
+  title: HSAAI Governance API
+  version: 1.0.0
+  description: |
+    Enterprise governance: RBAC + ABAC + Audit Logging + Data Governance + Compliance.
+    All access decisions flow through this service. No service makes authorization
+    decisions locally — all defer to governance.
+
+    ## Compliance Frameworks
+    - NIST AI RMF 1.0
+    - ISO/IEC 42001:2023
+    - GDPR
+    - Saudi PDPL
+    - OWASP LLM Top 10
+
+servers:
+  - url: https://hsaai.internal/api/v1/governance
+    description: Production
+  - url: http://localhost:8011
+    description: Local
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Access
+    description: Access control decisions (RBAC + ABAC)
+  - name: Audit
+    description: Audit log queries
+  - name: Data Governance
+    description: Data classification and retention
+  - name: Compliance
+    description: Compliance framework assessment
+
+paths:
+  /access/check:
+    post:
+      tags: [Access]
+      summary: Check access permission (RBAC + ABAC)
+      description: |
+        Two-layer access decision:
+        1. RBAC: coarse role-based check
+        2. ABAC: fine attribute-based check
+
+        Returns allowed/denied + reason + obligations.
+      operationId: checkAccess
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [subject, resource, action, environment]
+              properties:
+                subject:
+                  $ref: '#/components/schemas/Subject'
+                resource:
+                  $ref: '#/components/schemas/Resource'
+                action:
+                  $ref: '#/components/schemas/Action'
+                environment:
+                  $ref: '#/components/schemas/Environment'
+      responses:
+        '200':
+          description: Decision returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessDecision'
+
+  /audit/query:
+    get:
+      tags: [Audit]
+      summary: Query audit log
+      description: |
+        Query immutable audit log. Requires governance role.
+        Log is hash-chained for tamper-evidence.
+      operationId: queryAudit
+      parameters:
+        - name: tenant_id
+          in: query
+          schema: { type: string }
+        - name: action
+          in: query
+          schema: { type: string }
+        - name: start_time
+          in: query
+          schema: { type: string, format: date-time }
+        - name: end_time
+          in: query
+          schema: { type: string, format: date-time }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 100, maximum: 1000 }
+      responses:
+        '200':
+          description: Audit events
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events:
+                    type: array
+                    items: { $ref: '#/components/schemas/AuditEvent' }
+                  count: { type: integer }
+        '403':
+          description: Governance role required
+
+  /audit/integrity:
+    get:
+      tags: [Audit]
+      summary: Verify audit log integrity (hash chain)
+      operationId: verifyAuditIntegrity
+      responses:
+        '200':
+          description: Integrity check result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  intact: { type: boolean }
+
+  /data/classify:
+    post:
+      tags: [Data Governance]
+      summary: Auto-classify content
+      description: |
+        Classifies content as: public, internal, confidential, restricted, pii, phi, financial.
+        Returns retention period per classification.
+      operationId: classifyData
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                  description: Content to classify
+      responses:
+        '200':
+          description: Classification result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  classification:
+                    type: string
+                    enum: [public, internal, confidential, restricted, pii, phi, financial]
+                  retention_days:
+                    type: integer
+
+  /data/assets:
+    post:
+      tags: [Data Governance]
+      summary: Register a data asset
+      operationId: registerAsset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataAsset'
+      responses:
+        '201':
+          description: Asset registered
+
+  /compliance/assess:
+    get:
+      tags: [Compliance]
+      summary: Generate compliance assessment report
+      operationId: assessCompliance
+      responses:
+        '200':
+          description: Compliance report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplianceReport'
+
+  /compliance/frameworks/{framework}:
+    get:
+      tags: [Compliance]
+      summary: Get policies for a specific framework
+      operationId: getFrameworkPolicies
+      parameters:
+        - name: framework
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [nist_ai_rmf, iso_42001, gdpr, saudi_pdpl, owasp_llm_top_10, mitre_atlas]
+      responses:
+        '200':
+          description: Framework policies
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  framework: { type: string }
+                  policies:
+                    type: array
+                    items: { $ref: '#/components/schemas/CompliancePolicy' }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Subject:
+      type: object
+      required: [user_id, tenant_id, role]
+      properties:
+        user_id: { type: string }
+        tenant_id: { type: string }
+        role:
+          type: string
+          enum: [super_admin, admin, governance, builder, analyst, employee, external_auditor, service_account]
+        department: { type: string }
+        location: { type: string }
+        clearance_level:
+          type: integer
+          minimum: 0
+          maximum: 3
+          description: 0=public, 1=internal, 2=confidential, 3=restricted
+        is_authenticated: { type: boolean, default: true }
+
+    Resource:
+      type: object
+      required: [resource_type, resource_id, tenant_id]
+      properties:
+        resource_type: { type: string }
+        resource_id: { type: string }
+        tenant_id: { type: string }
+        owner_id: { type: string }
+        classification:
+          type: string
+          enum: [public, internal, confidential, restricted]
+        department: { type: string }
+
+    Action:
+      type: object
+      required: [verb, resource]
+      properties:
+        verb:
+          type: string
+          enum: [read, write, delete, execute, manage]
+        resource: { type: string }
+        risk_level:
+          type: string
+          enum: [low, medium, high, critical]
+
+    Environment:
+      type: object
+      properties:
+        timestamp: { type: string, format: date-time }
+        ip_address: { type: string }
+        is_business_hours: { type: boolean, default: true }
+        is_production: { type: boolean, default: true }
+
+    AccessDecision:
+      type: object
+      properties:
+        allowed: { type: boolean }
+        reason: { type: string }
+        policies:
+          type: array
+          items: { type: string }
+        obligations:
+          type: array
+          items: { type: string }
+
+    AuditEvent:
+      type: object
+      properties:
+        event_id: { type: string, format: uuid }
+        timestamp: { type: string, format: date-time }
+        tenant_id: { type: string }
+        user_id: { type: string }
+        action: { type: string }
+        resource_id: { type: string }
+        decision:
+          type: string
+          enum: [ALLOW, DENY]
+        reason: { type: string }
+        entry_hash: { type: string }
+        previous_hash: { type: string }
+
+    DataAsset:
+      type: object
+      required: [asset_id, tenant_id, name, classification, owner_id]
+      properties:
+        asset_id: { type: string }
+        tenant_id: { type: string }
+        name: { type: string }
+        classification:
+          type: string
+          enum: [public, internal, confidential, restricted, pii, phi, financial]
+        owner_id: { type: string }
+        source: { type: string }
+        retention_days:
+          type: integer
+          default: 2555
+        pii_categories:
+          type: array
+          items: { type: string }
+
+    CompliancePolicy:
+      type: object
+      properties:
+        policy_id: { type: string }
+        title: { type: string }
+        description: { type: string }
+        verb:
+          type: string
+          enum: [must, should, may]
+
+    ComplianceReport:
+      type: object
+      properties:
+        generated_at: { type: string, format: date-time }
+        frameworks:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              total_policies: { type: integer }
+              must_policies: { type: integer }
+              active_policies: { type: integer }

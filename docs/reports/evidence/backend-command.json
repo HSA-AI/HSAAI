@@ -1,0 +1,18 @@
+{
+  "command": [
+    "/workspace/scratch/79a59425d4b9/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests",
+    "-q",
+    "--cov-report=json:/workspace/scratch/79a59425d4b9/work/HSAAI/docs/reports/evidence/coverage.json",
+    "--junitxml=/workspace/scratch/79a59425d4b9/work/HSAAI/docs/reports/evidence/backend-tests.xml"
+  ],
+  "exit_code": 1,
+  "seconds": 69.31,
+  "coverage_gate": 80,
+  "source": [
+    "services",
+    "packages"
+  ]
+}

@@ -1,0 +1,66 @@
+# HSAAI Multi-Region Kustomize Overlay — Region me-west-1 (Gulf Primary)
+#
+# FIX v2.3 (Phase 3): Per-region overlay that customizes the base HSAAI
+# manifests for the me-west-1 region.
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../../kubernetes/base
+
+namePrefix: me-west-1-
+
+commonLabels:
+  app.kubernetes.io/region: me-west-1
+  app.kubernetes.io/part-of: hsaai
+  hsaai.io/region: me-west-1
+  hsaai.io/write-primary: "true"
+
+configMapGenerator:
+  - name: hsaai-region-config
+    literals:
+      - REGION=me-west-1
+      - REGION_NAME=Middle-East-West
+      - WRITE_PRIMARY=true
+      - POSTGRES_HOST=postgres.me-west-1.hsaai.internal
+      - QDRANT_URL=http://qdrant.me-west-1.hsaai.internal:6333
+      - REDIS_URL=redis://redis.me-west-1.hsaai.internal:6379
+      - MINIO_ENDPOINT=minio.me-west-1.hsaai.internal:9000
+      - NEO4J_URL=bolt://neo4j.me-west-1.hsaai.internal:7687
+
+replicas:
+  - name: backend
+    count: 5
+  - name: api-gateway
+    count: 4
+  - name: rag-engine
+    count: 4
+  - name: llm-gateway
+    count: 3
+  - name: frontend
+    count: 3
+
+patches:
+  - target:
+      kind: Deployment
+    patch: |-
+      - op: add
+        path: /spec/template/spec/affinity
+        value:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                    - key: topology.kubernetes.io/region
+                      operator: In
+                      values:
+                        - me-west-1
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                podAffinityTerm:
+                  topologyKey: topology.kubernetes.io/zone
+                  labelSelector:
+                    matchLabels:
+                      app.kubernetes.io/region: me-west-1

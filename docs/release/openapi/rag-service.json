@@ -1,0 +1,795 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "HSAAI RAG Engine",
+    "version": "4.0.0"
+  },
+  "paths": {
+    "/health/auth": {
+      "get": {
+        "summary": " Auth Health",
+        "description": "Health check for authentication module readiness.",
+        "operationId": "_auth_health_health_auth_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/embed": {
+      "post": {
+        "summary": "Embed Text Endpoint",
+        "description": "Generate an embedding vector for the given text.\n\nRequest body: {\"text\": \"query text to embed\"}\nResponse: {\"embedding\": [0.1, 0.2, ...], \"model\": \"paraphrase-multilingual-MiniLM-L12-v2\", \"dimensions\": 384}",
+        "operationId": "embed_text_endpoint_v1_embed_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/documents/upload": {
+      "post": {
+        "summary": "Upload Document",
+        "description": "Upload and index a document with persistent storage.\n\nFIX: Previously stored documents only in MEMORY_DOCS (lost on restart).\nNow documents are stored in Qdrant payloads and persist across restarts.",
+        "operationId": "upload_document_v1_documents_upload_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_document_v1_documents_upload_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/documents": {
+      "post": {
+        "summary": "List Documents",
+        "operationId": "list_documents_v1_documents_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentListRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/v1/documents/{doc_id}": {
+      "get": {
+        "summary": "Get Document",
+        "description": "Get document metadata from Qdrant.\nSECURITY FIX: tenant_id and workspace_id come from Claims ONLY, never from request.\nThis prevents IDOR (Insecure Direct Object Reference) / cross-tenant access.",
+        "operationId": "get_document_v1_documents__doc_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "doc_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Doc Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Document",
+        "description": "Delete a document.\nSECURITY FIX: tenant_id and workspace_id come from Claims ONLY.\nPrevents cross-tenant deletion (IDOR).",
+        "operationId": "delete_document_v1_documents__doc_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "doc_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Doc Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/analytics": {
+      "post": {
+        "summary": "Analytics",
+        "operationId": "analytics_v1_analytics_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnalyticsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/v1/search": {
+      "post": {
+        "summary": "Search",
+        "operationId": "search_v1_search_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/v1/answer": {
+      "post": {
+        "summary": "Answer",
+        "operationId": "answer_v1_answer_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnswerRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/v1/highlight": {
+      "post": {
+        "summary": "Highlight",
+        "operationId": "highlight_v1_highlight_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HighlightRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/v1/answer/stream": {
+      "post": {
+        "summary": "Answer Stream",
+        "operationId": "answer_stream_v1_answer_stream_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnswerRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/ready": {
+      "get": {
+        "summary": "Readiness",
+        "operationId": "readiness_ready_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AnalyticsRequest": {
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id",
+            "default": "default"
+          },
+          "workspace_id": {
+            "type": "string",
+            "title": "Workspace Id",
+            "default": "default"
+          }
+        },
+        "type": "object",
+        "title": "AnalyticsRequest"
+      },
+      "AnswerRequest": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Query"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id",
+            "default": "default"
+          },
+          "workspace_id": {
+            "type": "string",
+            "title": "Workspace Id",
+            "default": "default"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          },
+          "user_roles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "User Roles"
+          },
+          "top_k": {
+            "type": "integer",
+            "maximum": 30.0,
+            "minimum": 1.0,
+            "title": "Top K",
+            "default": 8
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode",
+            "default": "hybrid"
+          },
+          "include_context": {
+            "type": "boolean",
+            "title": "Include Context",
+            "default": true
+          },
+          "cite_sources": {
+            "type": "boolean",
+            "title": "Cite Sources",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "title": "AnswerRequest"
+      },
+      "Body_upload_document_v1_documents_upload_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id",
+            "default": "default"
+          },
+          "workspace_id": {
+            "type": "string",
+            "title": "Workspace Id",
+            "default": "default"
+          },
+          "visibility": {
+            "type": "string",
+            "title": "Visibility",
+            "default": "workspace"
+          },
+          "allowed_roles": {
+            "type": "string",
+            "title": "Allowed Roles",
+            "default": ""
+          },
+          "allowed_users": {
+            "type": "string",
+            "title": "Allowed Users",
+            "default": ""
+          },
+          "classification": {
+            "type": "string",
+            "title": "Classification",
+            "default": "internal"
+          },
+          "tags": {
+            "type": "string",
+            "title": "Tags",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_document_v1_documents_upload_post"
+      },
+      "DocumentListRequest": {
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id",
+            "default": "default"
+          },
+          "workspace_id": {
+            "type": "string",
+            "title": "Workspace Id",
+            "default": "default"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          },
+          "user_roles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "User Roles"
+          },
+          "limit": {
+            "type": "integer",
+            "maximum": 500.0,
+            "minimum": 1.0,
+            "title": "Limit",
+            "default": 50
+          }
+        },
+        "type": "object",
+        "title": "DocumentListRequest"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HighlightRequest": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Query"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id",
+            "default": "default"
+          },
+          "workspace_id": {
+            "type": "string",
+            "title": "Workspace Id",
+            "default": "default"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          },
+          "user_roles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "User Roles"
+          },
+          "top_k": {
+            "type": "integer",
+            "maximum": 30.0,
+            "minimum": 1.0,
+            "title": "Top K",
+            "default": 8
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode",
+            "default": "hybrid"
+          },
+          "doc_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Doc Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "title": "HighlightRequest"
+      },
+      "SearchRequest": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Query"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id",
+            "default": "default"
+          },
+          "workspace_id": {
+            "type": "string",
+            "title": "Workspace Id",
+            "default": "default"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          },
+          "user_roles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "User Roles"
+          },
+          "top_k": {
+            "type": "integer",
+            "maximum": 30.0,
+            "minimum": 1.0,
+            "title": "Top K",
+            "default": 8
+          },
+          "mode": {
+            "type": "string",
+            "title": "Mode",
+            "default": "hybrid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "title": "SearchRequest",
+        "description": "FIX FIX-MEDIUM-QUALITY (Issue 5): subclasses the canonical\nSearchRequest from common.schemas.search and adds rag-engine-specific\nscoping/ACL fields (preserving the previous wire-shape)."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

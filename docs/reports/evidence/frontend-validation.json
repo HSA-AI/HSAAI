@@ -1,0 +1,69 @@
+[
+  {
+    "name": "install",
+    "command": [
+      "npm",
+      "ci"
+    ],
+    "exit_code": 0,
+    "seconds": 21.39,
+    "log": "docs/reports/evidence/frontend-install.log"
+  },
+  {
+    "name": "lint",
+    "command": [
+      "npm",
+      "run",
+      "lint"
+    ],
+    "exit_code": 0,
+    "seconds": 5.39,
+    "log": "docs/reports/evidence/frontend-lint.log"
+  },
+  {
+    "name": "typecheck",
+    "command": [
+      "npm",
+      "run",
+      "type-check"
+    ],
+    "exit_code": 0,
+    "seconds": 3.74,
+    "log": "docs/reports/evidence/frontend-typecheck.log"
+  },
+  {
+    "name": "tests",
+    "command": [
+      "npm",
+      "test",
+      "--",
+      "--reporter=json",
+      "--outputFile=/workspace/scratch/79a59425d4b9/work/HSAAI/docs/reports/evidence/frontend-tests.json"
+    ],
+    "exit_code": 0,
+    "seconds": 1.32,
+    "log": "docs/reports/evidence/frontend-tests.log"
+  },
+  {
+    "name": "build",
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "exit_code": 0,
+    "seconds": 33.6,
+    "log": "docs/reports/evidence/frontend-build.log"
+  },
+  {
+    "name": "audit",
+    "command": [
+      "npm",
+      "audit",
+      "--json"
+    ],
+    "exit_code": 0,
+    "seconds": 9.41,
+    "log": "docs/reports/evidence/frontend-audit.log"
+  }
+]

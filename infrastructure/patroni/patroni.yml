@@ -1,0 +1,129 @@
+# Patroni node configuration (v3.0)
+# This is a template — actual values are set via environment variables in docker-compose.ha.yml
+
+scope: hsaai
+name: ${NODE_NAME}
+namespace: /patroni/
+
+restapi:
+  listen: 0.0.0.0:8008
+  connect_address: ${NODE_IP}:8008
+  authentication:
+    username: ${PATRONI_API_USER:-patroni}
+    password: ${PATRONI_API_PASSWORD:?Required}
+
+etcd:
+  hosts: ${ETCD_HOSTS:-etcd:2379}
+
+bootstrap:
+  dcs:
+    ttl: 30
+    loop_wait: 10
+    retry_timeout: 20
+    maximum_lag_on_failover: 1048576  # 1MB
+    maximum_lag_on_sync: 1048576
+    synchronous_mode: true
+    synchronous_mode_strict: false
+    postgresql:
+      use_pg_rewind: true
+      use_slots: true
+      parameters:
+        wal_level: replica
+        hot_standby: "on"
+        max_connections: 200
+        max_worker_processes: 8
+        wal_keep_segments: 64
+        max_wal_senders: 10
+        max_replication_slots: 10
+        checkpoint_timeout: 30min
+        checkpoint_completion_target: 0.9
+        wal_log_hints: "on"
+        # FIX v2.2 (Phase 2): Enable WAL archiving for Point-in-Time Recovery (PITR).
+        # Previously no WAL archiving was configured — RPO was up to 24h (time since
+        # last nightly pg_dump). With WAL-G archiving to MinIO, RPO drops to ~5 seconds.
+        archive_mode: "on"
+        archive_command: "wal-g wal-push %p"
+        archive_timeout: 60s
+        # Restore command (used during PITR recovery):
+        # restore_command: "wal-g wal-fetch %f %p"
+        logging_collector: "on"
+        log_destination: "stderr"
+        log_min_messages: "warning"
+        log_min_error_statement: "error"
+        log_line_prefix: "%t [%p]: %l %u@%d %h "
+        shared_buffers: "1GB"
+        effective_cache_size: "3GB"
+        work_mem: "16MB"
+        maintenance_work_mem: "256MB"
+        random_page_cost: 1.1
+        track_activity_query_size: 4096
+        track_io_timing: "on"
+        track_wal_io_timing: "on"
+
+  initdb:
+    - encoding: UTF8
+    - data-checksums
+    - locale: en_US.UTF-8
+    # FIX I-09: was auth-local: trust — any local user could connect as postgres superuser.
+    - auth-local: peer
+    - auth-host: scram-sha-256
+
+  pg_hba:
+    # FIX I-09: peer auth for local, scram-sha-256 for all TCP.
+    - local all all peer
+    - host all all 127.0.0.1/32 scram-sha-256
+    - host all all 0.0.0.0/0 scram-sha-256
+    - host replication replicator 0.0.0.0/0 scram-sha-256
+
+  users:
+    hsaai:
+      password: ${POSTGRES_PASSWORD:?Required}
+      options:
+        - createrole
+        - createdb
+    replicator:
+      password: ${REPLICATION_PASSWORD:?Required}
+      options:
+        - replication
+
+postgresql:
+  listen: 0.0.0.0:5432
+  connect_address: ${NODE_IP}:5432
+  data_dir: /var/lib/postgresql/data
+  bin_dir: /usr/lib/postgresql/16/bin
+  config_dir: /var/lib/postgresql/data
+  pgpass: /tmp/pgpass
+  authentication:
+    replication:
+      username: replicator
+      password: ${REPLICATION_PASSWORD:?Required}
+    superuser:
+      username: postgres
+      password: ${POSTGRES_SUPERUSER_PASSWORD:?Required}
+    rewind:
+      username: rewind_user
+      password: ${REWIND_PASSWORD:?Required}
+
+  create_replica_methods:
+    - basebackup
+
+  basebackup:
+    checkpoint: fast
+
+  callbacks:
+    on_start: /patroni/callbacks/on_start.sh
+    on_stop: /patroni/callbacks/on_stop.sh
+    on_role_change: /patroni/callbacks/on_role_change.sh
+
+  pg_hba:
+    # FIX I-09: mirror the bootstrap pg_hba — peer for local, scram-sha-256 for TCP.
+    - local all all peer
+    - host all all 127.0.0.1/32 scram-sha-256
+    - host all all 0.0.0.0/0 scram-sha-256
+    - host replication replicator 0.0.0.0/0 scram-sha-256
+
+tags:
+  nofailover: false
+  noloadbalance: false
+  clonefrom: false
+  nosync: false

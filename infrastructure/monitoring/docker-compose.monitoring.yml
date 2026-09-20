@@ -1,0 +1,79 @@
+# HSAAI Monitoring Stack
+# Usage: docker compose -f docker-compose.production.yml -f infrastructure/monitoring/docker-compose.monitoring.yml up
+services:
+  # ── OpenTelemetry Collector ─────────────────────────
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.110.0
+    container_name: hsaai-otel-collector
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./infrastructure/monitoring/otel-collector.yaml:/etc/otel-collector-config.yaml:ro
+    ports:
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+      - "8889:8889"   # Prometheus metrics exporter
+      - "13133:13133" # Health check
+    networks:
+      - hsaai_internal
+    restart: unless-stopped
+
+  # ── Jaeger (Trace Visualization) ────────────────────
+  jaeger:
+    image: jaegertracing/all-in-one:1.62
+    container_name: hsaai-jaeger
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "16686:16686" # Jaeger UI
+      - "14250:14250" # gRPC for model
+    networks:
+      - hsaai_internal
+    restart: unless-stopped
+
+  # ── Alertmanager ────────────────────────────────────
+  alertmanager:
+    image: prom/alertmanager:v0.28.0
+    container_name: hsaai-alertmanager
+    volumes:
+      - ./infrastructure/monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    ports:
+      - "9093:9093"
+    networks:
+      - hsaai_internal
+    restart: unless-stopped
+
+  # ── Node Exporter ───────────────────────────────────
+  node-exporter:
+    image: prom/node-exporter:v1.8.2
+    container_name: hsaai-node-exporter
+    ports:
+      - "9100:9100"
+    networks:
+      - hsaai_internal
+    restart: unless-stopped
+
+  # ── PostgreSQL Exporter ─────────────────────────────
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    container_name: hsaai-postgres-exporter
+    environment:
+      # FIX I-17: was hardcoded hsaai_dev_password + sslmode=disable.
+      # Now uses env var interpolation + SSL required.
+      DATA_SOURCE_NAME: "postgresql://hsaai:${POSTGRES_PASSWORD:?Required}@postgres:5432/hsaai?sslmode=require"
+    ports:
+      - "9187:9187"
+    networks:
+      - hsaai_internal
+    restart: unless-stopped
+
+  # ── Redis Exporter ──────────────────────────────────
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.62.0
+    container_name: hsaai-redis-exporter
+    environment:
+      REDIS_ADDR: "redis:6379"
+    ports:
+      - "9121:9121"
+    networks:
+      - hsaai_internal
+    restart: unless-stopped

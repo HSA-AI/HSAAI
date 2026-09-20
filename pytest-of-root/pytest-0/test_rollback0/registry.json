@@ -1,0 +1,46 @@
+{
+  "models": [
+    {
+      "model_id": "hsaai-r1",
+      "version": "1.0",
+      "base_model": "Qwen",
+      "status": "production",
+      "created_at": "2026-09-10T21:46:14.641346+00:00",
+      "created_by": "",
+      "accuracy": 0.0,
+      "perplexity": 0.0,
+      "eval_loss": 0.0,
+      "lora_r": 0,
+      "lora_alpha": 0,
+      "train_examples": 0,
+      "eval_examples": 0,
+      "training_hours": 0.0,
+      "model_path": "",
+      "gguf_path": "",
+      "model_hash": "",
+      "approved_by": "rollback",
+      "approved_at": "2026-09-10T21:46:14.642353+00:00"
+    },
+    {
+      "model_id": "hsaai-r1",
+      "version": "2.0",
+      "base_model": "Qwen",
+      "status": "archived",
+      "created_at": "2026-09-10T21:46:14.641749+00:00",
+      "created_by": "",
+      "accuracy": 0.0,
+      "perplexity": 0.0,
+      "eval_loss": 0.0,
+      "lora_r": 0,
+      "lora_alpha": 0,
+      "train_examples": 0,
+      "eval_examples": 0,
+      "training_hours": 0.0,
+      "model_path": "",
+      "gguf_path": "",
+      "model_hash": "",
+      "approved_by": "admin",
+      "approved_at": "2026-09-10T21:46:14.642012+00:00"
+    }
+  ]
+}

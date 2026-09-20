@@ -1,0 +1,166 @@
+# HSAAI Redis Sentinel HA (v3.0)
+# 3 Redis nodes (1 master + 2 replicas) + 3 Sentinel nodes
+
+version: "3.8"
+
+x-redis-common: &redis-common
+  image: redis:7-alpine
+  command: >
+    redis-server
+    --requirepass ${REDIS_PASSWORD:?Required set REDIS_PASSWORD env var}
+    --masterauth ${REDIS_PASSWORD:?Required set REDIS_PASSWORD env var}
+    --appendonly yes
+    --appendfsync everysec
+    --maxmemory 2gb
+    --maxmemory-policy allkeys-lru
+    --save 900 1
+    --save 300 10
+    --save 60 10000
+  environment:
+    REDIS_PASSWORD: "${REDIS_PASSWORD:?Required set REDIS_PASSWORD env var}"
+  networks:
+    - hsaai-private
+
+services:
+  # ─── Redis Node 1 (initial master) ───
+  redis1:
+    <<: *redis-common
+    container_name: hsaai-redis1
+    volumes:
+      - redis1-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:?Required set REDIS_PASSWORD env var}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Redis Node 2 (replica of redis1) ───
+  redis2:
+    <<: *redis-common
+    container_name: hsaai-redis2
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD:?Required set REDIS_PASSWORD env var}
+      --masterauth ${REDIS_PASSWORD:?Required set REDIS_PASSWORD env var}
+      --replicaof redis1 6379
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory 2gb
+      --maxmemory-policy allkeys-lru
+    volumes:
+      - redis2-data:/data
+    depends_on:
+      redis1:
+        condition: service_healthy
+
+  # ─── Redis Node 3 (replica of redis1) ───
+  redis3:
+    <<: *redis-common
+    container_name: hsaai-redis3
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD:?Required set REDIS_PASSWORD env var}
+      --masterauth ${REDIS_PASSWORD:?Required set REDIS_PASSWORD env var}
+      --replicaof redis1 6379
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory 2gb
+      --maxmemory-policy allkeys-lru
+    volumes:
+      - redis3-data:/data
+    depends_on:
+      redis2:
+        condition: service_started
+
+  # ─── Sentinel 1 ───
+  sentinel1:
+    image: redis:7-alpine
+    container_name: hsaai-sentinel1
+    command: >
+      sh -c '
+      cat > /tmp/sentinel.conf << EOF
+      port 26379
+      sentinel monitor hsaai-redis redis1 6379 2
+      sentinel auth-pass hsaai-redis ${REDIS_PASSWORD:?Required set REDIS_PASSWORD env var}
+      sentinel down-after-milliseconds hsaai-redis 5000
+      sentinel failover-timeout hsaai-redis 30000
+      sentinel parallel-syncs hsaai-redis 1
+      sentinel resolve-hostnames yes
+      sentinel announce-hostnames yes
+      sentinel deny-scripts-reconfig yes
+      protected-mode no
+      dir /tmp
+      EOF
+      redis-server /tmp/sentinel.conf --sentinel'
+    ports:
+      - "26379:26379"
+    networks:
+      - hsaai-private
+    depends_on:
+      - redis1
+      - redis2
+      - redis3
+
+  # ─── Sentinel 2 ───
+  sentinel2:
+    image: redis:7-alpine
+    container_name: hsaai-sentinel2
+    command: >
+      sh -c '
+      cat > /tmp/sentinel.conf << EOF
+      port 26379
+      sentinel monitor hsaai-redis redis1 6379 2
+      sentinel auth-pass hsaai-redis ${REDIS_PASSWORD:?Required set REDIS_PASSWORD env var}
+      sentinel down-after-milliseconds hsaai-redis 5000
+      sentinel failover-timeout hsaai-redis 30000
+      sentinel parallel-syncs hsaai-redis 1
+      sentinel resolve-hostnames yes
+      sentinel announce-hostnames yes
+      sentinel deny-scripts-reconfig yes
+      protected-mode no
+      dir /tmp
+      EOF
+      redis-server /tmp/sentinel.conf --sentinel'
+    ports:
+      - "26380:26379"
+    networks:
+      - hsaai-private
+    depends_on:
+      - sentinel1
+
+  # ─── Sentinel 3 ───
+  sentinel3:
+    image: redis:7-alpine
+    container_name: hsaai-sentinel3
+    command: >
+      sh -c '
+      cat > /tmp/sentinel.conf << EOF
+      port 26379
+      sentinel monitor hsaai-redis redis1 6379 2
+      sentinel auth-pass hsaai-redis ${REDIS_PASSWORD:?Required set REDIS_PASSWORD env var}
+      sentinel down-after-milliseconds hsaai-redis 5000
+      sentinel failover-timeout hsaai-redis 30000
+      sentinel parallel-syncs hsaai-redis 1
+      sentinel resolve-hostnames yes
+      sentinel announce-hostnames yes
+      sentinel deny-scripts-reconfig yes
+      protected-mode no
+      dir /tmp
+      EOF
+      redis-server /tmp/sentinel.conf --sentinel'
+    ports:
+      - "26381:26379"
+    networks:
+      - hsaai-private
+    depends_on:
+      - sentinel2
+
+volumes:
+  redis1-data:
+  redis2-data:
+  redis3-data:
+
+networks:
+  hsaai-private:
+    external: true
+    name: hsaai_private

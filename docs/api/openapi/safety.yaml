@@ -1,0 +1,146 @@
+openapi: 3.1.0
+info:
+  title: HSAAI Safety API
+  version: 1.0.0
+  description: |
+    Runtime safety layer: severity classification, approval routing,
+    circuit breakers, and kill switch.
+servers:
+  - url: https://hsaai.internal/api/v1/safety
+  - url: http://localhost:8005
+security:
+  - bearerAuth: []
+tags:
+  - name: Approvals
+  - name: Kill Switch
+paths:
+  /check:
+    post:
+      tags: [Approvals]
+      summary: Check if a tool call is permitted
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [agent_id, tenant_id, user_id, tool_name]
+              properties:
+                agent_id: { type: string }
+                tenant_id: { type: string }
+                user_id: { type: string }
+                tool_name: { type: string }
+                tool_args: { type: object, additionalProperties: true }
+                justification: { type: string }
+      responses:
+        '200':
+          description: Decision
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  allowed: { type: boolean }
+                  severity: { type: string, enum: [INFO, MODERATE, SERIOUS, CATASTROPHIC] }
+                  requires_approval: { type: boolean }
+                  request_id: { type: string, format: uuid }
+                  required_approvals: { type: integer }
+  /approvals/pending:
+    get:
+      tags: [Approvals]
+      summary: Get pending approval requests
+      parameters:
+        - name: tenant_id
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Pending approvals
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  approvals:
+                    type: array
+                    items: { $ref: '#/components/schemas/ApprovalRequest' }
+  /approvals/{id}/approve:
+    post:
+      tags: [Approvals]
+      summary: Approve a request
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                approver_id: { type: string }
+      responses:
+        '200':
+          description: Approved
+  /approvals/{id}/reject:
+    post:
+      tags: [Approvals]
+      summary: Reject a request
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rejecter_id: { type: string }
+                reason: { type: string }
+  /kill-switch:
+    post:
+      tags: [Kill Switch]
+      summary: Activate kill switch (halts all agents)
+      description: |
+        CRITICAL: Activating the kill switch immediately halts all agent
+        activity. Requires governance role.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason, activated_by]
+              properties:
+                reason: { type: string }
+                activated_by: { type: string }
+      responses:
+        '200':
+          description: Kill switch activated
+    delete:
+      tags: [Kill Switch]
+      summary: Deactivate kill switch
+      responses:
+        '200':
+          description: Kill switch deactivated
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  schemas:
+    ApprovalRequest:
+      type: object
+      properties:
+        request_id: { type: string, format: uuid }
+        agent_id: { type: string }
+        tenant_id: { type: string }
+        user_id: { type: string }
+        tool_name: { type: string }
+        severity: { type: string, enum: [SERIOUS, CATASTROPHIC] }
+        required_approvals: { type: integer }
+        approved_by:
+          type: array
+          items: { type: string }
+        status: { type: string, enum: [pending, approved, rejected, expired] }
+        created_at: { type: string, format: date-time }

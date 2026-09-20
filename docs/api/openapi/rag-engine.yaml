@@ -1,0 +1,180 @@
+openapi: 3.1.0
+info:
+  title: HSAAI RAG Engine API
+  version: 1.0.0
+  description: |
+    Retrieval-Augmented Generation with hybrid search:
+    - BM25 lexical retrieval (Arabic + English)
+    - Dense retrieval (BGE-M3)
+    - Hybrid fusion (Reciprocal Rank Fusion)
+    - Cross-encoder re-ranking (BGE-Reranker-v2-m3)
+    - Knowledge graph retrieval (Neo4j)
+
+servers:
+  - url: https://hsaai.internal/api/v1/rag
+    description: Production
+  - url: http://localhost:8001
+    description: Local
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Query
+    description: Retrieve documents
+  - name: Documents
+    description: Document management
+  - name: Knowledge Graph
+    description: Graph queries
+
+paths:
+  /query:
+    post:
+      tags: [Query]
+      summary: Retrieve relevant documents
+      operationId: queryDocuments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [query, tenant_id]
+              properties:
+                query: { type: string, example: "What is our procurement policy?" }
+                tenant_id: { type: string, example: hsa-foods }
+                top_k:
+                  type: integer
+                  default: 5
+                  maximum: 50
+                min_confidence:
+                  type: number
+                  default: 0.7
+                  minimum: 0
+                  maximum: 1
+                filters:
+                  type: object
+                  properties:
+                    category: { type: string }
+                    language: { type: string }
+                    date_from: { type: string, format: date }
+                    date_to: { type: string, format: date }
+                mode:
+                  type: string
+                  enum: [hybrid, dense, lexical, graph]
+                  default: hybrid
+      responses:
+        '200':
+          description: Retrieval results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items: { $ref: '#/components/schemas/SearchResult' }
+                  count: { type: integer }
+                  latency_ms: { type: integer }
+
+  /documents:
+    post:
+      tags: [Documents]
+      summary: Ingest a document
+      operationId: ingestDocument
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                tenant_id: { type: string }
+                category: { type: string }
+                language: { type: string, default: ar }
+      responses:
+        '201':
+          description: Document ingested
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  document_id: { type: string, format: uuid }
+                  status: { type: string }
+                  chunks_created: { type: integer }
+
+  /documents/{id}:
+    delete:
+      tags: [Documents]
+      summary: Delete a document
+      operationId: deleteDocument
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Deleted
+
+  /graph/query:
+    post:
+      tags: [Knowledge Graph]
+      summary: Query the knowledge graph
+      operationId: queryGraph
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cypher: { type: string, example: "MATCH (e:Entity {name: 'HSA Foods'})-[r]->(t) RETURN t" }
+                tenant_id: { type: string }
+                limit:
+                  type: integer
+                  default: 50
+      responses:
+        '200':
+          description: Graph query results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: true
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    SearchResult:
+      type: object
+      properties:
+        document_id: { type: string, format: uuid }
+        title: { type: string }
+        content: { type: string }
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        source: { type: string }
+        language: { type: string }
+        highlights:
+          type: array
+          items: { type: string }
+        metadata:
+          type: object
+          additionalProperties: true

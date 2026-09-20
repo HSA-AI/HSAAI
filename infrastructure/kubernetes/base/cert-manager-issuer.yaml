@@ -1,0 +1,120 @@
+# HSAAI cert-manager Configuration
+# Automates mTLS certificate provisioning using the internal CA
+#
+# Prerequisites:
+#   kubectl apply -f https://github.com/cert-manager/cert-manager/releases/latest/download/cert-manager.yaml
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: hsaai-ca-issuer
+spec:
+  ca:
+    secretName: hsaai-ca-secret
+---
+# Certificate template for HSAAI services
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: backend-core-cert
+  namespace: hsaai
+spec:
+  secretName: backend-core-mtls-certs
+  duration: 720h    # 30 days
+  renewBefore: 168h # 7 days before expiry
+  issuerRef:
+    name: hsaai-ca-issuer
+    kind: ClusterIssuer
+  dnsNames:
+    - backend_core
+    - backend_core.hsaai.internal
+    - backend_core.default.svc.cluster.local
+    - localhost
+  ipAddresses:
+    - 127.0.0.1
+  usages:
+    - server auth
+    - client auth
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: api-gateway-cert
+  namespace: hsaai
+spec:
+  secretName: api-gateway-mtls-certs
+  duration: 720h
+  renewBefore: 168h
+  issuerRef:
+    name: hsaai-ca-issuer
+    kind: ClusterIssuer
+  dnsNames:
+    - api_gateway
+    - api_gateway.hsaai.internal
+    - api_gateway.default.svc.cluster.local
+    - localhost
+  ipAddresses:
+    - 127.0.0.1
+  usages:
+    - server auth
+    - client auth
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: auth-service-cert
+  namespace: hsaai
+spec:
+  secretName: auth-service-mtls-certs
+  duration: 720h
+  renewBefore: 168h
+  issuerRef:
+    name: hsaai-ca-issuer
+    kind: ClusterIssuer
+  dnsNames:
+    - auth_service
+    - auth_service.hsaai.internal
+    - auth_service.default.svc.cluster.local
+  usages:
+    - server auth
+    - client auth
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: rag-engine-cert
+  namespace: hsaai
+spec:
+  secretName: rag-engine-mtls-certs
+  duration: 720h
+  renewBefore: 168h
+  issuerRef:
+    name: hsaai-ca-issuer
+    kind: ClusterIssuer
+  dnsNames:
+    - rag_engine
+    - rag_engine.hsaai.internal
+    - rag_engine.default.svc.cluster.local
+  usages:
+    - server auth
+    - client auth
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: llm-gateway-cert
+  namespace: hsaai
+spec:
+  secretName: llm-gateway-mtls-certs
+  duration: 720h
+  renewBefore: 168h
+  issuerRef:
+    name: hsaai-ca-issuer
+    kind: ClusterIssuer
+  dnsNames:
+    - llm_gateway
+    - llm_gateway.hsaai.internal
+    - llm_gateway.default.svc.cluster.local
+  usages:
+    - server auth
+    - client auth

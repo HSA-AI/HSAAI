@@ -1,0 +1,24 @@
+# OSX
+.DS_Store
+
+# Android/IntelliJ
+android/.gradle
+android/local.properties
+android/app/debug
+android/app/release
+*.iml
+.idea/
+
+# node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Expo
+.expo/
+dist/
+web-build/
+
+# Temporary files
+*.log
+.cache/

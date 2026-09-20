@@ -1,0 +1,120 @@
+[
+  {
+    "name": "frontend-install",
+    "command": [
+      "npm",
+      "ci"
+    ],
+    "exit_code": 0,
+    "seconds": 23.69
+  },
+  {
+    "name": "frontend-lint",
+    "command": [
+      "npm",
+      "run",
+      "lint"
+    ],
+    "exit_code": 0,
+    "seconds": 5.15
+  },
+  {
+    "name": "frontend-typecheck",
+    "command": [
+      "npm",
+      "run",
+      "type-check"
+    ],
+    "exit_code": 0,
+    "seconds": 3.79
+  },
+  {
+    "name": "frontend-tests",
+    "command": [
+      "npm",
+      "test",
+      "--",
+      "--reporter=json",
+      "--outputFile=/workspace/scratch/79a59425d4b9/work/HSAAI/docs/reports/evidence/frontend-tests.json"
+    ],
+    "exit_code": 0,
+    "seconds": 1.13
+  },
+  {
+    "name": "frontend-build",
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "exit_code": 0,
+    "seconds": 34.91
+  },
+  {
+    "name": "frontend-audit",
+    "command": [
+      "npm",
+      "audit",
+      "--json"
+    ],
+    "exit_code": 0,
+    "seconds": 9.91
+  },
+  {
+    "name": "backend-tests",
+    "command": [
+      "/workspace/scratch/79a59425d4b9/.venv/bin/python",
+      "-m",
+      "pytest",
+      "tests",
+      "-q",
+      "--cov-report=json:/workspace/scratch/79a59425d4b9/work/HSAAI/docs/reports/evidence/coverage.json",
+      "--junitxml=/workspace/scratch/79a59425d4b9/work/HSAAI/docs/reports/evidence/backend-tests.xml"
+    ],
+    "exit_code": 1,
+    "seconds": 54.1
+  },
+  {
+    "name": "browser-visual",
+    "command": [
+      "/workspace/scratch/79a59425d4b9/.venv/bin/python",
+      "/workspace/scratch/79a59425d4b9/tmp/visual_check.py"
+    ],
+    "exit_code": 1,
+    "seconds": 30.71
+  },
+  {
+    "name": "static-release",
+    "command": [
+      "/workspace/scratch/79a59425d4b9/.venv/bin/python",
+      "scripts/validate_release.py"
+    ],
+    "exit_code": 0,
+    "seconds": 0.87
+  },
+  {
+    "name": "python-critical-lint",
+    "command": [
+      "/workspace/scratch/79a59425d4b9/.venv/bin/python",
+      "-m",
+      "ruff",
+      "check",
+      "services",
+      "packages",
+      "--select",
+      "F821,F822,F823,E9"
+    ],
+    "exit_code": 0,
+    "seconds": 0.07
+  },
+  {
+    "name": "helm-lint",
+    "command": [
+      "/workspace/scratch/79a59425d4b9/tmp/tooling/helm",
+      "lint",
+      "infrastructure/helm"
+    ],
+    "exit_code": 0,
+    "seconds": 0.12
+  }
+]

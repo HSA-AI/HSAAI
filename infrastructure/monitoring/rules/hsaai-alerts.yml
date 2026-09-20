@@ -1,0 +1,111 @@
+groups:
+  # ── Application Health Alerts ──────────────────────
+  - name: hsaai.app.health
+    rules:
+      - alert: HSAAIServiceDown
+        expr: up{job=~"hsaai-.*"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "HSAAI service {{ $labels.job }} is down"
+          description: "Service {{ $labels.job }} (instance {{ $instance }}) has been down for more than 2 minutes."
+
+      - alert: HSAAIHighErrorRate
+        expr: |
+          sum(rate(hsaai_backend_errors_total[5m])) by (path)
+          /
+          sum(rate(hsaai_backend_requests_total[5m])) by (path)
+          > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "High error rate on {{ $labels.path }}"
+          description: "Error rate on {{ $labels.path }} is {{ $value | humanizePercentage }} over the last 5 minutes."
+
+      - alert: HSAAIHighLatency
+        expr: |
+          histogram_quantile(0.95, sum(rate(hsaai_backend_request_latency_seconds_bucket[5m])) by (le, path))
+          > 5
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "High latency on {{ $labels.path }}"
+          description: "P95 latency on {{ $labels.path }} is {{ $value }}s over the last 5 minutes."
+
+      - alert: HSAAIAuthFailures
+        expr: sum(rate(hsaai_auth_failures_total[5m])) by (path) > 10
+        for: 3m
+        labels:
+          severity: critical
+          team: security
+        annotations:
+          summary: "High authentication failure rate on {{ $labels.path }}"
+          description: "{{ $value }} auth failures/sec on {{ $labels.path }} — possible brute force attack."
+
+  # ── Infrastructure Alerts ──────────────────────────
+  - name: hsaai.infrastructure
+    rules:
+      - alert: HSAAIDatabaseConnectionPoolExhausted
+        expr: |
+          pg_stat_activity_count{datname="hsaai"} / pg_settings_max_connections > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "PostgreSQL connection pool approaching limit"
+          description: "Connection usage is {{ $value | humanizePercentage }} of max_connections."
+
+      - alert: HSAAIRedisMemoryHigh
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+
+      - alert: HSAAIQdrantUnhealthy
+        expr: up{job="qdrant"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          team: ai
+
+  # ── AI-Specific Alerts ─────────────────────────────
+  - name: hsaai.ai
+    rules:
+      - alert: HSAAILLMGatewayDown
+        expr: up{job="hsaai-llm-gateway"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: ai
+        annotations:
+          summary: "LLM Gateway is unreachable"
+          description: "Ollama/LLM backend is down — all AI features are affected."
+
+      - alert: HSAAIHighHallucinationRate
+        expr: |
+          sum(rate(hsaai_hallucination_detected_total[15m])) / sum(rate(hsaai_llm_responses_total[15m])) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+          team: ai
+        annotations:
+          summary: "High hallucination rate detected"
+          description: "Hallucination rate is {{ $value | humanizePercentage }} over the last 15 minutes."
+
+      - alert: HSAAIModelQualityDegraded
+        expr: hsaai_model_quality_score < 0.7
+        for: 30m
+        labels:
+          severity: warning
+          team: ai
+        annotations:
+          summary: "Model quality score below threshold"
+          description: "Model {{ $labels.model }} quality score is {{ $value }}, below 0.7 threshold."

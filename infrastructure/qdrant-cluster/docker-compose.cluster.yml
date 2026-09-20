@@ -1,0 +1,115 @@
+# HSAAI Qdrant Cluster (v3.0)
+# 3 nodes + Nginx load balancer + sharding + replication
+
+version: "3.8"
+
+services:
+  # ─── Qdrant Node 1 (seed) ───
+  qdrant1:
+    image: qdrant/qdrant:v1.12.1
+    container_name: hsaai-qdrant1
+    environment:
+      QDRANT__CLUSTER__ENABLED: "true"
+      QDRANT__CLUSTER__PEER_ID: "1"
+      QDRANT__CLUSTER__GOSSIP_PORT: "6335"
+      QDRANT__CLUSTER__BIND_ADDR: "0.0.0.0:6335"
+      QDRANT__CLUSTER__ADVERTISED_ADDR: "qdrant1:6335"
+      QDRANT__SERVICE__HTTP_PORT: "6333"
+      QDRANT__SERVICE__GRPC_PORT: "6334"
+      QDRANT__STORAGE__STORAGE_PATH: "/qdrant/storage"
+      QDRANT__STORAGE__SNAPSHOTS_PATH: "/qdrant/snapshots"
+      QDRANT__LOG_LEVEL: "INFO"
+    volumes:
+      - qdrant1-data:/qdrant/storage
+      - qdrant1-snapshots:/qdrant/snapshots
+    networks:
+      - hsaai-private
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Qdrant Node 2 (joins cluster via gossip) ───
+  qdrant2:
+    image: qdrant/qdrant:v1.12.1
+    container_name: hsaai-qdrant2
+    environment:
+      QDRANT__CLUSTER__ENABLED: "true"
+      QDRANT__CLUSTER__PEER_ID: "2"
+      QDRANT__CLUSTER__GOSSIP_PORT: "6335"
+      QDRANT__CLUSTER__BIND_ADDR: "0.0.0.0:6335"
+      QDRANT__CLUSTER__ADVERTISED_ADDR: "qdrant2:6335"
+      QDRANT__CLUSTER__BOOTSTRAP_PEERS: "qdrant1:6335"
+      QDRANT__SERVICE__HTTP_PORT: "6333"
+      QDRANT__SERVICE__GRPC_PORT: "6334"
+      QDRANT__STORAGE__STORAGE_PATH: "/qdrant/storage"
+      QDRANT__STORAGE__SNAPSHOTS_PATH: "/qdrant/snapshots"
+      QDRANT__LOG_LEVEL: "INFO"
+    volumes:
+      - qdrant2-data:/qdrant/storage
+      - qdrant2-snapshots:/qdrant/snapshots
+    networks:
+      - hsaai-private
+    depends_on:
+      qdrant1:
+        condition: service_healthy
+
+  # ─── Qdrant Node 3 (joins cluster via gossip) ───
+  qdrant3:
+    image: qdrant/qdrant:v1.12.1
+    container_name: hsaai-qdrant3
+    environment:
+      QDRANT__CLUSTER__ENABLED: "true"
+      QDRANT__CLUSTER__PEER_ID: "3"
+      QDRANT__CLUSTER__GOSSIP_PORT: "6335"
+      QDRANT__CLUSTER__BIND_ADDR: "0.0.0.0:6335"
+      QDRANT__CLUSTER__ADVERTISED_ADDR: "qdrant3:6335"
+      QDRANT__CLUSTER__BOOTSTRAP_PEERS: "qdrant1:6335"
+      QDRANT__SERVICE__HTTP_PORT: "6333"
+      QDRANT__SERVICE__GRPC_PORT: "6334"
+      QDRANT__STORAGE__STORAGE_PATH: "/qdrant/storage"
+      QDRANT__STORAGE__SNAPSHOTS_PATH: "/qdrant/snapshots"
+      QDRANT__LOG_LEVEL: "INFO"
+    volumes:
+      - qdrant3-data:/qdrant/storage
+      - qdrant3-snapshots:/qdrant/snapshots
+    networks:
+      - hsaai-private
+    depends_on:
+      qdrant2:
+        condition: service_started
+
+  # ─── Nginx Load Balancer ───
+  nginx-qdrant:
+    image: nginx:1.27-alpine
+    container_name: hsaai-nginx-qdrant
+    volumes:
+      - ./nginx-qdrant.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    networks:
+      - hsaai-private
+    depends_on:
+      - qdrant1
+      - qdrant2
+      - qdrant3
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  qdrant1-data:
+  qdrant2-data:
+  qdrant3-data:
+  qdrant1-snapshots:
+  qdrant2-snapshots:
+  qdrant3-snapshots:
+
+networks:
+  hsaai-private:
+    external: true
+    name: hsaai_private

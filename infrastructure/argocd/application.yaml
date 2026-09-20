@@ -1,0 +1,81 @@
+# HSAAI ArgoCD GitOps Configuration (Phase 2 — Modernize)
+#
+# FIX v2.2 (Phase 2): Replaces push-based `helm upgrade` from GitHub Actions
+# (which used a long-lived PRODUCTION_KUBECONFIG secret) with ArgoCD pull-based
+# GitOps. Benefits:
+#   - Automatic drift detection + reconciliation
+#   - No long-lived kubeconfig secrets in CI
+#   - Audit trail of all cluster state changes (Git history)
+#   - Self-healing (manual kubectl edits are reverted)
+#   - Multi-environment promotion via Git branches
+#
+# Prerequisites:
+#   1. Install ArgoCD in the cluster:
+#      kubectl create namespace argocd
+#      kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+#
+#   2. Apply this Application:
+#      kubectl apply -f infrastructure/argocd/application.yaml
+#
+#   3. Access ArgoCD UI:
+#      kubectl port-forward svc/argocd-server -n argocd 8080:443
+#      # Get admin password:
+#      kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+#
+#   4. Configure the repo credential secret (if the repo is private):
+#      kubectl create secret generic hsaai-repo-cred \
+#        --from-literal=type=git \
+#        --from-literal=url=https://github.com/hsaai/hsaai \
+#        --from-literal=username=hsaai-bot \
+#        --from-literal=password=$GITHUB_TOKEN \
+#        -n argocd
+#      kubectl annotate secret hsaai-repo-cred -n argocd \
+#        argocd.argoproj.io/secret-type=repository
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: hsaai
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: hsaai
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io  # cascade delete on Application deletion
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/hsaai/hsaai  # CHANGE to your actual repo URL
+    targetRevision: main                      # branch/tag/commit to track
+    path: infrastructure/helm                 # path to Helm chart
+    helm:
+      valueFiles:
+        - values.yaml
+        # Override per-environment:
+        # - values-production.yaml  (uncomment for production)
+      # Pass secrets via external-secrets or sealed-secrets, NOT --set.
+      # See infrastructure/secrets/ for the secret management strategy.
+      parameters:
+        - name: global.environment
+          value: production
+        - name: global.domain
+          value: hsaai.internal
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: hsaai
+  syncPolicy:
+    automated:
+      prune: true        # delete resources that are no longer in Git
+      selfHeal: true     # revert manual kubectl edits automatically
+      allowEmpty: false  # don't sync if the chart produces zero resources (safety)
+    syncOptions:
+      - CreateNamespace=true      # auto-create the hsaai namespace
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true            # prune resources only after new ones are healthy
+      - ApplyOutOfSyncOnly=true   # faster syncs — only apply changed resources
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  revisionHistoryLimit: 10  # keep last 10 sync revisions for rollback

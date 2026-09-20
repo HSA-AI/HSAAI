@@ -1,0 +1,134 @@
+{
+  "llm-gateway": {
+    "directory": "llm_gateway",
+    "port": 8090
+  },
+  "api-gateway": {
+    "directory": "api_gateway",
+    "port": 8000
+  },
+  "auth-service": {
+    "directory": "auth_service",
+    "port": 8010
+  },
+  "rag-service": {
+    "directory": "rag_engine",
+    "port": 8030
+  },
+  "agent-runtime": {
+    "directory": "multi_agents",
+    "port": 8040
+  },
+  "alignment-service": {
+    "directory": "ai_alignment",
+    "port": 8005
+  },
+  "governance-service": {
+    "directory": "governance",
+    "port": 8011
+  },
+  "backend-core": {
+    "directory": "backend_core",
+    "port": 8000
+  },
+  "workflow-engine": {
+    "directory": "workflow_engine",
+    "port": 8070
+  },
+  "mcp-server": {
+    "directory": "mcp_server",
+    "port": 8094
+  },
+  "pii-detector": {
+    "directory": "pii_detector",
+    "port": 8092
+  },
+  "model-training": {
+    "directory": "model_training",
+    "port": 8090
+  },
+  "consciousness-stream": {
+    "directory": "consciousness_stream",
+    "port": 8070
+  },
+  "proactive-intelligence": {
+    "directory": "proactive_intelligence",
+    "port": 8071
+  },
+  "digital-twin": {
+    "directory": "digital_twin",
+    "port": 8072
+  },
+  "intelligence-economy": {
+    "directory": "intelligence_economy",
+    "port": 8073
+  },
+  "wisdom-marketplace": {
+    "directory": "wisdom_marketplace",
+    "port": 8074
+  },
+  "evolution-engine": {
+    "directory": "evolution_engine",
+    "port": 8075
+  },
+  "federation-hub": {
+    "directory": "federation_hub",
+    "port": 8076
+  },
+  "dream-engine": {
+    "directory": "dream_engine",
+    "port": 8077
+  },
+  "empathy-engine": {
+    "directory": "empathy_engine",
+    "port": 8078
+  },
+  "time-travel": {
+    "directory": "time_travel",
+    "port": 8079
+  },
+  "genealogy-service": {
+    "directory": "genealogy_service",
+    "port": 8081
+  },
+  "reflection-engine": {
+    "directory": "reflection_engine",
+    "port": 8082
+  },
+  "imagination-engine": {
+    "directory": "imagination_engine",
+    "port": 8083
+  },
+  "intuition-engine": {
+    "directory": "intuition_engine",
+    "port": 8084
+  },
+  "narrative-engine": {
+    "directory": "narrative_engine",
+    "port": 8085
+  },
+  "quantum-decision-engine": {
+    "directory": "quantum_decision_engine",
+    "port": 8086
+  },
+  "precognition-engine": {
+    "directory": "precognition_engine",
+    "port": 8087
+  },
+  "immune-system": {
+    "directory": "immune_system",
+    "port": 8088
+  },
+  "collective-intelligence-engine": {
+    "directory": "collective_intelligence_engine",
+    "port": 8089
+  },
+  "singularity-engine": {
+    "directory": "singularity_engine",
+    "port": 8095
+  },
+  "knowledge-genome-engine": {
+    "directory": "knowledge_genome_engine",
+    "port": 8096
+  }
+}

@@ -1,0 +1,9 @@
+apiVersion: 1
+providers:
+  - name: HSAAI Production Dashboards
+    folder: HSAAI
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards

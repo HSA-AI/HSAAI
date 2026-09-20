@@ -1,0 +1,60 @@
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: hsaai_training
+      POSTGRES_USER: hsaai
+      POSTGRES_PASSWORD: hsaai
+    volumes:
+      - training_postgres:/var/lib/postgresql/data
+    ports: ["5433:5432"]
+  redis:
+    image: redis:7-alpine
+    ports: ["6380:6379"]
+  model-training-api:
+    build:
+      context: ../..
+      dockerfile: services/model_training/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+psycopg://hsaai:hsaai@postgres:5432/hsaai_training
+      REDIS_URL: redis://redis:6379/0
+      ARTIFACTS_ROOT: /app/artifacts
+      HF_HOME: /app/.cache/huggingface
+    volumes:
+      - training_artifacts:/app/artifacts
+      - hf_cache:/app/.cache/huggingface
+    ports: ["8090:8090"]
+    depends_on: [postgres, redis]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+  training-worker:
+    build:
+      context: ../..
+      dockerfile: services/model_training/Dockerfile
+    command: ["python3.11", "-m", "services.model_training.workers.queue_worker"]
+    environment:
+      DATABASE_URL: postgresql+psycopg://hsaai:hsaai@postgres:5432/hsaai_training
+      REDIS_URL: redis://redis:6379/0
+      ARTIFACTS_ROOT: /app/artifacts
+      HF_HOME: /app/.cache/huggingface
+    volumes:
+      - training_artifacts:/app/artifacts
+      - hf_cache:/app/.cache/huggingface
+    depends_on: [postgres, redis]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+volumes:
+  training_postgres:
+  training_artifacts:
+  hf_cache:

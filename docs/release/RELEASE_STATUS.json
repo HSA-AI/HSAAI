@@ -1,0 +1,47 @@
+{
+  "version": "4.0.0-rc.1",
+  "delivery_target": "هائل سعيد أنعم وشركاه",
+  "date": "2026-09-12",
+  "classification": "technical_handover_release_candidate",
+  "production_approved": false,
+  "all_pdf_requirements_complete": false,
+  "validation": {
+    "backend": {
+      "tests": 364,
+      "errors": 0,
+      "failures": 0,
+      "skipped": 13,
+      "passed": 351
+    },
+    "frontend_tests_passed": 38,
+    "frontend_build": "passed",
+    "frontend_lint": "passed",
+    "coverage_percent": 41.92,
+    "required_coverage_percent": 80,
+    "coverage_gate": "failed",
+    "npm_known_vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "python_dependency_audit": "blocked_by_network_timeout",
+    "static_checks": "passed",
+    "helm_lint_and_render": "passed",
+    "frontend_http_smoke": "passed"
+  },
+  "production_gates_remaining": [
+    "80% coverage",
+    "Full Ruff/mypy/SAST and image audits",
+    "Actual Docker build/start and inter-service acceptance",
+    "PostgreSQL migrations and RLS acceptance",
+    "Real SSO and cross-tenant acceptance",
+    "Arabic RAG/OCR and actual local model/GPU inference",
+    "Load 1000/10000 and HA/DR restore",
+    "Browser accessibility and visual QA"
+  ],
+  "advanced_pdf_axes": "research/roadmap/prototypes; see requirements traceability",
+  "source_preservation": "All original file paths must be present; package script fails otherwise"
+}

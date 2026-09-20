@@ -1,0 +1,385 @@
+[
+  {
+    "name": "advanced_agent_invocation_logs",
+    "create": "\nCREATE TABLE advanced_agent_invocation_logs (\n\tid SERIAL NOT NULL, \n\trequest_id VARCHAR NOT NULL, \n\tuser_id VARCHAR, \n\ttenant_id VARCHAR, \n\tworkspace_id VARCHAR, \n\tmessage TEXT, \n\tselected_agent VARCHAR NOT NULL, \n\tsupervisor_decision TEXT, \n\tconfidence FLOAT, \n\trequired_connectors_json TEXT, \n\tpermission_status VARCHAR, \n\tlatency_ms INTEGER, \n\tsuccess BOOLEAN, \n\tcreated_at TIMESTAMP WITH TIME ZONE DEFAULT now(), \n\tPRIMARY KEY (id)\n)\n\n",
+    "indexes": [
+      "CREATE INDEX ix_advanced_agent_invocation_logs_permission_status ON advanced_agent_invocation_logs (permission_status)",
+      "CREATE UNIQUE INDEX ix_advanced_agent_invocation_logs_request_id ON advanced_agent_invocation_logs (request_id)",
+      "CREATE INDEX ix_advanced_agent_invocation_logs_selected_agent ON advanced_agent_invocation_logs (selected_agent)",
+      "CREATE INDEX ix_advanced_agent_invocation_logs_tenant_id ON advanced_agent_invocation_logs (tenant_id)",
+      "CREATE INDEX ix_advanced_agent_invocation_logs_user_id ON advanced_agent_invocation_logs (user_id)",
+      "CREATE INDEX ix_advanced_agent_invocation_logs_workspace_id ON advanced_agent_invocation_logs (workspace_id)"
+    ]
+  },
+  {
+    "name": "advanced_agent_memory_records",
+    "create": "\nCREATE TABLE advanced_agent_memory_records (\n\tid SERIAL NOT NULL, \n\tagent_key VARCHAR NOT NULL, \n\tmemory_scope VARCHAR, \n\tsubject VARCHAR, \n\tcontent TEXT, \n\ttenant_id VARCHAR, \n\tworkspace_id VARCHAR, \n\tcreated_at TIMESTAMP WITH TIME ZONE DEFAULT now(), \n\tPRIMARY KEY (id)\n)\n\n",
+    "indexes": [
+      "CREATE INDEX ix_advanced_agent_memory_records_agent_key ON advanced_agent_memory_records (agent_key)",
+      "CREATE INDEX ix_advanced_agent_memory_records_memory_scope ON advanced_agent_memory_records (memory_scope)",
+      "CREATE INDEX ix_advanced_agent_memory_records_subject ON advanced_agent_memory_records (subject)",
+      "CREATE INDEX ix_advanced_agent_memory_records_tenant_id ON advanced_agent_memory_records (tenant_id)",
+      "CREATE INDEX ix_advanced_agent_memory_records_workspace_id ON advanced_agent_memory_records (workspace_id)"
+    ]
+  },
+  {
+    "name": "advanced_connector_runtime_states",
+    "create": "\nCREATE TABLE advanced_connector_runtime_states (\n\tid SERIAL NOT NULL, \n\tconnector_key VARCHAR NOT NULL, \n\thealth_status VARCHAR, \n\tsync_status VARCHAR, \n\tlast_error TEXT, \n\tlatency_ms INTEGER, \n\trate_limit_remaining INTEGER, \n\tcircuit_state VARCHAR, \n\tsuccess_count INTEGER, \n\terror_count INTEGER, \n\ttenant_id VARCHAR, \n\tworkspace_id VARCHAR, \n\tupdated_at TIMESTAMP WITH TIME ZONE DEFAULT now(), \n\tPRIMARY KEY (id)\n)\n\n",
+    "indexes": [
+      "CREATE INDEX ix_advanced_connector_runtime_states_circuit_state ON advanced_connector_runtime_states (circuit_state)",
+      "CREATE INDEX ix_advanced_connector_runtime_states_connector_key ON advanced_connector_runtime_states (connector_key)",
+      "CREATE INDEX ix_advanced_connector_runtime_states_health_status ON advanced_connector_runtime_states (health_status)",
+      "CREATE INDEX ix_advanced_connector_runtime_states_sync_status ON advanced_connector_runtime_states (sync_status)",
+      "CREATE INDEX ix_advanced_connector_runtime_states_tenant_id ON advanced_connector_runtime_states (tenant_id)",
+      "CREATE INDEX ix_advanced_connector_runtime_states_workspace_id ON advanced_connector_runtime_states (workspace_id)"
+    ]
+  },
+  {
+    "name": "advanced_observability_metrics",
+    "create": "\nCREATE TABLE advanced_observability_metrics (\n\tid SERIAL NOT NULL, \n\tevent_type VARCHAR NOT NULL, \n\tcomponent VARCHAR NOT NULL, \n\tstatus VARCHAR, \n\tlatency_ms INTEGER, \n\ttokens INTEGER, \n\tmodel VARCHAR, \n\tagent VARCHAR, \n\tworkflow VARCHAR, \n\tconnector VARCHAR, \n\terror_message TEXT, \n\ttenant_id VARCHAR, \n\tworkspace_id VARCHAR, \n\tcreated_at TIMESTAMP WITH TIME ZONE DEFAULT now(), \n\tPRIMARY KEY (id)\n)\n\n",
+    "indexes": [
+      "CREATE INDEX ix_advanced_observability_metrics_agent ON advanced_observability_metrics (agent)",
+      "CREATE INDEX ix_advanced_observability_metrics_component ON advanced_observability_metrics (component)",
+      "CREATE INDEX ix_advanced_observability_metrics_connector ON advanced_observability_metrics (connector)",
+      "CREATE INDEX ix_advanced_observability_metrics_event_type ON advanced_observability_metrics (event_type)",
+      "CREATE INDEX ix_advanced_observability_metrics_model ON advanced_observability_metrics (model)",
+      "CREATE INDEX ix_advanced_observability_metrics_status ON advanced_observability_metrics (status)",
+      "CREATE INDEX ix_advanced_observability_metrics_tenant_id ON advanced_observability_metrics (tenant_id)",
+      "CREATE INDEX ix_advanced_observability_metrics_workflow ON advanced_observability_metrics (workflow)",
+      "CREATE INDEX ix_advanced_observability_metrics_workspace_id ON advanced_observability_metrics (workspace_id)"
+    ]
+  },
+  {
+    "name": "advanced_workflow_audit_events",
+    "create": "\nCREATE TABLE advanced_workflow_audit_events (\n\tid SERIAL NOT NULL, \n\texecution_id VARCHAR NOT NULL, \n\tactor VARCHAR, \n\taction VARCHAR NOT NULL, \n\tcomment TEXT, \n\tstatus_after VARCHAR, \n\tcreated_at TIMESTAMP WITH TIME ZONE DEFAULT now(), \n\tPRIMARY KEY (id)\n)\n\n",
+    "indexes": [
+      "CREATE INDEX ix_advanced_workflow_audit_events_action ON advanced_workflow_audit_events (action)",
+      "CREATE INDEX ix_advanced_workflow_audit_events_actor ON advanced_workflow_audit_events (actor)",
+      "CREATE INDEX ix_advanced_workflow_audit_events_execution_id ON advanced_workflow_audit_events (execution_id)",
+      "CREATE INDEX ix_advanced_workflow_audit_events_status_after ON advanced_workflow_audit_events (status_after)"
+    ]
+  },
+  {
+    "name": "advanced_workflow_executions",
+    "create": "\nCREATE TABLE advanced_workflow_executions (\n\tid SERIAL NOT NULL, \n\texecution_id VARCHAR NOT NULL, \n\ttemplate_key VARCHAR NOT NULL, \n\ttitle VARCHAR NOT NULL, \n\tstatus VARCHAR, \n\tcurrent_step VARCHAR, \n\trequested_by VARCHAR, \n\tpayload_json TEXT, \n\tsteps_json TEXT, \n\tsla_status VARCHAR, \n\ttenant_id VARCHAR, \n\tworkspace_id VARCHAR, \n\tcreated_at TIMESTAMP WITH TIME ZONE DEFAULT now(), \n\tupdated_at TIMESTAMP WITH TIME ZONE DEFAULT now(), \n\tPRIMARY KEY (id)\n)\n\n",
+    "indexes": [
+      "CREATE INDEX ix_advanced_workflow_executions_current_step ON advanced_workflow_executions (current_step)",
+      "CREATE UNIQUE INDEX ix_advanced_workflow_executions_execution_id ON advanced_workflow_executions (execution_id)",
+      "CREATE INDEX ix_advanced_workflow_executions_requested_by ON advanced_workflow_executions (requested_by)",
+      "CREATE INDEX ix_advanced_workflow_executions_sla_status ON advanced_workflow_executions (sla_status)",
+      "CREATE INDEX ix_advanced_workflow_executions_status ON advanced_workflow_executions (status)",
+      "CREATE INDEX ix_advanced_workflow_executions_template_key ON advanced_workflow_executions (template_key)",
+      "CREATE INDEX ix_advanced_workflow_executions_tenant_id ON advanced_workflow_executions (tenant_id)",
+      "CREATE INDEX ix_advanced_workflow_executions_title ON advanced_workflow_executions (title)",
+      "CREATE INDEX ix_advanced_workflow_executions_workspace_id ON advanced_workflow_executions (workspace_id)"
+    ]
+  },
+  {
+    "name": "enterprise_agent_audit_logs",
+    "create": "\nCREATE TABLE enterprise_agent_audit_logs (\n\tid SERIAL NOT NULL, \n\trun_id VARCHAR NOT NULL, \n\tsupervisor_decision VARCHAR, \n\tselected_agent VARCHAR, \n\tactor VARCHAR, \n\tmessage TEXT, \n\tallowed BOOLEAN, \n\treason TEXT, \n\tlatency_ms INTEGER, \n\ttenant_id VARCHAR, \n\tworkspace_id VARCHAR, \n\tcreated_at TIMESTAMP WITH TIME ZONE DEFAULT now(), \n\tPRIMARY KEY (id)\n)\n\n",
+    "indexes": [
+      "CREATE INDEX ix_enterprise_agent_audit_logs_actor ON enterprise_agent_audit_logs (actor)",
+      "CREATE INDEX ix_enterprise_agent_audit_logs_run_id ON enterprise_agent_audit_logs (run_id)",
+      "CREATE INDEX ix_enterprise_agent_audit_logs_selected_agent ON enterprise_agent_audit_logs (selected_agent)",
+      "CREATE INDEX ix_enterprise_agent_audit_logs_supervisor_decision ON enterprise_agent_audit_logs (supervisor_decision)",
+      "CREATE INDEX ix_enterprise_agent_audit_logs_tenant_id ON enterprise_agent_audit_logs (tenant_id)",
+      "CREATE INDEX ix_enterprise_agent_audit_logs_workspace_id ON enterprise_agent_audit_logs (workspace_id)"
+    ]
+  },
+  {
+    "name": "enterprise_agent_definitions",
+    "create": "\nCREATE TABLE enterprise_agent_definitions (\n\tid SERIAL NOT NULL, \n\tkey VARCHAR NOT NULL, \n\tname VARCHAR NOT NULL, \n\tdepartment VARCHAR, \n\tcapabilities_json TEXT, \n\trequired_roles_json TEXT, \n\ttools_json TEXT, \n\tsystem_prompt TEXT, \n\tstatus VARCHAR, \n\thealth_status VARCHAR, \n\tavg_latency_ms INTEGER, \n\tsuccess_rate FLOAT, \n\ttenant_id VARCHAR, \n\tworkspace_id VARCHAR, \n\tcreated_at TIMESTAMP WITH TIME ZONE DEFAULT now(), \n\tPRIMARY KEY (id)\n)\n\n",
+    "indexes": [
+      "CREATE INDEX ix_enterprise_agent_definitions_department ON enterprise_agent_definitions (department)",
+      "CREATE INDEX ix_enterprise_agent_definitions_health_status ON enterprise_agent_definitions (health_status)",
+      "CREATE INDEX ix_enterprise_agent_definitions_key ON enterprise_agent_definitions (key)",
+      "CREATE INDEX ix_enterprise_agent_definitions_name ON enterprise_agent_definitions (name)",
+      "CREATE INDEX ix_enterprise_agent_definitions_status ON enterprise_agent_definitions (status)",
+      "CREATE INDEX ix_enterprise_agent_definitions_tenant_id ON enterprise_agent_definitions (tenant_id)",
+      "CREATE INDEX ix_enterprise_agent_definitions_workspace_id ON enterprise_agent_definitions (workspace_id)"
+    ]
+  },
+  {
+    "name": "enterprise_connector_security_policies",
+    "create": "\nCREATE TABLE enterprise_connector_security_policies (\n\tid SERIAL NOT NULL, \n\tconnector_key VARCHAR NOT NULL, \n\tpolicy_name VARCHAR NOT NULL, \n\tread_only BOOLEAN, \n\tblocked_operations_json TEXT, \n\tfield_masking_json TEXT, \n\trow_filter_json TEXT, \n\trequires_human_approval BOOLEAN, \n\ttenant_id VARCHAR, \n\tworkspace_id VARCHAR, \n\tcreated_at TIMESTAMP WITH TIME ZONE DEFAULT now(), \n\tPRIMARY KEY (id)\n)\n\n",
+    "indexes": [
+      "CREATE INDEX ix_enterprise_connector_security_policies_connector_key ON enterprise_connector_security_policies (connector_key)",
+      "CREATE INDEX ix_enterprise_connector_security_policies_policy_name ON enterprise_connector_security_policies (policy_name)",
+      "CREATE INDEX ix_enterprise_connector_security_policies_tenant_id ON enterprise_connector_security_policies (tenant_id)",
+      "CREATE INDEX ix_enterprise_connector_security_policies_workspace_id ON enterprise_connector_security_policies (workspace_id)"
+    ]
+  },
+  {
+    "name": "enterprise_connectors",
+    "create": "\nCREATE TABLE enterprise_connectors (\n\tid SERIAL NOT NULL, \n\tkey VARCHAR NOT NULL, \n\tname VARCHAR NOT NULL, \n\tconnector_type VARCHAR NOT NULL, \n\tauth_type VARCHAR, \n\tbase_url TEXT, \n\tschedule VARCHAR, \n\tsecrets_ref VARCHAR, \n\tenabled BOOLEAN, \n\thealth_status VARCHAR, \n\tlast_sync_status VARCHAR, \n\tlast_sync_at TIMESTAMP WITH TIME ZONE, \n\tmetadata_json TEXT, \n\ttenant_id VARCHAR, \n\tworkspace_id VARCHAR, \n\tcreated_at TIMESTAMP WITH TIME ZONE DEFAULT now(), \n\tPRIMARY KEY (id)\n)\n\n",
+    "indexes": [
+      "CREATE INDEX ix_enterprise_connectors_auth_type ON enterprise_connectors (auth_type)",
+      "CREATE INDEX ix_enterprise_connectors_connector_type ON enterprise_connectors (connector_type)",
+      "CREATE INDEX ix_enterprise_connectors_enabled ON enterprise_connectors (enabled)",
+      "CREATE INDEX ix_enterprise_connectors_health_status ON enterprise_connectors (health_status)",
+      "CREATE INDEX ix_enterprise_connectors_key ON enterprise_connectors (key)",
+      "CREATE INDEX ix_enterprise_connectors_last_sync_status ON enterprise_connectors (last_sync_status)",
+      "CREATE INDEX ix_enterprise_connectors_name ON enterprise_connectors (name)",
+      "CREATE INDEX ix_enterprise_connectors_schedule ON enterprise_connectors (schedule)",
+      "CREATE INDEX ix_enterprise_connectors_tenant_id ON enterprise_connectors (tenant_id)",
+      "CREATE INDEX ix_enterprise_connectors_workspace_id ON enterprise_connectors (workspace_id)"
+    ]
+  },
+  {
+    "name": "enterprise_integration_audit_logs",
+    "create": "\nCREATE TABLE enterprise_integration_audit_logs (\n\tid SERIAL NOT NULL, \n\trequest_id VARCHAR NOT NULL, \n\tconnector_key VARCHAR NOT NULL, \n\tactor VARCHAR, \n\taction VARCHAR NOT NULL, \n\tresource VARCHAR, \n\tsuccess BOOLEAN, \n\tmessage TEXT, \n\tdata_source VARCHAR, \n\tlatency_ms INTEGER, \n\ttenant_id VARCHAR, \n\tworkspace_id VARCHAR, \n\tcreated_at TIMESTAMP WITH TIME ZONE DEFAULT now(), \n\tPRIMARY KEY (id)\n)\n\n",
+    "indexes": [
+      "CREATE INDEX ix_enterprise_integration_audit_logs_action ON enterprise_integration_audit_logs (action)",
+      "CREATE INDEX ix_enterprise_integration_audit_logs_actor ON enterprise_integration_audit_logs (actor)",
+      "CREATE INDEX ix_enterprise_integration_audit_logs_connector_key ON enterprise_integration_audit_logs (connector_key)",
+      "CREATE INDEX ix_enterprise_integration_audit_logs_data_source ON enterprise_integration_audit_logs (data_source)",
+      "CREATE INDEX ix_enterprise_integration_audit_logs_request_id ON enterprise_integration_audit_logs (request_id)",
+      "CREATE INDEX ix_enterprise_integration_audit_logs_resource ON enterprise_integration_audit_logs (resource)",
+      "CREATE INDEX ix_enterprise_integration_audit_logs_tenant_id ON enterprise_integration_audit_logs (tenant_id)",
+      "CREATE INDEX ix_enterprise_integration_audit_logs_workspace_id ON enterprise_integration_audit_logs (workspace_id)"
+    ]
+  },
+  {
+    "name": "enterprise_integration_definitions",
+    "create": "\nCREATE TABLE enterprise_integration_definitions (\n\tid SERIAL NOT NULL, \n\tkey VARCHAR NOT NULL, \n\tname VARCHAR NOT NULL, \n\tsystem_type VARCHAR NOT NULL, \n\tcategory VARCHAR, \n\tbase_url TEXT, \n\tauth_type VARCHAR, \n\tcredentials_ref VARCHAR, \n\tread_only BOOLEAN, \n\tenabled BOOLEAN, \n\thealth_status VARCHAR, \n\tlast_sync_status VARCHAR, \n\tlast_sync_at TIMESTAMP WITH TIME ZONE, \n\tcapabilities_json TEXT, \n\tallowed_roles_json TEXT, \n\tmetadata_json TEXT, \n\ttenant_id VARCHAR, \n\tworkspace_id VARCHAR, \n\tcreated_at TIMESTAMP WITH TIME ZONE DEFAULT now(), \n\tupdated_at TIMESTAMP WITH TIME ZONE DEFAULT now(), \n\tPRIMARY KEY (id)\n)\n\n",
+    "indexes": [
+      "CREATE INDEX ix_enterprise_integration_definitions_auth_type ON enterprise_integration_definitions (auth_type)",
+      "CREATE INDEX ix_enterprise_integration_definitions_category ON enterprise_integration_definitions (category)",
+      "CREATE INDEX ix_enterprise_integration_definitions_enabled ON enterprise_integration_definitions (enabled)",
+      "CREATE INDEX ix_enterprise_integration_definitions_health_status ON enterprise_integration_definitions (health_status)",
+      "CREATE UNIQUE INDEX ix_enterprise_integration_definitions_key ON enterprise_integration_definitions (key)",
+      "CREATE INDEX ix_enterprise_integration_definitions_last_sync_status ON enterprise_integration_definitions (last_sync_status)",
+      "CREATE INDEX ix_enterprise_integration_definitions_name ON enterprise_integration_definitions (name)",
+      "CREATE INDEX ix_enterprise_integration_definitions_system_type ON enterprise_integration_definitions (system_type)",
+      "CREATE INDEX ix_enterprise_integration_definitions_tenant_id ON enterprise_integration_definitions (tenant_id)",
+      "CREATE INDEX ix_enterprise_integration_definitions_workspace_id ON enterprise_integration_definitions (workspace_id)"
+    ]
+  },
+  {
+    "name": "enterprise_integration_sync_runs",
+    "create": "\nCREATE TABLE enterprise_integration_sync_runs (\n\tid SERIAL NOT NULL, \n\tsync_id VARCHAR NOT NULL, \n\tconnector_key VARCHAR NOT NULL, \n\tstatus VARCHAR, \n\trecords_read INTEGER, \n\trecords_written INTEGER, \n\terror_message TEXT, \n\tstarted_by VARCHAR, \n\ttenant_id VARCHAR, \n\tworkspace_id VARCHAR, \n\tcreated_at TIMESTAMP WITH TIME ZONE DEFAULT now(), \n\tfinished_at TIMESTAMP WITH TIME ZONE, \n\tPRIMARY KEY (id)\n)\n\n",
+    "indexes": [
+      "CREATE INDEX ix_enterprise_integration_sync_runs_connector_key ON enterprise_integration_sync_runs (connector_key)",
+      "CREATE INDEX ix_enterprise_integration_sync_runs_started_by ON enterprise_integration_sync_runs (started_by)",
+      "CREATE INDEX ix_enterprise_integration_sync_runs_status ON enterprise_integration_sync_runs (status)",
+      "CREATE UNIQUE INDEX ix_enterprise_integration_sync_runs_sync_id ON enterprise_integration_sync_runs (sync_id)",
+      "CREATE INDEX ix_enterprise_integration_sync_runs_tenant_id ON enterprise_integration_sync_runs (tenant_id)",
+      "CREATE INDEX ix_enterprise_integration_sync_runs_workspace_id ON enterprise_integration_sync_runs (workspace_id)"
+    ]
+  },
+  {
+    "name": "enterprise_metric_events",
+    "create": "\nCREATE TABLE enterprise_metric_events (\n\tid SERIAL NOT NULL, \n\tmetric_type VARCHAR NOT NULL, \n\tcategory VARCHAR, \n\tname VARCHAR NOT NULL, \n\tvalue FLOAT, \n\tunit VARCHAR, \n\tlabels_json TEXT, \n\ttenant_id VARCHAR, \n\tworkspace_id VARCHAR, \n\tcreated_at TIMESTAMP WITH TIME ZONE DEFAULT now(), \n\tPRIMARY KEY (id)\n)\n\n",
+    "indexes": [
+      "CREATE INDEX ix_enterprise_metric_events_category ON enterprise_metric_events (category)",
+      "CREATE INDEX ix_enterprise_metric_events_metric_type ON enterprise_metric_events (metric_type)",
+      "CREATE INDEX ix_enterprise_metric_events_name ON enterprise_metric_events (name)",
+      "CREATE INDEX ix_enterprise_metric_events_tenant_id ON enterprise_metric_events (tenant_id)",
+      "CREATE INDEX ix_enterprise_metric_events_workspace_id ON enterprise_metric_events (workspace_id)"
+    ]
+  },
+  {
+    "name": "enterprise_upgrade_approval_requests",
+    "create": "\nCREATE TABLE enterprise_upgrade_approval_requests (\n\tid SERIAL NOT NULL, \n\tapproval_id VARCHAR NOT NULL, \n\ttitle VARCHAR NOT NULL, \n\taction_type VARCHAR NOT NULL, \n\tresource_type VARCHAR NOT NULL, \n\tresource_id VARCHAR NOT NULL, \n\trecommendation TEXT, \n\trisk_level VARCHAR, \n\tstatus VARCHAR, \n\trequired_roles_json TEXT, \n\tpayload_json TEXT, \n\trequested_by VARCHAR, \n\treviewed_by VARCHAR, \n\treview_comment TEXT, \n\ttenant_id VARCHAR, \n\tworkspace_id VARCHAR, \n\tcreated_at TIMESTAMP WITH TIME ZONE DEFAULT now(), \n\tupdated_at TIMESTAMP WITH TIME ZONE DEFAULT now(), \n\tPRIMARY KEY (id)\n)\n\n",
+    "indexes": [
+      "CREATE INDEX ix_enterprise_upgrade_approval_requests_action_type ON enterprise_upgrade_approval_requests (action_type)",
+      "CREATE UNIQUE INDEX ix_enterprise_upgrade_approval_requests_approval_id ON enterprise_upgrade_approval_requests (approval_id)",
+      "CREATE INDEX ix_enterprise_upgrade_approval_requests_requested_by ON enterprise_upgrade_approval_requests (requested_by)",
+      "CREATE INDEX ix_enterprise_upgrade_approval_requests_resource_id ON enterprise_upgrade_approval_requests (resource_id)",
+      "CREATE INDEX ix_enterprise_upgrade_approval_requests_resource_type ON enterprise_upgrade_approval_requests (resource_type)",
+      "CREATE INDEX ix_enterprise_upgrade_approval_requests_reviewed_by ON enterprise_upgrade_approval_requests (reviewed_by)",
+      "CREATE INDEX ix_enterprise_upgrade_approval_requests_risk_level ON enterprise_upgrade_approval_requests (risk_level)",
+      "CREATE INDEX ix_enterprise_upgrade_approval_requests_status ON enterprise_upgrade_approval_requests (status)",
+      "CREATE INDEX ix_enterprise_upgrade_approval_requests_tenant_id ON enterprise_upgrade_approval_requests (tenant_id)",
+      "CREATE INDEX ix_enterprise_upgrade_approval_requests_title ON enterprise_upgrade_approval_requests (title)",
+      "CREATE INDEX ix_enterprise_upgrade_approval_requests_workspace_id ON enterprise_upgrade_approval_requests (workspace_id)"
+    ]
+  },
+  {
+    "name": "enterprise_workflow_executions",
+    "create": "\nCREATE TABLE enterprise_workflow_executions (\n\tid SERIAL NOT NULL, \n\texecution_id VARCHAR NOT NULL, \n\ttemplate_key VARCHAR NOT NULL, \n\tstatus VARCHAR, \n\tcurrent_step VARCHAR, \n\trequested_by VARCHAR, \n\tpayload_json TEXT, \n\tsla_due_at TIMESTAMP WITH TIME ZONE, \n\ttenant_id VARCHAR, \n\tworkspace_id VARCHAR, \n\tcreated_at TIMESTAMP WITH TIME ZONE DEFAULT now(), \n\tupdated_at TIMESTAMP WITH TIME ZONE DEFAULT now(), \n\tPRIMARY KEY (id)\n)\n\n",
+    "indexes": [
+      "CREATE INDEX ix_enterprise_workflow_executions_current_step ON enterprise_workflow_executions (current_step)",
+      "CREATE UNIQUE INDEX ix_enterprise_workflow_executions_execution_id ON enterprise_workflow_executions (execution_id)",
+      "CREATE INDEX ix_enterprise_workflow_executions_requested_by ON enterprise_workflow_executions (requested_by)",
+      "CREATE INDEX ix_enterprise_workflow_executions_status ON enterprise_workflow_executions (status)",
+      "CREATE INDEX ix_enterprise_workflow_executions_template_key ON enterprise_workflow_executions (template_key)",
+      "CREATE INDEX ix_enterprise_workflow_executions_tenant_id ON enterprise_workflow_executions (tenant_id)",
+      "CREATE INDEX ix_enterprise_workflow_executions_workspace_id ON enterprise_workflow_executions (workspace_id)"
+    ]
+  },
+  {
+    "name": "enterprise_workflow_templates",
+    "create": "\nCREATE TABLE enterprise_workflow_templates (\n\tid SERIAL NOT NULL, \n\tkey VARCHAR NOT NULL, \n\tname VARCHAR NOT NULL, \n\tcategory VARCHAR, \n\tdescription TEXT, \n\tdefinition_json TEXT, \n\tenabled BOOLEAN, \n\ttenant_id VARCHAR, \n\tworkspace_id VARCHAR, \n\tcreated_at TIMESTAMP WITH TIME ZONE DEFAULT now(), \n\tPRIMARY KEY (id)\n)\n\n",
+    "indexes": [
+      "CREATE INDEX ix_enterprise_workflow_templates_category ON enterprise_workflow_templates (category)",
+      "CREATE INDEX ix_enterprise_workflow_templates_enabled ON enterprise_workflow_templates (enabled)",
+      "CREATE INDEX ix_enterprise_workflow_templates_key ON enterprise_workflow_templates (key)",
+      "CREATE INDEX ix_enterprise_workflow_templates_name ON enterprise_workflow_templates (name)",
+      "CREATE INDEX ix_enterprise_workflow_templates_tenant_id ON enterprise_workflow_templates (tenant_id)",
+      "CREATE INDEX ix_enterprise_workflow_templates_workspace_id ON enterprise_workflow_templates (workspace_id)"
+    ]
+  },
+  {
+    "name": "kg_audit_logs",
+    "create": "\nCREATE TABLE kg_audit_logs (\n\tid SERIAL NOT NULL, \n\tevent_type VARCHAR NOT NULL, \n\tactor VARCHAR, \n\tresource_type VARCHAR, \n\tresource_id VARCHAR, \n\tstatus VARCHAR, \n\tdetail_json TEXT, \n\ttenant_id VARCHAR, \n\tworkspace_id VARCHAR, \n\tcreated_at TIMESTAMP WITH TIME ZONE DEFAULT now(), \n\tPRIMARY KEY (id)\n)\n\n",
+    "indexes": [
+      "CREATE INDEX ix_kg_audit_logs_actor ON kg_audit_logs (actor)",
+      "CREATE INDEX ix_kg_audit_logs_event_type ON kg_audit_logs (event_type)",
+      "CREATE INDEX ix_kg_audit_logs_resource_id ON kg_audit_logs (resource_id)",
+      "CREATE INDEX ix_kg_audit_logs_resource_type ON kg_audit_logs (resource_type)",
+      "CREATE INDEX ix_kg_audit_logs_status ON kg_audit_logs (status)",
+      "CREATE INDEX ix_kg_audit_logs_tenant_id ON kg_audit_logs (tenant_id)",
+      "CREATE INDEX ix_kg_audit_logs_workspace_id ON kg_audit_logs (workspace_id)"
+    ]
+  },
+  {
+    "name": "kg_document_maps",
+    "create": "\nCREATE TABLE kg_document_maps (\n\tid SERIAL NOT NULL, \n\tdocument_id VARCHAR NOT NULL, \n\tdocument_title VARCHAR, \n\tentity_key VARCHAR NOT NULL, \n\tcitation TEXT, \n\tchunk_ref VARCHAR, \n\ttenant_id VARCHAR, \n\tworkspace_id VARCHAR, \n\tcreated_at TIMESTAMP WITH TIME ZONE DEFAULT now(), \n\tPRIMARY KEY (id)\n)\n\n",
+    "indexes": [
+      "CREATE INDEX ix_kg_document_maps_chunk_ref ON kg_document_maps (chunk_ref)",
+      "CREATE INDEX ix_kg_document_maps_document_id ON kg_document_maps (document_id)",
+      "CREATE INDEX ix_kg_document_maps_document_title ON kg_document_maps (document_title)",
+      "CREATE INDEX ix_kg_document_maps_entity_key ON kg_document_maps (entity_key)",
+      "CREATE INDEX ix_kg_document_maps_tenant_id ON kg_document_maps (tenant_id)",
+      "CREATE INDEX ix_kg_document_maps_workspace_id ON kg_document_maps (workspace_id)"
+    ]
+  },
+  {
+    "name": "kg_entities",
+    "create": "\nCREATE TABLE kg_entities (\n\tid SERIAL NOT NULL, \n\tentity_key VARCHAR NOT NULL, \n\tname VARCHAR NOT NULL, \n\tentity_type VARCHAR NOT NULL, \n\tdescription TEXT, \n\tclassification VARCHAR, \n\tvisibility VARCHAR, \n\tsource_ref VARCHAR, \n\tsource_type VARCHAR, \n\tconfidence FLOAT, \n\tmetadata_json TEXT, \n\tpermissions_json TEXT, \n\ttenant_id VARCHAR, \n\tworkspace_id VARCHAR, \n\tcreated_by VARCHAR, \n\tcreated_at TIMESTAMP WITH TIME ZONE DEFAULT now(), \n\tupdated_at TIMESTAMP WITH TIME ZONE DEFAULT now(), \n\tPRIMARY KEY (id), \n\tCONSTRAINT uq_kg_entity_scope UNIQUE (entity_key, tenant_id, workspace_id)\n)\n\n",
+    "indexes": [
+      "CREATE INDEX ix_kg_entities_classification ON kg_entities (classification)",
+      "CREATE INDEX ix_kg_entities_created_by ON kg_entities (created_by)",
+      "CREATE INDEX ix_kg_entities_entity_key ON kg_entities (entity_key)",
+      "CREATE INDEX ix_kg_entities_entity_type ON kg_entities (entity_type)",
+      "CREATE INDEX ix_kg_entities_name ON kg_entities (name)",
+      "CREATE INDEX ix_kg_entities_source_ref ON kg_entities (source_ref)",
+      "CREATE INDEX ix_kg_entities_source_type ON kg_entities (source_type)",
+      "CREATE INDEX ix_kg_entities_tenant_id ON kg_entities (tenant_id)",
+      "CREATE INDEX ix_kg_entities_visibility ON kg_entities (visibility)",
+      "CREATE INDEX ix_kg_entities_workspace_id ON kg_entities (workspace_id)"
+    ]
+  },
+  {
+    "name": "kg_ingestion_runs",
+    "create": "\nCREATE TABLE kg_ingestion_runs (\n\tid SERIAL NOT NULL, \n\trun_key VARCHAR NOT NULL, \n\tsource_type VARCHAR, \n\tsource_ref VARCHAR, \n\tstatus VARCHAR, \n\tentities_count INTEGER, \n\trelationships_count INTEGER, \n\terror TEXT, \n\ttenant_id VARCHAR, \n\tworkspace_id VARCHAR, \n\tcreated_at TIMESTAMP WITH TIME ZONE DEFAULT now(), \n\tPRIMARY KEY (id)\n)\n\n",
+    "indexes": [
+      "CREATE UNIQUE INDEX ix_kg_ingestion_runs_run_key ON kg_ingestion_runs (run_key)",
+      "CREATE INDEX ix_kg_ingestion_runs_source_ref ON kg_ingestion_runs (source_ref)",
+      "CREATE INDEX ix_kg_ingestion_runs_source_type ON kg_ingestion_runs (source_type)",
+      "CREATE INDEX ix_kg_ingestion_runs_status ON kg_ingestion_runs (status)",
+      "CREATE INDEX ix_kg_ingestion_runs_tenant_id ON kg_ingestion_runs (tenant_id)",
+      "CREATE INDEX ix_kg_ingestion_runs_workspace_id ON kg_ingestion_runs (workspace_id)"
+    ]
+  },
+  {
+    "name": "kg_relationships",
+    "create": "\nCREATE TABLE kg_relationships (\n\tid SERIAL NOT NULL, \n\trelationship_key VARCHAR NOT NULL, \n\tsource_key VARCHAR NOT NULL, \n\trelationship_type VARCHAR NOT NULL, \n\ttarget_key VARCHAR NOT NULL, \n\tlabel VARCHAR, \n\tsource_ref VARCHAR, \n\tconfidence FLOAT, \n\tmetadata_json TEXT, \n\ttenant_id VARCHAR, \n\tworkspace_id VARCHAR, \n\tcreated_by VARCHAR, \n\tcreated_at TIMESTAMP WITH TIME ZONE DEFAULT now(), \n\tupdated_at TIMESTAMP WITH TIME ZONE DEFAULT now(), \n\tPRIMARY KEY (id)\n)\n\n",
+    "indexes": [
+      "CREATE INDEX ix_kg_relationships_created_by ON kg_relationships (created_by)",
+      "CREATE INDEX ix_kg_relationships_label ON kg_relationships (label)",
+      "CREATE UNIQUE INDEX ix_kg_relationships_relationship_key ON kg_relationships (relationship_key)",
+      "CREATE INDEX ix_kg_relationships_relationship_type ON kg_relationships (relationship_type)",
+      "CREATE INDEX ix_kg_relationships_source_key ON kg_relationships (source_key)",
+      "CREATE INDEX ix_kg_relationships_source_ref ON kg_relationships (source_ref)",
+      "CREATE INDEX ix_kg_relationships_target_key ON kg_relationships (target_key)",
+      "CREATE INDEX ix_kg_relationships_tenant_id ON kg_relationships (tenant_id)",
+      "CREATE INDEX ix_kg_relationships_workspace_id ON kg_relationships (workspace_id)"
+    ]
+  },
+  {
+    "name": "smart_response_logs",
+    "create": "\nCREATE TABLE smart_response_logs (\n\tid SERIAL NOT NULL, \n\ttenant_id VARCHAR NOT NULL, \n\tworkspace_id VARCHAR NOT NULL, \n\tuser_id VARCHAR, \n\tmessage TEXT, \n\tmatched_rule_id INTEGER, \n\tintent VARCHAR, \n\tscore FLOAT, \n\tresponse_source VARCHAR, \n\tcreated_at TIMESTAMP WITH TIME ZONE DEFAULT now(), \n\tPRIMARY KEY (id)\n)\n\n",
+    "indexes": [
+      "CREATE INDEX ix_smart_response_logs_intent ON smart_response_logs (intent)",
+      "CREATE INDEX ix_smart_response_logs_matched_rule_id ON smart_response_logs (matched_rule_id)",
+      "CREATE INDEX ix_smart_response_logs_response_source ON smart_response_logs (response_source)",
+      "CREATE INDEX ix_smart_response_logs_tenant_id ON smart_response_logs (tenant_id)",
+      "CREATE INDEX ix_smart_response_logs_user_id ON smart_response_logs (user_id)",
+      "CREATE INDEX ix_smart_response_logs_workspace_id ON smart_response_logs (workspace_id)"
+    ]
+  },
+  {
+    "name": "smart_response_templates",
+    "create": "\nCREATE TABLE smart_response_templates (\n\tid SERIAL NOT NULL, \n\ttenant_id VARCHAR NOT NULL, \n\tworkspace_id VARCHAR NOT NULL, \n\trule_name VARCHAR NOT NULL, \n\tintent VARCHAR NOT NULL, \n\tkeywords_json TEXT NOT NULL, \n\tmatch_type VARCHAR NOT NULL, \n\tregex_pattern TEXT, \n\tresponse_text TEXT NOT NULL, \n\tpriority INTEGER, \n\tenabled BOOLEAN, \n\tlanguage VARCHAR, \n\tusage_count INTEGER, \n\tsuccess_count INTEGER, \n\tfallback_count INTEGER, \n\tcreated_by VARCHAR, \n\tupdated_by VARCHAR, \n\tcreated_at TIMESTAMP WITH TIME ZONE DEFAULT now(), \n\tupdated_at TIMESTAMP WITH TIME ZONE DEFAULT now(), \n\tPRIMARY KEY (id)\n)\n\n",
+    "indexes": [
+      "CREATE INDEX ix_smart_response_templates_created_by ON smart_response_templates (created_by)",
+      "CREATE INDEX ix_smart_response_templates_enabled ON smart_response_templates (enabled)",
+      "CREATE INDEX ix_smart_response_templates_intent ON smart_response_templates (intent)",
+      "CREATE INDEX ix_smart_response_templates_language ON smart_response_templates (language)",
+      "CREATE INDEX ix_smart_response_templates_match_type ON smart_response_templates (match_type)",
+      "CREATE INDEX ix_smart_response_templates_priority ON smart_response_templates (priority)",
+      "CREATE INDEX ix_smart_response_templates_rule_name ON smart_response_templates (rule_name)",
+      "CREATE INDEX ix_smart_response_templates_tenant_id ON smart_response_templates (tenant_id)",
+      "CREATE INDEX ix_smart_response_templates_updated_by ON smart_response_templates (updated_by)",
+      "CREATE INDEX ix_smart_response_templates_workspace_id ON smart_response_templates (workspace_id)"
+    ]
+  },
+  {
+    "name": "datasets",
+    "create": "\nCREATE TABLE datasets (\n\tid SERIAL NOT NULL, \n\ttenant_id VARCHAR(64) NOT NULL, \n\tname VARCHAR(255) NOT NULL, \n\tversion VARCHAR(64) NOT NULL, \n\tformat VARCHAR(32) NOT NULL, \n\tpath TEXT NOT NULL, \n\tsize_bytes BIGINT NOT NULL, \n\trecords_count INTEGER NOT NULL, \n\ttokens_count INTEGER NOT NULL, \n\tvalidation_status VARCHAR(32) NOT NULL, \n\tstatistics JSON NOT NULL, \n\tcreated_by VARCHAR(255) NOT NULL, \n\tcreated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL, \n\tPRIMARY KEY (id)\n)\n\n",
+    "indexes": [
+      "CREATE INDEX ix_datasets_name ON datasets (name)",
+      "CREATE INDEX ix_datasets_tenant_id ON datasets (tenant_id)"
+    ]
+  },
+  {
+    "name": "trained_models",
+    "create": "\nCREATE TABLE trained_models (\n\tid SERIAL NOT NULL, \n\ttenant_id VARCHAR(64) NOT NULL, \n\tmodel_name VARCHAR(255) NOT NULL, \n\tversion VARCHAR(64) NOT NULL, \n\tbase_model VARCHAR(255) NOT NULL, \n\tdataset_id INTEGER, \n\tmethod VARCHAR(32) NOT NULL, \n\tmetrics JSON NOT NULL, \n\towner VARCHAR(255) NOT NULL, \n\tartifact_path TEXT NOT NULL, \n\tcreated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL, \n\tis_active BOOLEAN NOT NULL, \n\tPRIMARY KEY (id), \n\tFOREIGN KEY(dataset_id) REFERENCES datasets (id)\n)\n\n",
+    "indexes": [
+      "CREATE INDEX ix_trained_models_model_name ON trained_models (model_name)",
+      "CREATE INDEX ix_trained_models_tenant_id ON trained_models (tenant_id)"
+    ]
+  },
+  {
+    "name": "training_jobs",
+    "create": "\nCREATE TABLE training_jobs (\n\tid SERIAL NOT NULL, \n\ttenant_id VARCHAR(64) NOT NULL, \n\ttraining_name VARCHAR(255) NOT NULL, \n\tdescription TEXT, \n\tbase_model VARCHAR(255) NOT NULL, \n\tdataset_id INTEGER, \n\tdataset_path TEXT, \n\tmethod VARCHAR(32) NOT NULL, \n\tstatus VARCHAR(32) NOT NULL, \n\tgpu_device VARCHAR(128), \n\tcpu_limit VARCHAR(64), \n\tram_limit VARCHAR(64), \n\tvram_limit VARCHAR(64), \n\tcreated_by VARCHAR(255) NOT NULL, \n\tcreated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL, \n\tstarted_at TIMESTAMP WITHOUT TIME ZONE, \n\tfinished_at TIMESTAMP WITHOUT TIME ZONE, \n\tconfig JSON NOT NULL, \n\toutput_dir TEXT, \n\tPRIMARY KEY (id), \n\tFOREIGN KEY(dataset_id) REFERENCES datasets (id)\n)\n\n",
+    "indexes": [
+      "CREATE INDEX ix_training_jobs_base_model ON training_jobs (base_model)",
+      "CREATE INDEX ix_training_jobs_status ON training_jobs (status)",
+      "CREATE INDEX ix_training_jobs_tenant_id ON training_jobs (tenant_id)",
+      "CREATE INDEX ix_training_jobs_training_name ON training_jobs (training_name)"
+    ]
+  },
+  {
+    "name": "checkpoints",
+    "create": "\nCREATE TABLE checkpoints (\n\tid SERIAL NOT NULL, \n\ttenant_id VARCHAR(64) NOT NULL, \n\tjob_id INTEGER NOT NULL, \n\tpath TEXT NOT NULL, \n\tstep INTEGER NOT NULL, \n\tepoch FLOAT NOT NULL, \n\tmetrics JSON NOT NULL, \n\tcreated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL, \n\tPRIMARY KEY (id), \n\tFOREIGN KEY(job_id) REFERENCES training_jobs (id)\n)\n\n",
+    "indexes": [
+      "CREATE INDEX ix_checkpoints_job_id ON checkpoints (job_id)",
+      "CREATE INDEX ix_checkpoints_tenant_id ON checkpoints (tenant_id)"
+    ]
+  },
+  {
+    "name": "deployments",
+    "create": "\nCREATE TABLE deployments (\n\tid SERIAL NOT NULL, \n\ttenant_id VARCHAR(64) NOT NULL, \n\tmodel_id INTEGER NOT NULL, \n\ttarget VARCHAR(64) NOT NULL, \n\tstatus VARCHAR(32) NOT NULL, \n\tendpoint_url TEXT, \n\tconfig JSON NOT NULL, \n\tcreated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL, \n\tPRIMARY KEY (id), \n\tFOREIGN KEY(model_id) REFERENCES trained_models (id)\n)\n\n",
+    "indexes": [
+      "CREATE INDEX ix_deployments_model_id ON deployments (model_id)",
+      "CREATE INDEX ix_deployments_tenant_id ON deployments (tenant_id)"
+    ]
+  },
+  {
+    "name": "experiments",
+    "create": "\nCREATE TABLE experiments (\n\tid SERIAL NOT NULL, \n\ttenant_id VARCHAR(64) NOT NULL, \n\tjob_id INTEGER NOT NULL, \n\thyperparameters JSON NOT NULL, \n\tmetrics JSON NOT NULL, \n\truntime_seconds FLOAT NOT NULL, \n\tgpu_usage JSON NOT NULL, \n\tcreated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL, \n\tPRIMARY KEY (id), \n\tFOREIGN KEY(job_id) REFERENCES training_jobs (id)\n)\n\n",
+    "indexes": [
+      "CREATE INDEX ix_experiments_job_id ON experiments (job_id)",
+      "CREATE INDEX ix_experiments_tenant_id ON experiments (tenant_id)"
+    ]
+  },
+  {
+    "name": "gpu_metrics",
+    "create": "\nCREATE TABLE gpu_metrics (\n\tid SERIAL NOT NULL, \n\ttenant_id VARCHAR(64) NOT NULL, \n\tjob_id INTEGER, \n\tgpu_index INTEGER NOT NULL, \n\tgpu_name VARCHAR(255) NOT NULL, \n\tgpu_usage FLOAT NOT NULL, \n\tvram_usage FLOAT NOT NULL, \n\tvram_total FLOAT NOT NULL, \n\ttemperature FLOAT NOT NULL, \n\tpower_usage FLOAT NOT NULL, \n\tcreated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL, \n\tPRIMARY KEY (id), \n\tFOREIGN KEY(job_id) REFERENCES training_jobs (id)\n)\n\n",
+    "indexes": [
+      "CREATE INDEX ix_gpu_metrics_job_id ON gpu_metrics (job_id)",
+      "CREATE INDEX ix_gpu_metrics_tenant_id ON gpu_metrics (tenant_id)"
+    ]
+  },
+  {
+    "name": "training_logs",
+    "create": "\nCREATE TABLE training_logs (\n\tid SERIAL NOT NULL, \n\ttenant_id VARCHAR(64) NOT NULL, \n\tjob_id INTEGER NOT NULL, \n\tlevel VARCHAR(20) NOT NULL, \n\tmessage TEXT NOT NULL, \n\tpayload JSON NOT NULL, \n\tcreated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL, \n\tPRIMARY KEY (id), \n\tFOREIGN KEY(job_id) REFERENCES training_jobs (id)\n)\n\n",
+    "indexes": [
+      "CREATE INDEX ix_training_logs_job_id ON training_logs (job_id)",
+      "CREATE INDEX ix_training_logs_tenant_id ON training_logs (tenant_id)"
+    ]
+  }
+]

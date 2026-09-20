@@ -1,0 +1,208 @@
+[
+  {
+    "command": [
+      "git",
+      "status",
+      "--short"
+    ],
+    "exit_code": 128,
+    "output": "fatal: not a git repository (or any of the parent directories): .git\n",
+    "status": "FAIL"
+  },
+  {
+    "command": [
+      "docker",
+      "version"
+    ],
+    "exit_code": 127,
+    "output": "Executable not found: docker",
+    "status": "BLOCKED"
+  },
+  {
+    "command": [
+      "docker",
+      "compose",
+      "version"
+    ],
+    "exit_code": 127,
+    "output": "Executable not found: docker",
+    "status": "BLOCKED"
+  },
+  {
+    "command": [
+      "docker",
+      "info"
+    ],
+    "exit_code": 127,
+    "output": "Executable not found: docker",
+    "status": "BLOCKED"
+  },
+  {
+    "command": [
+      "docker",
+      "compose",
+      "config"
+    ],
+    "exit_code": 127,
+    "output": "Executable not found: docker",
+    "status": "BLOCKED"
+  },
+  {
+    "command": [
+      "docker",
+      "compose",
+      "build"
+    ],
+    "exit_code": 127,
+    "output": "Executable not found: docker",
+    "status": "BLOCKED"
+  },
+  {
+    "command": [
+      "docker",
+      "compose",
+      "up",
+      "-d"
+    ],
+    "exit_code": 127,
+    "output": "Executable not found: docker",
+    "status": "BLOCKED"
+  },
+  {
+    "command": [
+      "docker",
+      "compose",
+      "ps"
+    ],
+    "exit_code": 127,
+    "output": "Executable not found: docker",
+    "status": "BLOCKED"
+  },
+  {
+    "command": [
+      "docker",
+      "compose",
+      "logs",
+      "--tail=30"
+    ],
+    "exit_code": 127,
+    "output": "Executable not found: docker",
+    "status": "BLOCKED"
+  },
+  {
+    "command": [
+      "docker",
+      "stats",
+      "--no-stream"
+    ],
+    "exit_code": 127,
+    "output": "Executable not found: docker",
+    "status": "BLOCKED"
+  },
+  {
+    "command": [
+      "docker",
+      "compose",
+      "down"
+    ],
+    "exit_code": 127,
+    "output": "Executable not found: docker",
+    "status": "BLOCKED"
+  },
+  {
+    "command": [
+      "docker",
+      "compose",
+      "build",
+      "--no-cache"
+    ],
+    "exit_code": 127,
+    "output": "Executable not found: docker",
+    "status": "BLOCKED"
+  },
+  {
+    "command": [
+      "docker",
+      "compose",
+      "up",
+      "-d"
+    ],
+    "exit_code": 127,
+    "output": "Executable not found: docker",
+    "status": "BLOCKED"
+  },
+  {
+    "command": [
+      "kubectl",
+      "version",
+      "--client"
+    ],
+    "exit_code": 127,
+    "output": "Executable not found: kubectl",
+    "status": "BLOCKED"
+  },
+  {
+    "command": [
+      "kubectl",
+      "apply",
+      "--dry-run=server",
+      "-k",
+      "infrastructure/kubernetes/overlays/production"
+    ],
+    "exit_code": 127,
+    "output": "Executable not found: kubectl",
+    "status": "BLOCKED"
+  },
+  {
+    "command": [
+      "kubectl",
+      "get",
+      "pods",
+      "-A"
+    ],
+    "exit_code": 127,
+    "output": "Executable not found: kubectl",
+    "status": "BLOCKED"
+  },
+  {
+    "command": [
+      "kubectl",
+      "get",
+      "svc",
+      "-A"
+    ],
+    "exit_code": 127,
+    "output": "Executable not found: kubectl",
+    "status": "BLOCKED"
+  },
+  {
+    "command": [
+      "kubectl",
+      "get",
+      "deployments",
+      "-A"
+    ],
+    "exit_code": 127,
+    "output": "Executable not found: kubectl",
+    "status": "BLOCKED"
+  },
+  {
+    "command": [
+      "kubectl",
+      "get",
+      "events",
+      "-A"
+    ],
+    "exit_code": 127,
+    "output": "Executable not found: kubectl",
+    "status": "BLOCKED"
+  },
+  {
+    "command": [
+      "nvidia-smi"
+    ],
+    "exit_code": 127,
+    "output": "Executable not found: nvidia-smi",
+    "status": "BLOCKED"
+  }
+]

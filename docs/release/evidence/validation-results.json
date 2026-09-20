@@ -1,0 +1,65 @@
+{
+  "backend-tests": {
+    "exit_code": 0,
+    "status": "passed",
+    "command": [
+      "/workspace/scratch/79a59425d4b9/.venv/bin/python",
+      "-m",
+      "pytest",
+      "tests/",
+      "-o",
+      "addopts=",
+      "-q",
+      "--cov=services",
+      "--cov=packages",
+      "--cov-report=json:/workspace/scratch/79a59425d4b9/work/HSAAI/docs/release/evidence/coverage.json",
+      "--junitxml=/workspace/scratch/79a59425d4b9/work/HSAAI/docs/release/evidence/backend-tests.xml"
+    ],
+    "scope": "Full-source tests excluding production coverage threshold"
+  },
+  "python-critical-lint": {
+    "exit_code": 0,
+    "status": "passed",
+    "command": [
+      "/workspace/scratch/79a59425d4b9/.venv/bin/python",
+      "-m",
+      "ruff",
+      "check",
+      "services",
+      "packages",
+      "--select",
+      "F821,F822,F823,E9"
+    ],
+    "scope": "Local validation"
+  },
+  "static-release": {
+    "exit_code": 0,
+    "status": "passed",
+    "command": [
+      "/workspace/scratch/79a59425d4b9/.venv/bin/python",
+      "scripts/validate_release.py"
+    ],
+    "scope": "Local validation"
+  },
+  "helm-lint": {
+    "exit_code": 0,
+    "status": "passed",
+    "command": [
+      "/workspace/scratch/79a59425d4b9/tmp/tooling/helm",
+      "lint",
+      "infrastructure/helm"
+    ],
+    "scope": "Local validation"
+  },
+  "helm-render": {
+    "exit_code": 0,
+    "status": "passed",
+    "command": [
+      "/workspace/scratch/79a59425d4b9/tmp/tooling/helm",
+      "template",
+      "hsaai",
+      "infrastructure/helm"
+    ],
+    "scope": "Local validation"
+  }
+}

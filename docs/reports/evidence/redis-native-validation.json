@@ -1,0 +1,45 @@
+{
+  "scope": "native isolated TCP, not production container",
+  "redis_version": "6.2.14",
+  "concurrency_200_operations_seconds": 0.0351,
+  "checks": [
+    {
+      "name": "connect",
+      "result": "PASS"
+    },
+    {
+      "name": "read_write",
+      "result": "PASS"
+    },
+    {
+      "name": "expiry",
+      "result": "PASS"
+    },
+    {
+      "name": "transaction",
+      "result": "PASS"
+    },
+    {
+      "name": "concurrent_increments",
+      "result": "PASS"
+    },
+    {
+      "name": "snapshot",
+      "result": "PASS"
+    },
+    {
+      "name": "controlled_outage",
+      "result": "PASS"
+    },
+    {
+      "name": "restart_persistence",
+      "result": "PASS"
+    },
+    {
+      "name": "backup_restore",
+      "result": "PASS"
+    }
+  ],
+  "seconds": 6.531,
+  "result": "PASS"
+}

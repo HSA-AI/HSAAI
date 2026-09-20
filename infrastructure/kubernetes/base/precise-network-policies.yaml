@@ -1,0 +1,319 @@
+# HSAAI Precise NetworkPolicies (v4.1)
+# SECURITY FIX v2.1 (P0):
+#   - All pod selectors now match the actual Deployment labels
+#     (app: api-gateway, app: backend, app: postgres, etc.) instead of
+#     the non-existent hsaai-* prefixed labels.
+#   - All HSAAI pods now carry app.kubernetes.io/part-of: hsaai label
+#     (added in Helm chart and base manifests) for consistent selection.
+#   - DNS egress now targets kube-system namespace by name (not empty selector).
+
+---
+# Default: deny all egress (must explicitly allow)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all-egress
+  namespace: hsaai
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: hsaai
+  policyTypes:
+    - Egress
+---
+# Frontend → API Gateway only
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: frontend-egress
+  namespace: hsaai
+spec:
+  podSelector:
+    matchLabels:
+      app: frontend
+      app.kubernetes.io/part-of: hsaai
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: api-gateway
+      ports:
+        - protocol: TCP
+          port: 8080
+    # DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+---
+# API Gateway → Backend Core + Auth Service only
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: api-gateway-egress
+  namespace: hsaai
+spec:
+  podSelector:
+    matchLabels:
+      app: api-gateway
+      app.kubernetes.io/part-of: hsaai
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: backend
+      ports:
+        - protocol: TCP
+          port: 8000
+    - to:
+        - podSelector:
+            matchLabels:
+              app: auth-service
+      ports:
+        - protocol: TCP
+          port: 8010
+    # DNS
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+---
+# Backend Core → PostgreSQL, Redis, Qdrant, LLM Gateway, RAG Engine, Keycloak, OPA
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend-egress
+  namespace: hsaai
+spec:
+  podSelector:
+    matchLabels:
+      app: backend
+      app.kubernetes.io/part-of: hsaai
+  policyTypes:
+    - Egress
+  egress:
+    # PostgreSQL
+    - to:
+        - podSelector:
+            matchLabels:
+              app: postgres
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Redis
+    - to:
+        - podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+    # Qdrant
+    - to:
+        - podSelector:
+            matchLabels:
+              app: qdrant
+      ports:
+        - protocol: TCP
+          port: 6333
+    # LLM Gateway
+    - to:
+        - podSelector:
+            matchLabels:
+              app: llm-gateway
+      ports:
+        - protocol: TCP
+          port: 8090
+    # RAG Engine
+    - to:
+        - podSelector:
+            matchLabels:
+              app: rag-engine
+      ports:
+        - protocol: TCP
+          port: 8030
+    # Keycloak
+    - to:
+        - podSelector:
+            matchLabels:
+              app: keycloak
+      ports:
+        - protocol: TCP
+          port: 8080
+    # OPA
+    - to:
+        - podSelector:
+            matchLabels:
+              app: opa
+      ports:
+        - protocol: TCP
+          port: 8181
+    # Auth Service
+    - to:
+        - podSelector:
+            matchLabels:
+              app: auth-service
+      ports:
+        - protocol: TCP
+          port: 8010
+    # Workflow Engine
+    - to:
+        - podSelector:
+            matchLabels:
+              app: workflow-engine
+      ports:
+        - protocol: TCP
+          port: 8070
+    # Agent Runtime (multi-agents)
+    - to:
+        - podSelector:
+            matchLabels:
+              app: multi-agents
+      ports:
+        - protocol: TCP
+          port: 8096
+    # DNS
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+---
+# RAG Engine → Qdrant + PII Detector + PostgreSQL
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: rag-engine-egress
+  namespace: hsaai
+spec:
+  podSelector:
+    matchLabels:
+      app: rag-engine
+      app.kubernetes.io/part-of: hsaai
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: qdrant
+      ports:
+        - protocol: TCP
+          port: 6333
+    - to:
+        - podSelector:
+            matchLabels:
+              app: pii-detector
+      ports:
+        - protocol: TCP
+          port: 8092
+    - to:
+        - podSelector:
+            matchLabels:
+              app: postgres
+      ports:
+        - protocol: TCP
+          port: 5432
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+---
+# LLM Gateway → Ollama (local_llm) only
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: llm-gateway-egress
+  namespace: hsaai
+spec:
+  podSelector:
+    matchLabels:
+      app: llm-gateway
+      app.kubernetes.io/part-of: hsaai
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: ollama
+      ports:
+        - protocol: TCP
+          port: 11434
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+---
+# Workflow Engine → Backend Core + RAG + LLM + Auth
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: workflow-engine-egress
+  namespace: hsaai
+spec:
+  podSelector:
+    matchLabels:
+      app: workflow-engine
+      app.kubernetes.io/part-of: hsaai
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: backend
+      ports:
+        - protocol: TCP
+          port: 8000
+    - to:
+        - podSelector:
+            matchLabels:
+              app: rag-engine
+      ports:
+        - protocol: TCP
+          port: 8030
+    - to:
+        - podSelector:
+            matchLabels:
+              app: llm-gateway
+      ports:
+        - protocol: TCP
+          port: 8090
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53

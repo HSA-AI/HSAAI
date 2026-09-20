@@ -1,0 +1,138 @@
+{
+  "release": "4.0.0-rc.2",
+  "package": "HSAAI_v1.zip",
+  "date": "2026-09-14",
+  "classification": "B – PRODUCTION CANDIDATE – BLOCKERS REMAIN",
+  "production_approved": false,
+  "backend": {
+    "passed": 598,
+    "failed": 0,
+    "skipped": 0
+  },
+  "frontend": {
+    "passed": 38,
+    "failed": 0,
+    "skipped": 0
+  },
+  "e2e": {
+    "passed": 2,
+    "failed": 0,
+    "skipped": 11,
+    "scope": "public browser checks; full authenticated stack pending"
+  },
+  "integration": {
+    "contract_test_passed": 1,
+    "contract_test_failed": 0,
+    "live_full_stack_passed": 0,
+    "live_full_stack_failed": 0,
+    "live_full_stack_status": "NOT TESTED"
+  },
+  "coverage": {
+    "previous": 41.92,
+    "final": 54.78,
+    "covered": 9319,
+    "statements": 17013,
+    "gate": "FAIL",
+    "target": 80
+  },
+  "pdf": {
+    "pages": 100,
+    "rows": 1540,
+    "requirements": 1482,
+    "statuses": {
+      "PARTIAL": 864,
+      "NOT APPLICABLE": 58,
+      "BLOCKED": 103,
+      "PASS": 5,
+      "FAIL": 510
+    },
+    "source_reconstruction": "PASS for all 100 pages",
+    "pdf_sha256": "168147a6d5c31cf48986acbf65fb60d176bcd19a3f83dcbf00cb235a69ee93b5"
+  },
+  "security": {
+    "critical_observed": 0,
+    "high_observed": 1,
+    "medium_observed": 55,
+    "low_observed": 57,
+    "bandit": {
+      "LOW": 57,
+      "MEDIUM": 52
+    },
+    "manual_high": 1,
+    "manual_medium": 3,
+    "approved": false,
+    "scope": "Observed SAST and listed manual findings only; image/GPU/runtime/DAST scope remains untested."
+  },
+  "docker": {
+    "build": "BLOCKED",
+    "runtime": "BLOCKED",
+    "healthy_observed": 0,
+    "required_long_running": 33,
+    "extended_long_running": 22,
+    "oneshot_jobs": 2
+  },
+  "kubernetes": {
+    "static_helm": "PASS",
+    "server_validation": "BLOCKED",
+    "real_deployment": "NOT AVAILABLE"
+  },
+  "blockers": [
+    {
+      "id": "BL-01",
+      "status": "FAIL",
+      "requirement": "Coverage 54.78% < 80%",
+      "evidence": "9319/17013 lines; at least 4292 more covered statements at the present denominator",
+      "action": "Additional meaningful tests and root-cause fixes. This is engineering work, not an external environment excuse."
+    },
+    {
+      "id": "BL-02",
+      "status": "BLOCKED",
+      "requirement": "Docker build and runtime",
+      "evidence": "docker/daemon unavailable; actual commands exit 127",
+      "action": "Execute build/up, inspect every required service, fix build/runtime issues, then repeat a clean --no-cache build."
+    },
+    {
+      "id": "BL-03",
+      "status": "BLOCKED",
+      "requirement": "Actual Kubernetes deployment",
+      "evidence": "No kubectl/cluster access; Helm/static validation only",
+      "action": "Server dry-run plus real cluster deployment, probes, persistence, recovery and network-policy checks."
+    },
+    {
+      "id": "BL-04",
+      "status": "BLOCKED",
+      "requirement": "Full database/identity/AI/monitoring/E2E chain",
+      "evidence": "2 public browser tests; 11 authenticated E2E skipped; local Redis and SQLite only",
+      "action": "Provision Keycloak accounts/scopes, databases, local model/embeddings, monitoring and complete end-to-end acceptance."
+    },
+    {
+      "id": "BL-05",
+      "status": "FAIL",
+      "requirement": "Mandatory PDF capabilities remain incomplete",
+      "evidence": "5/1482 requirement clauses PASS; 510 FAIL, 864 PARTIAL, 103 BLOCKED",
+      "action": "Implement/validate every mandatory clause. SaaS/billing, research/global/federation programs are not waived as impossible."
+    },
+    {
+      "id": "BL-06",
+      "status": "FAIL",
+      "requirement": "Open High security finding and incomplete security scope",
+      "evidence": "MAN-H01 global CoE/FinOps isolation; runtime/image/DAST scans missing",
+      "action": "Close High finding and validate full security scope; no formal exception exists."
+    },
+    {
+      "id": "BL-07",
+      "status": "PARTIAL",
+      "requirement": "Durable orchestration and business execution",
+      "evidence": "workflow_engine uses process-local execution state; legacy Enterprise OS only routes/records approvals; marketplace and some events use global files",
+      "action": "Implement durable resume/idempotency and multi-replica ownership/locking; prove no duplicate tool execution after failure."
+    },
+    {
+      "id": "BL-08",
+      "status": "NOT TESTED",
+      "requirement": "Production failure/recovery, HA and performance",
+      "evidence": "Only native Redis recovery and public Next.js health latency are measured",
+      "action": "Run PostgreSQL/vector/AI/backend fault tests, restore drills, concurrency, resource sizing and PDF load targets."
+    }
+  ],
+  "evidence_generated_utc": "2026-09-14T13:42:54.401651+00:00"
+}

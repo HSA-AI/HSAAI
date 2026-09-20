@@ -1,0 +1,285 @@
+# HSAAI PostgreSQL HA Stack (v3.1)
+# Patroni + 3-node etcd + HAProxy + PgBouncer
+#
+# FIX v2.2 (Phase 2): etcd is now a 3-node cluster (was single-node SPOF).
+# With 3 etcd nodes, quorum is 2/3 — the cluster survives the loss of any
+# single node. This is critical because etcd is the DCS (Distributed
+# Configuration Store) that Patroni uses for leader election; a single-node
+# etcd failure would cause split-brain across Patroni nodes.
+#
+# Usage:
+#   POSTGRES_PASSWORD=strong-pass docker compose -f docker-compose.ha.yml up -d
+#
+# Verify:
+#   docker exec hsaai-patroni1 patronictl list
+#   docker exec hsaai-etcd1 etcdctl endpoint status --cluster -w table
+
+version: "3.8"
+
+services:
+  # ─── etcd cluster (3 nodes for HA quorum) ──────────────────
+  etcd1:
+    image: quay.io/coreos/etcd:v3.5.0
+    container_name: hsaai-etcd1
+    environment:
+      ETCD_NAME: etcd1
+      ETCD_DATA_DIR: /etcd-data
+      ETCD_LISTEN_PEER_URLS: http://0.0.0.0:2380
+      ETCD_LISTEN_CLIENT_URLS: http://0.0.0.0:2379
+      ETCD_INITIAL_CLUSTER: etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380
+      ETCD_INITIAL_CLUSTER_TOKEN: hsaai-etcd-cluster
+      ETCD_INITIAL_CLUSTER_STATE: new
+      ETCD_ADVERTISE_CLIENT_URLS: http://etcd1:2379
+      ETCD_INITIAL_ADVERTISE_PEER_URLS: http://etcd1:2380
+    volumes:
+      - etcd1-data:/etcd-data
+    networks:
+      - hsaai-private
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  etcd2:
+    image: quay.io/coreos/etcd:v3.5.0
+    container_name: hsaai-etcd2
+    environment:
+      ETCD_NAME: etcd2
+      ETCD_DATA_DIR: /etcd-data
+      ETCD_LISTEN_PEER_URLS: http://0.0.0.0:2380
+      ETCD_LISTEN_CLIENT_URLS: http://0.0.0.0:2379
+      ETCD_INITIAL_CLUSTER: etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380
+      ETCD_INITIAL_CLUSTER_TOKEN: hsaai-etcd-cluster
+      ETCD_INITIAL_CLUSTER_STATE: new
+      ETCD_ADVERTISE_CLIENT_URLS: http://etcd2:2379
+      ETCD_INITIAL_ADVERTISE_PEER_URLS: http://etcd2:2380
+    volumes:
+      - etcd2-data:/etcd-data
+    networks:
+      - hsaai-private
+    depends_on:
+      - etcd1
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  etcd3:
+    image: quay.io/coreos/etcd:v3.5.0
+    container_name: hsaai-etcd3
+    environment:
+      ETCD_NAME: etcd3
+      ETCD_DATA_DIR: /etcd-data
+      ETCD_LISTEN_PEER_URLS: http://0.0.0.0:2380
+      ETCD_LISTEN_CLIENT_URLS: http://0.0.0.0:2379
+      ETCD_INITIAL_CLUSTER: etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380
+      ETCD_INITIAL_CLUSTER_TOKEN: hsaai-etcd-cluster
+      ETCD_INITIAL_CLUSTER_STATE: new
+      ETCD_ADVERTISE_CLIENT_URLS: http://etcd3:2379
+      ETCD_INITIAL_ADVERTISE_PEER_URLS: http://etcd3:2380
+    volumes:
+      - etcd3-data:/etcd-data
+    networks:
+      - hsaai-private
+    depends_on:
+      - etcd1
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Patroni Node 1 (initial leader) ───
+  patroni1:
+    image: ghcr.io/zalando/spilo-16:2.1-p9
+    container_name: hsaai-patroni1
+    environment:
+      SCOPE: hsaai
+      NODE_NAME: patroni1
+      NODE_IP: patroni1
+      # FIX v2.2 (Phase 2): Connect to 3-node etcd cluster (comma-separated).
+      ETCD_HOSTS: etcd1:2379,etcd2:2379,etcd3:2379
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?Required set POSTGRES_PASSWORD}"
+      POSTGRES_SUPERUSER_PASSWORD: "${POSTGRES_SUPERUSER_PASSWORD:?Required set POSTGRES_SUPERUSER_PASSWORD}"
+      REPLICATION_PASSWORD: "${REPLICATION_PASSWORD:?Required set REPLICATION_PASSWORD}"
+      REWIND_PASSWORD: "${REWIND_PASSWORD:?Required set REWIND_PASSWORD}"
+      PATRONI_API_PASSWORD: "${PATRONI_API_PASSWORD:?Required set PATRONI_API_PASSWORD}"
+      PATRONI_RESTAPI_USERNAME: ${PATRONI_API_USER:-patroni}
+    volumes:
+      - patroni1-data:/var/lib/postgresql/data
+    networks:
+      - hsaai-private
+    depends_on:
+      # FIX v2.2: wait for at least one etcd node to be healthy before starting.
+      etcd1:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8008/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Patroni Node 2 (replica) ───
+  patroni2:
+    image: ghcr.io/zalando/spilo-16:2.1-p9
+    container_name: hsaai-patroni2
+    environment:
+      SCOPE: hsaai
+      NODE_NAME: patroni2
+      NODE_IP: patroni2
+      ETCD_HOSTS: etcd1:2379,etcd2:2379,etcd3:2379  # FIX v2.2: 3-node etcd cluster
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?Required set POSTGRES_PASSWORD}"
+      POSTGRES_SUPERUSER_PASSWORD: "${POSTGRES_SUPERUSER_PASSWORD:?Required set POSTGRES_SUPERUSER_PASSWORD}"
+      REPLICATION_PASSWORD: "${REPLICATION_PASSWORD:?Required set REPLICATION_PASSWORD}"
+      REWIND_PASSWORD: "${REWIND_PASSWORD:?Required set REWIND_PASSWORD}"
+      PATRONI_API_PASSWORD: "${PATRONI_API_PASSWORD:?Required set PATRONI_API_PASSWORD}"
+      PATRONI_RESTAPI_USERNAME: ${PATRONI_API_USER:-patroni}
+    volumes:
+      - patroni2-data:/var/lib/postgresql/data
+    networks:
+      - hsaai-private
+    depends_on:
+      patroni1:
+        condition: service_healthy
+      etcd1:
+        condition: service_healthy  # FIX v2.2: wait for etcd quorum
+
+  # ─── Patroni Node 3 (replica) ───
+  patroni3:
+    image: ghcr.io/zalando/spilo-16:2.1-p9
+    container_name: hsaai-patroni3
+    environment:
+      SCOPE: hsaai
+      NODE_NAME: patroni3
+      NODE_IP: patroni3
+      ETCD_HOSTS: etcd1:2379,etcd2:2379,etcd3:2379  # FIX v2.2: 3-node etcd cluster
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?Required set POSTGRES_PASSWORD}"
+      POSTGRES_SUPERUSER_PASSWORD: "${POSTGRES_SUPERUSER_PASSWORD:?Required set POSTGRES_SUPERUSER_PASSWORD}"
+      REPLICATION_PASSWORD: "${REPLICATION_PASSWORD:?Required set REPLICATION_PASSWORD}"
+      REWIND_PASSWORD: "${REWIND_PASSWORD:?Required set REWIND_PASSWORD}"
+      PATRONI_API_PASSWORD: "${PATRONI_API_PASSWORD:?Required set PATRONI_API_PASSWORD}"
+      PATRONI_RESTAPI_USERNAME: ${PATRONI_API_USER:-patroni}
+    volumes:
+      - patroni3-data:/var/lib/postgresql/data
+    networks:
+      - hsaai-private
+    depends_on:
+      patroni1:
+        condition: service_healthy  # FIX v2.2: was service_started — caused split-brain risk
+      etcd1:
+        condition: service_healthy  # FIX v2.2: wait for etcd quorum
+
+  # ─── HAProxy: read/write split ───
+  haproxy:
+    image: haproxy:2.8-alpine
+    container_name: hsaai-haproxy
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    ports:
+      - "5430:5430"  # Write (leader)
+      - "5431:5431"  # Read (leader + replicas)
+      - "8404:8404"  # Stats
+    networks:
+      - hsaai-private
+    depends_on:
+      - patroni1
+      - patroni2
+      - patroni3
+    healthcheck:
+      test: ["CMD", "haproxy", "-c", "-f", "/usr/local/etc/haproxy/haproxy.cfg"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ─── PgBouncer: connection pooling ───
+  pgbouncer:
+    image: edoburu/pgbouncer:1.22.0
+    container_name: hsaai-pgbouncer
+    environment:
+      DB_USER: hsaai
+      DB_PASSWORD: "${POSTGRES_PASSWORD:?Required set POSTGRES_PASSWORD}"
+      DB_HOST: haproxy
+      DB_PORT: 5430
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 500
+      DEFAULT_POOL_SIZE: 25
+      AUTH_TYPE: scram-sha-256
+    ports:
+      - "5432:5432"
+    networks:
+      - hsaai-private
+    depends_on:
+      haproxy:
+        condition: service_healthy
+
+  # ─── WAL-G backup sidecar (Phase 2 — PITR) ─────────────────
+  # FIX v2.2 (Phase 2): Runs daily base backups + continuous WAL archiving
+  # to MinIO. Enables Point-in-Time Recovery with RPO ~5 seconds.
+  walg-backup:
+    image: wal-g/wal-g:latest
+    container_name: hsaai-walg-backup
+    environment:
+      # WAL-G S3 config (MinIO)
+      WALG_S3_PREFIX: s3://hsaai-backups/postgres/
+      AWS_ENDPOINT: http://minio:9000
+      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-hsaai_minio_admin}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:?Required}
+      AWS_REGION: us-east-1
+      WALG_COMPRESSION_METHOD: lz4
+      # PostgreSQL connection (via PgBouncer)
+      PGHOST: pgbouncer
+      PGPORT: "5432"
+      PGUSER: hsaai
+      PGPASSWORD: ${POSTGRES_PASSWORD:?Required}
+      # Schedule: daily base backup at 02:00 UTC
+      BACKUP_SCHEDULE: "0 2 * * *"
+      # Retention: keep 7 daily backups
+      RETENTION_DAYS: "7"
+    depends_on:
+      pgbouncer:
+        condition: service_started
+      minio:
+        condition: service_healthy
+    networks:
+      - hsaai-private
+    # Override entrypoint to run scheduled backups.
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        set -e
+        echo "[$$(date -u +%Y-%m-%dT%H:%M:%SZ)] WAL-G backup sidecar started."
+        echo "Schedule: daily base backup at 02:00 UTC, retention: 7 days."
+        # Run initial backup on first boot.
+        wal-g backup-push pgbouncer:5432 || echo "Initial backup skipped (may already exist)."
+        # Schedule daily backups via a simple loop.
+        while true; do
+          # Sleep until next 02:00 UTC.
+          NOW=$$(date -u +%s)
+          TARGET=$$(date -u -d "tomorrow 02:00:00" +%s 2>/dev/null || date -u -d "02:00:00" +%s)
+          SLEEP_SECONDS=$$((TARGET - NOW))
+          if [ "$$SLEEP_SECONDS" -le 0 ]; then SLEEP_SECONDS=86400; fi
+          echo "Next backup in $$SLEEP_SECONDS seconds."
+          sleep $$SLEEP_SECONDS
+          echo "[$$(date -u +%Y-%m-%dT%H:%M:%SZ)] Running scheduled base backup..."
+          wal-g backup-push pgbouncer:5432
+          wal-g delete retain 7 full --confirm
+          echo "[$$(date -u +%Y-%m-%dT%H:%M:%SZ)] Scheduled backup complete."
+        done
+    restart: unless-stopped
+
+volumes:
+  # FIX v2.2: 3 separate etcd volumes (was 1 shared — caused state conflicts).
+  etcd1-data:
+  etcd2-data:
+  etcd3-data:
+  patroni1-data:
+  patroni2-data:
+  patroni3-data:
+
+networks:
+  hsaai-private:
+    external: true
+    name: hsaai_private

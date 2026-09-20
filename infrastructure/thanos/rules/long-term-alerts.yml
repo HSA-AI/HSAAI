@@ -1,0 +1,55 @@
+# HSAAI Thanos Ruler Rules (Phase 3 — Scale)
+#
+# FIX v2.3 (Phase 3): Long-term alerting rules evaluated by Thanos Ruler
+# against the global query layer (across all Prometheus instances + history).
+
+groups:
+  - name: hsaai-long-term-slo
+    interval: 5m
+    rules:
+      # 30-day SLO: 99.9% availability (43.2 minutes of downtime allowed per 30 days)
+      - alert: HSAAISLOBurnRate30d
+        expr: |
+          (
+            sum(rate(hsaai_backend_requests_total{status=~"5.."}[30d]))
+            /
+            sum(rate(hsaai_backend_requests_total[30d]))
+          ) > 0.001
+        for: 5m
+        labels:
+          severity: warning
+          slo: availability
+          window: 30d
+        annotations:
+          summary: "HSAAI 30-day availability SLO burn rate exceeded"
+          description: "30-day error rate is {{ $value | humanizePercentage }} (SLO: 0.1%)"
+
+      # Long-term latency trend: p95 should be < 2s over 7 days
+      - alert: HSAAILatencyTrendUp
+        expr: |
+          avg_over_time(
+            histogram_quantile(0.95,
+              rate(hsaai_backend_request_latency_seconds_bucket[5m])
+            )[7d:1h]
+          ) > 2
+        for: 1h
+        labels:
+          severity: warning
+          trend: latency
+        annotations:
+          summary: "HSAAI p95 latency trending up over 7 days"
+          description: "7-day average p95 latency is {{ $value }}s (threshold: 2s)"
+
+      # Cost anomaly: daily token spend > 2x the 30-day average
+      - alert: HSAAICostAnomaly
+        expr: |
+          sum(increase(hsaai_llm_tokens_total[1d]))
+          >
+          2 * avg_over_time(sum(increase(hsaai_llm_tokens_total[1d]))[30d:1d])
+        for: 1h
+        labels:
+          severity: warning
+          category: finops
+        annotations:
+          summary: "HSAAI token cost anomaly detected"
+          description: "Today's token usage is >2x the 30-day average — investigate unexpected spend"

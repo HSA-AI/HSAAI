@@ -1,0 +1,37 @@
+# HSAAI Feature Store Configuration (Feast) — Phase 3 — Scale
+#
+# FIX v2.3 (Phase 3): Implements a centralized Feature Store using Feast
+# (Feature Store for ML). This enables:
+#   - Feature reuse across multiple models (no recomputation)
+#   - Online/offline consistency (same features used for training + serving)
+#   - Point-in-time correctness (no training/serving skew)
+#   - Feature discovery (data scientists can browse available features)
+#   - Feature freshness monitoring
+#
+# Architecture:
+#   Offline store (PostgreSQL) — historical features for training
+#   Online store (Redis) — low-latency features for real-time inference
+#   Feature registry — feature definitions (this file + Python entities)
+#
+# Usage:
+#   1. Apply feature definitions: feast apply
+#   2. Materialize features (offline → online): feast materialize-incremental
+#   3. Get online features: feast get-online-features
+#   4. Get historical features: feast get-historical-features
+
+project: hsaai_feature_store
+registry: data/registry.db
+provider: local
+offline_store:
+    type: postgres
+    host: postgres
+    port: 5432
+    database: hsaai
+    db_schema: feature_store
+    user: hsaai
+    password: ${POSTGRES_PASSWORD}
+online_store:
+    type: redis
+    connection_string: redis:6379,db=3
+    key_ttl_seconds: 86400  # features expire after 24h (re-materialized daily)
+entity_key_serialization_version: 2

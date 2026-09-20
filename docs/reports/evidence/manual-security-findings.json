@@ -1,0 +1,41 @@
+{
+  "date": "2026-09-19",
+  "open_high": 3,
+  "open_medium": 1,
+  "findings": [
+    {
+      "id": "MAN-H01",
+      "severity": "High",
+      "status": "PARTIAL",
+      "action": "Validate PostgreSQL scope migration and legacy ownership"
+    },
+    {
+      "id": "MAN-H02",
+      "severity": "High",
+      "status": "OPEN",
+      "action": "RAG PII block must not be swallowed"
+    },
+    {
+      "id": "MAN-H03",
+      "severity": "High",
+      "status": "OPEN",
+      "action": "RAG document ACL/workspace/mutation authorization"
+    },
+    {
+      "id": "MAN-M01",
+      "severity": "Medium",
+      "status": "CLOSED_LOCAL_VALIDATION"
+    },
+    {
+      "id": "MAN-M02",
+      "severity": "Medium",
+      "status": "CLOSED_UNIT_VALIDATION"
+    },
+    {
+      "id": "MAN-M03",
+      "severity": "Medium",
+      "status": "OPEN",
+      "action": "Immutable image/model provenance"
+    }
+  ]
+}
