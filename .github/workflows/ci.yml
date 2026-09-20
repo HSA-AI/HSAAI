@@ -2,13 +2,57 @@ name: HSAAI Continuous Integration
 
 on:
   push:
+    branches:
+      - main
+
   pull_request:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   validation:
+    name: Validate HSAAI Repository
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Validate repository structure
+      - name: Checkout HSAAI Repository
+        uses: actions/checkout@v4
+
+      - name: Display Repository Structure
         run: |
+          echo "HSAAI Enterprise AI Operating System"
+          echo "Repository validation started"
           ls -la
+
+      - name: Validate Required Directories
+        run: |
+          test -d apps || exit 1
+          test -d services || exit 1
+          test -d infrastructure || exit 1
+          test -d tests || exit 1
+          echo "Required directories validated successfully"
+
+      - name: Validate Docker Configuration
+        run: |
+          if [ -f docker-compose.yml ]; then
+            echo "docker-compose.yml found"
+          else
+            echo "docker-compose.yml not found"
+            exit 1
+          fi
+
+      - name: Validate Project Documentation
+        run: |
+          test -f README.md
+          test -f START_HERE_AR.md
+          test -f RELEASE_MANIFEST.md
+          echo "Documentation validation completed"
+
+      - name: CI Validation Completed
+        run: |
+          echo "HSAAI CI Pipeline completed successfully"
