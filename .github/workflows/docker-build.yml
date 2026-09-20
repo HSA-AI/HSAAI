@@ -20,34 +20,86 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
       - name: Checkout HSAAI Repository
         uses: actions/checkout@v4
+
 
       - name: Prepare CI Environment Variables
         run: |
           cat > .env <<EOF
           SESSION_SECRET=ci-validation-secret
-          NEO4J_PASSWORD=ci-validation-password
-          POSTGRES_PASSWORD=ci-validation-password
-          REDIS_PASSWORD=ci-validation-password
           JWT_SECRET=ci-validation-jwt-secret
+
+          POSTGRES_PASSWORD=ci-validation-password
+          POSTGRES_USER=postgres
+          POSTGRES_DB=hsaai
+
+          REDIS_PASSWORD=ci-validation-password
+
+          NEO4J_PASSWORD=ci-validation-password
+
+          MINIO_ROOT_USER=minioadmin
+          MINIO_ROOT_PASSWORD=ci-validation-minio-password
+
+          QDRANT_API_KEY=ci-validation-qdrant-key
+
+          KEYCLOAK_ADMIN=admin
+          KEYCLOAK_ADMIN_PASSWORD=ci-validation-keycloak-password
+
+          GRAFANA_ADMIN_PASSWORD=ci-validation-grafana-password
+
+          SECRET_KEY=ci-validation-secret-key
+          ENCRYPTION_KEY=ci-validation-encryption-key
+
+          OAUTH_CLIENT_SECRET=ci-validation-oauth-secret
+
+          DATABASE_URL=postgresql://postgres:ci-validation-password@postgres:5432/hsaai
+
           EOF
+
 
       - name: Docker Version Check
         run: |
           docker --version
           docker compose version
 
-      - name: Validate Docker Compose
+
+      - name: Validate Docker Compose Configuration
         run: |
           docker compose config
+
+
+      - name: Validate Production Compose Configuration
+        run: |
+          if [ -f docker-compose.production.yml ]; then
+            docker compose -f docker-compose.production.yml config
+          else
+            echo "Production compose file not found - skipped"
+          fi
+
 
       - name: Check Docker Files
         run: |
           test -f docker-compose.yml
           test -f docker-compose.production.yml
-          echo "Docker configuration validated"
+          test -f docker-compose.gpu.yml || true
+
+          echo "Docker files validation completed"
+
+
+      - name: Validate Required Project Components
+        run: |
+          test -d services
+          test -d apps
+          test -d infrastructure
+          test -d deployment
+
+          echo "HSAAI project structure validated"
+
 
       - name: Docker Validation Completed
         run: |
-          echo "HSAAI Docker validation completed successfully"
+          echo "===================================="
+          echo "HSAAI Docker Validation Completed"
+          echo "===================================="
