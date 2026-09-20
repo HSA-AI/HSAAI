@@ -1,12 +1,43 @@
 name: HSAAI Docker Build Validation
 
 on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
-  docker:
+  docker-validation:
+    name: Docker Environment Validation
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Docker compose validation
-        run: docker compose config
+      - name: Checkout HSAAI Repository
+        uses: actions/checkout@v4
+
+      - name: Docker Version Check
+        run: |
+          docker --version
+          docker compose version
+
+      - name: Validate Docker Compose
+        run: |
+          docker compose config
+
+      - name: Check Docker Files
+        run: |
+          test -f docker-compose.yml
+          test -f docker-compose.production.yml
+          echo "Docker configuration validated"
+
+      - name: Docker Validation Completed
+        run: |
+          echo "HSAAI Docker validation completed successfully"
