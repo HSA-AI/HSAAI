@@ -102,26 +102,38 @@ jobs:
         run: |
           set -euo pipefail
 
-          docker compose run --rm --no-deps \
+          VOLUME="hsaai_embedding_models"
+
+          docker volume inspect "$VOLUME" >/dev/null
+
+          # Independent helper: does not inherit rag-service cap_drop.
+          docker run --rm \
+            --network none \
             --user 0:0 \
-            --entrypoint sh \
-            rag-service -c '
+            --cap-drop ALL \
+            --cap-add CHOWN \
+            --cap-add DAC_OVERRIDE \
+            --mount "type=volume,source=${VOLUME},target=/models" \
+            alpine:3.20 sh -ec '
               mkdir -p /models/hub
               chown -R 1000:1000 /models
               stat -c "%u:%g %n" /models /models/hub
             '
 
-          docker compose run --rm --no-deps \
+          # Verify permissions with the real RAG application UID.
+          docker run --rm \
+            --network none \
             --user 1000:1000 \
-            --entrypoint sh \
-            rag-service -c '
+            --cap-drop ALL \
+            --mount "type=volume,source=${VOLUME},target=/models" \
+            alpine:3.20 sh -ec '
+              set -e
               mkdir -p /models/hub/models--sentence-transformers--paraphrase-multilingual-MiniLM-L12-v2
               touch /models/hub/models--sentence-transformers--paraphrase-multilingual-MiniLM-L12-v2/.permission-test
               rm /models/hub/models--sentence-transformers--paraphrase-multilingual-MiniLM-L12-v2/.permission-test
             '
 
           echo "PASS: Model cache writable by RAG user"
-          echo "PASS: RAG model cache permissions initialized"
 
       - name: Start RAG Engine
         run: |
