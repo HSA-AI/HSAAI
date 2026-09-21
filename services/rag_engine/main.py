@@ -405,7 +405,7 @@ async def upload_document(
                 "http://pii-detector:8092/v1/pii/check-document",
                 headers=outgoing_headers(),
                 json={
-                    "text": text[:50000],  # scan first 50K chars (balance speed vs coverage)
+                    "text": text,  # scan the full extracted document; fail closed on errors
                     "redact": True,
                     "tenant_id": tenant_id,
                     "workspace_id": workspace_id,
