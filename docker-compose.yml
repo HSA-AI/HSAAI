@@ -35,10 +35,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
@@ -457,10 +457,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 1G
   api-gateway:
@@ -496,10 +496,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
@@ -536,10 +536,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
@@ -582,10 +582,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
@@ -625,10 +625,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
@@ -676,10 +676,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
@@ -725,10 +725,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
@@ -794,10 +794,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
@@ -843,10 +843,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
@@ -894,10 +894,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
@@ -939,10 +939,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
@@ -1004,10 +1004,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
@@ -1045,10 +1045,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
@@ -1083,10 +1083,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
@@ -1120,10 +1120,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
@@ -1157,10 +1157,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
@@ -1194,10 +1194,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
@@ -1232,10 +1232,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
@@ -1269,10 +1269,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
@@ -1307,10 +1307,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
@@ -1344,10 +1344,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
@@ -1381,10 +1381,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
@@ -1418,10 +1418,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
@@ -1455,10 +1455,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
@@ -1492,10 +1492,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
@@ -1529,10 +1529,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
@@ -1566,10 +1566,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
@@ -1603,10 +1603,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
@@ -1641,10 +1641,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
@@ -1678,10 +1678,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
@@ -1715,10 +1715,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
@@ -1752,10 +1752,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
@@ -1789,10 +1789,10 @@ services:
     - no-new-privileges:true
     cap_drop:
     - ALL
-    pids_limit: 256
     deploy:
       resources:
         limits:
+          pids: 256
           cpus: '2'
           memory: 2G
         reservations:
