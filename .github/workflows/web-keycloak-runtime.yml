@@ -1,0 +1,316 @@
+name: HSAAI Web and Keycloak Runtime Validation
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  core-runtime:
+    name: Docker Web and Keycloak Runtime
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Docker information
+        run: |
+          docker --version
+          docker compose version
+          df -h
+
+      - name: Prepare CI environment
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ -f .env.example ]; then
+            cp .env.example .env
+          else
+            touch .env
+          fi
+
+          chmod 600 .env
+
+          {
+            printf '%s\n' \
+              'POSTGRES_USER=hsaai' \
+              'POSTGRES_DB=hsaai' \
+              'APP_ENV=test' \
+              'HSAAI_APP_ENV=test' \
+              'APP_PUBLIC_URL=http://localhost:3000' \
+              'KEYCLOAK_PUBLIC_URL=http://localhost:8080' \
+              'OPENAI_API_KEY=ci-placeholder-not-real'
+
+            for name in \
+              POSTGRES_PASSWORD \
+              SESSION_SECRET \
+              JWT_SECRET \
+              NEO4J_PASSWORD \
+              MINIO_ROOT_PASSWORD \
+              KEYCLOAK_ADMIN_PASSWORD \
+              GRAFANA_PASSWORD; do
+              printf '%s=%s\n' "$name" "$(openssl rand -hex 32)"
+            done
+          } >> .env
+
+      - name: Validate Compose
+        run: |
+          docker compose config --quiet
+
+      - name: Build backend image
+        run: |
+          docker compose build --pull backend-core
+
+      - name: Start databases
+        run: |
+          docker compose up -d --no-deps \
+            postgres redis qdrant
+
+          docker compose ps --all
+
+      - name: Wait for PostgreSQL
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for i in $(seq 1 36); do
+            if docker compose exec -T postgres \
+              pg_isready -U hsaai -d hsaai; then
+              break
+            fi
+
+            sleep 5
+          done
+
+          docker compose exec -T postgres \
+            psql -U hsaai -d hsaai \
+            -v ON_ERROR_STOP=1 \
+            -Atqc "SELECT 1"
+
+      - name: Validate Redis
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for i in $(seq 1 24); do
+            if docker compose exec -T redis redis-cli ping \
+              | grep -qx PONG; then
+              echo "Redis ready"
+              exit 0
+            fi
+
+            sleep 5
+          done
+
+          exit 1
+
+      - name: Validate Qdrant
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for i in $(seq 1 24); do
+            if curl -fsS \
+              http://127.0.0.1:6333/healthz; then
+              echo "Qdrant ready"
+              exit 0
+            fi
+
+            sleep 5
+          done
+
+          exit 1
+
+      - name: Start backend
+        run: |
+          docker compose up -d --no-deps backend-core
+          docker compose ps --all
+
+      - name: Validate backend health
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for i in $(seq 1 36); do
+            if docker compose exec -T backend-core \
+              python3 -c \
+              "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)"; then
+              echo "Backend health passed"
+              exit 0
+            fi
+
+            sleep 5
+          done
+
+          echo "Backend health failed"
+          exit 1
+
+      - name: Validate internal connectivity
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          docker compose exec -T backend-core python3 -c '
+          import socket
+
+          targets = [
+              ("postgres", 5432),
+              ("redis", 6379),
+              ("qdrant", 6333),
+          ]
+
+          for host, port in targets:
+              with socket.create_connection((host, port), timeout=5):
+                  print("CONNECTED", host, port)
+          '
+
+      - name: Verify Keycloak database
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          docker compose exec -T postgres             psql -U hsaai -d keycloak             -v ON_ERROR_STOP=1             -Atqc "SELECT 1" | grep -qx 1
+
+          echo "Keycloak database verified"
+
+      - name: Build Web image
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          df -h
+
+          docker compose --progress plain build web
+
+          echo "Web image built successfully"
+
+      - name: Start Keycloak
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          docker compose up -d --no-deps keycloak
+
+          docker compose ps --all
+
+      - name: Validate Keycloak realm
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          URL="http://127.0.0.1:8080/realms/hsaai/.well-known/openid-configuration"
+
+          for i in $(seq 1 60); do
+
+            if curl -fsS -o /dev/null "$URL"; then
+              echo "Keycloak realm is available"
+              exit 0
+            fi
+
+            sleep 5
+          done
+
+          echo "ERROR: Keycloak realm did not become available"
+          exit 1
+
+      - name: Validate Keycloak JWKS
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          curl -fsS             http://127.0.0.1:8080/realms/hsaai/protocol/openid-connect/certs             | python3 -c '
+          import json
+          import sys
+
+          data = json.load(sys.stdin)
+
+          assert isinstance(data.get("keys"), list)
+          assert data["keys"], "JWKS contains no keys"
+
+          print("Keycloak JWKS validation passed")
+          '
+
+      - name: Start Web
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          docker compose up -d --no-deps web
+
+          docker compose ps --all
+
+      - name: Validate Web HTTP health
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for i in $(seq 1 48); do
+
+            if curl -fsS               -o /dev/null               http://127.0.0.1:3000/api/health; then
+
+              echo "Web HTTP health passed"
+              exit 0
+
+            fi
+
+            sleep 5
+          done
+
+          echo "ERROR: Web HTTP health failed"
+          exit 1
+
+      - name: Validate Web container health
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ID=$(docker compose ps -q web)
+
+          test -n "$ID"
+
+          for i in $(seq 1 12); do
+
+            STATUS=$(docker inspect               --format '{{.State.Health.Status}}' "$ID")
+
+            echo "Web health status: $STATUS"
+
+            if [ "$STATUS" = "healthy" ]; then
+              echo "Web container health passed"
+              exit 0
+            fi
+
+            if [ "$STATUS" = "unhealthy" ]; then
+              echo "ERROR: Web container unhealthy"
+              exit 1
+            fi
+
+            sleep 5
+          done
+
+          echo "ERROR: Web container did not become healthy"
+          exit 1
+
+      - name: Runtime report
+        run: |
+          docker compose ps --all
+          docker system df
+          df -h
+
+      - name: Collect failure logs
+        if: failure()
+        run: |
+          docker compose ps --all
+
+          docker compose logs \
+            --no-color \
+            --tail=100 \
+            postgres redis qdrant backend-core keycloak web
+
+      - name: Shutdown test environment
+        if: always()
+        run: |
+          docker compose down --remove-orphans || true
