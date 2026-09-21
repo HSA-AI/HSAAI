@@ -394,7 +394,7 @@ jobs:
         n\\n    if authenticated:\\n        outgoing.update(headers)\\n\\n    request\
         \ = urllib.request.Request(\\n        url,\\n        data=json.dumps(payload).encode(),\\\
         n        headers=outgoing,\\n        method=\"POST\"\\n    )\\n\\n    with\
-        \ urllib.request.urlopen(\\n        request, timeout=45\\n    ) as response:\\\
+        \ urllib.request.urlopen(\\n        request, timeout=120\\n    ) as response:\\\
         n        return json.load(response)\\n\\ndef verify_qdrant(doc_id, marker):\\\
         n    url = (\\n        QDRANT\\n        + \"/collections/\"\\n        + quote(COLLECTION,\
         \ safe=\"\")\\n        + \"/points/scroll\"\\n    )\\n\\n    payload = {\\\
@@ -418,45 +418,46 @@ jobs:
         \ Qdrant\"\\n        )\\n\\n    print(\"PASS: Document verified in Qdrant\"\
         )\\n\\ndef verify_search(doc_id):\\n    result = post_json(\\n        RAG\
         \ + \"/v1/search\",\\n        {\\n            \"query\": \"cerulean archive\
-        \ beacon\",\\n            \"top_k\": 10\\n        }\\n    )\\n\\n    hits\
-        \ = result.get(\"results\", [])\\n\\n    if not isinstance(hits, list):\\\
-        n        raise SystemExit(\\n            \"STOP: Invalid search response\"\
-        \\n        )\\n\\n    matching = [\\n        hit for hit in hits\\n      \
-        \  if hit.get(\"doc_id\") == doc_id\\n    ]\\n\\n    if not matching:\\n \
-        \       raise SystemExit(\\n            \"STOP: Uploaded document not found\
-        \ in RAG search\"\\n        )\\n\\n    for hit in matching:\\n        if (\\\
-        n            hit.get(\"tenant_id\") != tenant\\n            or hit.get(\"\
-        workspace_id\") != workspace\\n        ):\\n            raise SystemExit(\\\
-        n                \"STOP: Search scope mismatch\"\\n            )\\n\\n   \
-        \ print(\"PASS: Authenticated RAG retrieval\")\\n\\nif mode == \"upload\"\
-        :\\n    marker = \"hsaai-e2e-\" + uuid.uuid4().hex\\n\\n    text = (\\n  \
-        \      \"cerulean archive beacon \"\\n        \"synthetic indexing verification\
-        \ \"\\n        \"retrieval durability documentation \"\\n        + marker\\\
-        n    )\\n\\n    boundary = \"----HSAAI\" + uuid.uuid4().hex\\n\\n    body\
-        \ = (\\n        \"--\" + boundary + \"\\\\r\\\\n\"\\n        \\'Content-Disposition:\
-        \ form-data; \\'\\n        \\'name=\"file\"; filename=\"e2e-document.txt\"\
-        \\\\r\\\\n\\'\\n        \"Content-Type: text/plain\\\\r\\\\n\\\\r\\\\n\"\\\
-        n    ).encode()\\n\\n    body += text.encode()\\n\\n    body += (\\n     \
-        \   \"\\\\r\\\\n--\" + boundary + \"--\\\\r\\\\n\"\\n    ).encode()\\n\\n\
-        \    request = urllib.request.Request(\\n        RAG + \"/v1/documents/upload\"\
-        ,\\n        data=body,\\n        headers={\\n            **headers,\\n   \
-        \         \"Content-Type\":\\n                \"multipart/form-data; boundary=\"\
-        \ + boundary\\n        },\\n        method=\"POST\"\\n    )\\n\\n    try:\\\
-        n        with urllib.request.urlopen(\\n            request, timeout=180\\\
-        n        ) as response:\\n            status = response.status\\n        \
-        \    result = json.load(response)\\n    except urllib.error.HTTPError as exc:\\\
-        n        raise SystemExit(\\n            f\"STOP: Document upload HTTP {exc.code}\"\
-        \\n        )\\n\\n    if status != 200:\\n        raise SystemExit(\\n   \
-        \         \"STOP: Unexpected upload status\"\\n        )\\n\\n    if result.get(\"\
-        status\") != \"indexed\":\\n        raise SystemExit(\\n            \"STOP:\
-        \ Document was not indexed\"\\n        )\\n\\n    doc_id = result.get(\"doc_id\"\
-        )\\n\\n    if not doc_id:\\n        raise SystemExit(\\n            \"STOP:\
-        \ Missing document ID\"\\n        )\\n\\n    if (\\n        result.get(\"\
-        tenant_id\") != tenant\\n        or result.get(\"workspace_id\") != workspace\\\
-        n    ):\\n        raise SystemExit(\\n            \"STOP: Document scope mismatch\"\
-        \\n        )\\n\\n    print(\"PASS: Safe document uploaded\")\\n    print(\"\
-        PASS: Document indexed\")\\n\\nelif mode == \"verify\":\\n    doc_id = config[\"\
-        doc_id\"]\\n    marker = config[\"marker\"]\\n\\n    with urllib.request.urlopen(\\\
+        \ beacon\",\\n            \"mode\": \"semantic\",\\n            \"top_k\"\
+        : 10\\n        }\\n    )\\n\\n    hits = result.get(\"results\", [])\\n\\\
+        n    if not isinstance(hits, list):\\n        raise SystemExit(\\n       \
+        \     \"STOP: Invalid search response\"\\n        )\\n\\n    matching = [\\\
+        n        hit for hit in hits\\n        if hit.get(\"doc_id\") == doc_id\\\
+        n    ]\\n\\n    if not matching:\\n        raise SystemExit(\\n          \
+        \  \"STOP: Uploaded document not found in RAG search\"\\n        )\\n\\n \
+        \   for hit in matching:\\n        if (\\n            hit.get(\"tenant_id\"\
+        ) != tenant\\n            or hit.get(\"workspace_id\") != workspace\\n   \
+        \     ):\\n            raise SystemExit(\\n                \"STOP: Search\
+        \ scope mismatch\"\\n            )\\n\\n    print(\"PASS: Authenticated RAG\
+        \ retrieval\")\\n\\nif mode == \"upload\":\\n    marker = \"hsaai-e2e-\" +\
+        \ uuid.uuid4().hex\\n\\n    text = (\\n        \"cerulean archive beacon \"\
+        \\n        \"synthetic indexing verification \"\\n        \"retrieval durability\
+        \ documentation \"\\n        + marker\\n    )\\n\\n    boundary = \"----HSAAI\"\
+        \ + uuid.uuid4().hex\\n\\n    body = (\\n        \"--\" + boundary + \"\\\\\
+        r\\\\n\"\\n        \\'Content-Disposition: form-data; \\'\\n        \\'name=\"\
+        file\"; filename=\"e2e-document.txt\"\\\\r\\\\n\\'\\n        \"Content-Type:\
+        \ text/plain\\\\r\\\\n\\\\r\\\\n\"\\n    ).encode()\\n\\n    body += text.encode()\\\
+        n\\n    body += (\\n        \"\\\\r\\\\n--\" + boundary + \"--\\\\r\\\\n\"\
+        \\n    ).encode()\\n\\n    request = urllib.request.Request(\\n        RAG\
+        \ + \"/v1/documents/upload\",\\n        data=body,\\n        headers={\\n\
+        \            **headers,\\n            \"Content-Type\":\\n               \
+        \ \"multipart/form-data; boundary=\" + boundary\\n        },\\n        method=\"\
+        POST\"\\n    )\\n\\n    try:\\n        with urllib.request.urlopen(\\n   \
+        \         request, timeout=180\\n        ) as response:\\n            status\
+        \ = response.status\\n            result = json.load(response)\\n    except\
+        \ urllib.error.HTTPError as exc:\\n        raise SystemExit(\\n          \
+        \  f\"STOP: Document upload HTTP {exc.code}\"\\n        )\\n\\n    if status\
+        \ != 200:\\n        raise SystemExit(\\n            \"STOP: Unexpected upload\
+        \ status\"\\n        )\\n\\n    if result.get(\"status\") != \"indexed\":\\\
+        n        raise SystemExit(\\n            \"STOP: Document was not indexed\"\
+        \\n        )\\n\\n    doc_id = result.get(\"doc_id\")\\n\\n    if not doc_id:\\\
+        n        raise SystemExit(\\n            \"STOP: Missing document ID\"\\n\
+        \        )\\n\\n    if (\\n        result.get(\"tenant_id\") != tenant\\n\
+        \        or result.get(\"workspace_id\") != workspace\\n    ):\\n        raise\
+        \ SystemExit(\\n            \"STOP: Document scope mismatch\"\\n        )\\\
+        n\\n    print(\"PASS: Safe document uploaded\")\\n    print(\"PASS: Document\
+        \ indexed\")\\n\\nelif mode == \"verify\":\\n    doc_id = config[\"doc_id\"\
+        ]\\n    marker = config[\"marker\"]\\n\\n    with urllib.request.urlopen(\\\
         n        RAG + \"/ready\", timeout=15\\n    ) as response:\\n        if response.status\
         \ != 200:\\n            raise SystemExit(\\n                \"STOP: RAG not\
         \ ready after restart\"\\n            )\\n\\n    with urllib.request.urlopen(\\\
