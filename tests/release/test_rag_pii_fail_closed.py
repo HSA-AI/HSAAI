@@ -39,7 +39,7 @@ async def test_pii_rejection_never_persists_document(
         rag,
         "extract_text_with_metadata",
         lambda *args, **kwargs: {
-            "text": "Security regression fixture",
+            "text": "A" * 50_001 + " LATE_PII_TEST_MARKER",
             "page_map": [],
         },
     )
@@ -145,6 +145,10 @@ async def test_pii_rejection_never_persists_document(
     assert len(calls) == 1
 
     target, kwargs = calls[0]
+    forwarded_text = kwargs['json']['text']
+    assert len(forwarded_text) > 50_000
+    assert forwarded_text.index('LATE_PII_TEST_MARKER') > 50_000
+    assert forwarded_text == 'A' * 50_001 + ' LATE_PII_TEST_MARKER'
 
     assert target == url
     assert kwargs["headers"]["Authorization"] == (
