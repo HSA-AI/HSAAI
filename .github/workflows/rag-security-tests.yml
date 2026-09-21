@@ -1,0 +1,59 @@
+name: HSAAI RAG PII Security Tests
+'on':
+  workflow_dispatch: null
+permissions:
+  contents: read
+jobs:
+  rag-pii-security:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Prepare CI environment
+      shell: bash
+      run: "set -euo pipefail\n\nif [ -f .env.example ]; then\n  cp .env.example .env\n\
+        else\n  touch .env\nfi\n\nchmod 600 .env\n\n{\n  printf '%s\\n' \\\n    'POSTGRES_USER=hsaai'\
+        \ \\\n    'POSTGRES_DB=hsaai' \\\n    'APP_ENV=test' \\\n    'HSAAI_APP_ENV=test'\
+        \ \\\n    'APP_PUBLIC_URL=http://localhost:3000' \\\n    'KEYCLOAK_PUBLIC_URL=http://localhost:8080'\n\
+        \n  for name in \\\n    POSTGRES_PASSWORD \\\n    SESSION_SECRET \\\n    JWT_SECRET\
+        \ \\\n    NEO4J_PASSWORD \\\n    MINIO_ROOT_PASSWORD \\\n    KEYCLOAK_ADMIN_PASSWORD\
+        \ \\\n    GRAFANA_PASSWORD; do\n\n    printf '%s=%s\\n' \\\n      \"$name\"\
+        \ \"$(openssl rand -hex 32)\"\n\n  done\n} >> .env\n"
+    - name: Validate Docker Compose
+      run: 'set -euo pipefail
+
+        docker compose config --quiet
+
+        echo "PASS: Docker Compose"
+
+        '
+    - name: Check available disk space
+      run: "set -euo pipefail\n\ndf -h .\n\navailable=$(df -Pk . | awk 'NR==2 {print\
+        \ $4}')\nminimum=$((12 * 1024 * 1024))\n\nif [ \"$available\" -lt \"$minimum\"\
+        \ ]; then\n  echo \"ERROR: Less than 12 GiB available.\"\n  exit 1\nfi\n"
+    - name: Build RAG image
+      run: 'set -euo pipefail
+
+        docker compose build rag-service
+
+        '
+    - name: Run RAG PII security tests
+      timeout-minutes: 12
+      run: "set -euo pipefail\n\ndocker compose run --rm --no-deps \\\n  --volume\
+        \ \"$GITHUB_WORKSPACE/tests:/app/tests:ro\" \\\n  --entrypoint sh \\\n  rag-service\
+        \ -ec '\n    set -eu\n\n    python -m pip install \\\n      --disable-pip-version-check\
+        \ \\\n      --no-cache-dir \\\n      --target /tmp/hsaai-test-deps \\\n  \
+        \    \"pytest>=8,<9\" \\\n      \"pytest-asyncio>=0.24,<2\"\n\n    export\
+        \ PYTHONPATH=\"/tmp/hsaai-test-deps:/app:/app/services:/app/packages\"\n\n\
+        \    python -m pytest \\\n      -q \\\n      -ra \\\n      -c /dev/null \\\
+        \n      /app/tests/release/test_rag_pii_fail_closed.py\n  '\n\necho \"PASS:\
+        \ RAG PII security regression tests\""
+    - name: Collect failure logs
+      if: failure()
+      run: 'docker compose ps --all || true
+
+        docker compose logs --tail=60 rag-service || true'
+    - name: Shutdown test environment
+      if: always()
+      run: docker compose down --remove-orphans || true
