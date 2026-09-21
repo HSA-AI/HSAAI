@@ -1,0 +1,206 @@
+name: HSAAI Keycloak Token Validation
+'on':
+  workflow_dispatch: null
+permissions:
+  contents: read
+jobs:
+  keycloak-token-validation:
+    name: Validate Keycloak Service JWT
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Docker information
+      run: 'docker --version
+
+        docker compose version
+
+        df -h
+
+        '
+    - name: Prepare CI environment
+      shell: bash
+      run: "set -euo pipefail\n\nif [ -f .env.example ]; then\n  cp .env.example .env\n\
+        else\n  touch .env\nfi\n\nchmod 600 .env\n\n{\n  printf '%s\\n' \\\n    'POSTGRES_USER=hsaai'\
+        \ \\\n    'POSTGRES_DB=hsaai' \\\n    'APP_ENV=test' \\\n    'HSAAI_APP_ENV=test'\
+        \ \\\n    'APP_PUBLIC_URL=http://localhost:3000' \\\n    'KEYCLOAK_PUBLIC_URL=http://localhost:8080'\
+        \ \\\n    'OPENAI_API_KEY=ci-placeholder-not-real'\n\n  for name in \\\n \
+        \   POSTGRES_PASSWORD \\\n    SESSION_SECRET \\\n    JWT_SECRET \\\n    NEO4J_PASSWORD\
+        \ \\\n    MINIO_ROOT_PASSWORD \\\n    KEYCLOAK_ADMIN_PASSWORD \\\n    GRAFANA_PASSWORD;\
+        \ do\n    printf '%s=%s\\n' \"$name\" \"$(openssl rand -hex 32)\"\n  done\n\
+        } >> .env\n"
+    - name: Validate Compose
+      run: 'docker compose config --quiet
+
+        '
+    - name: Build backend image
+      run: 'docker compose build --pull backend-core
+
+        '
+    - name: Start databases
+      run: "docker compose up -d --no-deps \\\n  postgres redis qdrant\n\ndocker compose\
+        \ ps --all\n"
+    - name: Wait for PostgreSQL
+      shell: bash
+      run: "set -euo pipefail\n\nfor i in $(seq 1 36); do\n  if docker compose exec\
+        \ -T postgres \\\n    pg_isready -U hsaai -d hsaai; then\n    break\n  fi\n\
+        \n  sleep 5\ndone\n\ndocker compose exec -T postgres \\\n  psql -U hsaai -d\
+        \ hsaai \\\n  -v ON_ERROR_STOP=1 \\\n  -Atqc \"SELECT 1\"\n"
+    - name: Validate Redis
+      shell: bash
+      run: "set -euo pipefail\n\nfor i in $(seq 1 24); do\n  if docker compose exec\
+        \ -T redis redis-cli ping \\\n    | grep -qx PONG; then\n    echo \"Redis\
+        \ ready\"\n    exit 0\n  fi\n\n  sleep 5\ndone\n\nexit 1\n"
+    - name: Validate Qdrant
+      shell: bash
+      run: "set -euo pipefail\n\nfor i in $(seq 1 24); do\n  if curl -fsS \\\n   \
+        \ http://127.0.0.1:6333/healthz; then\n    echo \"Qdrant ready\"\n    exit\
+        \ 0\n  fi\n\n  sleep 5\ndone\n\nexit 1\n"
+    - name: Start backend
+      run: 'docker compose up -d --no-deps backend-core
+
+        docker compose ps --all
+
+        '
+    - name: Validate backend health
+      shell: bash
+      run: "set -euo pipefail\n\nfor i in $(seq 1 36); do\n  if docker compose exec\
+        \ -T backend-core \\\n    python3 -c \\\n    \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health',\
+        \ timeout=5)\"; then\n    echo \"Backend health passed\"\n    exit 0\n  fi\n\
+        \n  sleep 5\ndone\n\necho \"Backend health failed\"\nexit 1\n"
+    - name: Validate internal connectivity
+      shell: bash
+      run: "set -euo pipefail\n\ndocker compose exec -T backend-core python3 -c '\n\
+        import socket\n\ntargets = [\n    (\"postgres\", 5432),\n    (\"redis\", 6379),\n\
+        \    (\"qdrant\", 6333),\n]\n\nfor host, port in targets:\n    with socket.create_connection((host,\
+        \ port), timeout=5):\n        print(\"CONNECTED\", host, port)\n'\n"
+    - name: Verify Keycloak database
+      shell: bash
+      run: 'set -euo pipefail
+
+
+        docker compose exec -T postgres             psql -U hsaai -d keycloak             -v
+        ON_ERROR_STOP=1             -Atqc "SELECT 1" | grep -qx 1
+
+
+        echo "Keycloak database verified"
+
+        '
+    - name: Build Web image
+      shell: bash
+      run: 'set -euo pipefail
+
+
+        df -h
+
+
+        docker compose --progress plain build web
+
+
+        echo "Web image built successfully"
+
+        '
+    - name: Start Keycloak
+      shell: bash
+      run: 'set -euo pipefail
+
+
+        docker compose up -d --no-deps keycloak
+
+
+        docker compose ps --all
+
+        '
+    - name: Validate Keycloak realm
+      shell: bash
+      run: "set -euo pipefail\n\nURL=\"http://127.0.0.1:8080/realms/hsaai/.well-known/openid-configuration\"\
+        \n\nfor i in $(seq 1 60); do\n\n  if curl -fsS -o /dev/null \"$URL\"; then\n\
+        \    echo \"Keycloak realm is available\"\n    exit 0\n  fi\n\n  sleep 5\n\
+        done\n\necho \"ERROR: Keycloak realm did not become available\"\nexit 1\n"
+    - name: Validate Keycloak JWKS
+      shell: bash
+      run: 'set -euo pipefail
+
+
+        curl -fsS             http://127.0.0.1:8080/realms/hsaai/protocol/openid-connect/certs             |
+        python3 -c ''
+
+        import json
+
+        import sys
+
+
+        data = json.load(sys.stdin)
+
+
+        assert isinstance(data.get("keys"), list)
+
+        assert data["keys"], "JWKS contains no keys"
+
+
+        print("Keycloak JWKS validation passed")
+
+        ''
+
+        '
+    - name: Validate real Keycloak service token
+      timeout-minutes: 5
+      run: "set -euo pipefail\n\npython - <<'PYCODE'\nimport subprocess\nimport json\n\
+        import base64\nimport urllib.request\nimport urllib.parse\nimport urllib.error\n\
+        import time\n\ndef docker(*args):\n    result = subprocess.run(\n        [\"\
+        docker\", \"compose\", \"exec\", \"-T\", \"keycloak\", *args],\n        capture_output=True,\n\
+        \        text=True\n    )\n\n    if result.returncode:\n        raise SystemExit(\n\
+        \            \"STOP: Keycloak administration command failed\"\n        )\n\
+        \n    return result.stdout\n\n# Authenticate using the ephemeral CI administrator.\n\
+        login = subprocess.run(\n    [\n        \"docker\", \"compose\", \"exec\"\
+        , \"-T\",\n        \"keycloak\", \"sh\", \"-ec\",\n        '/opt/keycloak/bin/kcadm.sh\
+        \ config credentials '\n        '--server http://localhost:8080 '\n      \
+        \  '--realm master '\n        '--user \"$KEYCLOAK_ADMIN\" '\n        '--password\
+        \ \"$KEYCLOAK_ADMIN_PASSWORD\" '\n        '>/dev/null'\n    ],\n    capture_output=True,\n\
+        \    text=True\n)\n\nif login.returncode:\n    raise SystemExit(\"STOP: Keycloak\
+        \ admin authentication failed\")\n\nprint(\"PASS: Keycloak admin authentication\"\
+        )\n\nclients = json.loads(docker(\n    \"/opt/keycloak/bin/kcadm.sh\",\n \
+        \   \"get\", \"clients\",\n    \"-r\", \"hsaai\",\n    \"-q\", \"clientId=hsaai-api\"\
+        \n))\n\nmatches = [\n    client for client in clients\n    if client.get(\"\
+        clientId\") == \"hsaai-api\"\n]\n\nif len(matches) != 1:\n    raise SystemExit(\"\
+        STOP: hsaai-api client not found uniquely\")\n\nclient = matches[0]\n\nif\
+        \ not client.get(\"serviceAccountsEnabled\"):\n    raise SystemExit(\"STOP:\
+        \ Service account not enabled\")\n\nclient_id = client[\"id\"]\n\nsecret_data\
+        \ = json.loads(docker(\n    \"/opt/keycloak/bin/kcadm.sh\",\n    \"get\",\n\
+        \    f\"clients/{client_id}/client-secret\",\n    \"-r\", \"hsaai\"\n))\n\n\
+        secret = secret_data.get(\"value\")\n\nif not secret:\n    raise SystemExit(\"\
+        STOP: Client secret unavailable\")\n\nprint(\"PASS: Service account and secret\
+        \ available\")\n\nendpoint = (\n    \"http://127.0.0.1:8080/realms/hsaai/\"\
+        \n    \"protocol/openid-connect/token\"\n)\n\npayload = urllib.parse.urlencode({\n\
+        \    \"grant_type\": \"client_credentials\",\n    \"client_id\": \"hsaai-api\"\
+        ,\n    \"client_secret\": secret,\n}).encode()\n\nrequest = urllib.request.Request(\n\
+        \    endpoint,\n    data=payload,\n    method=\"POST\"\n)\n\ntry:\n    with\
+        \ urllib.request.urlopen(\n        request, timeout=20\n    ) as response:\n\
+        \        token_response = json.load(response)\nexcept urllib.error.HTTPError\
+        \ as exc:\n    raise SystemExit(\n        f\"STOP: Token issuance failed:\
+        \ HTTP {exc.code}\"\n    )\n\ntoken = token_response.get(\"access_token\"\
+        )\n\nif not token:\n    raise SystemExit(\"STOP: No access token issued\"\
+        )\n\nprint(\"PASS: Real access token issued\")\n\n# Diagnostic inspection\
+        \ only: decoding the payload here\n# does not cryptographically verify the\
+        \ JWT signature.\ntry:\n    encoded = token.split(\".\")[1]\n    encoded +=\
+        \ \"=\" * (-len(encoded) % 4)\n    claims = json.loads(\n        base64.urlsafe_b64decode(encoded)\n\
+        \    )\nexcept Exception:\n    raise SystemExit(\"STOP: Invalid JWT structure\"\
+        )\n\nprint(\"===== JWT CLAIM VALIDATION =====\")\n\nissuer = (\n    \"http://localhost:8080/realms/hsaai\"\
+        \n)\n\naud = claims.get(\"aud\", [])\n\nif isinstance(aud, str):\n    aud\
+        \ = [aud]\n\nchecks = {\n    \"issuer\": claims.get(\"iss\") == issuer,\n\
+        \    \"audience\": \"hsaai-api\" in aud,\n    \"subject\": bool(claims.get(\"\
+        sub\")),\n    \"expiration\": isinstance(\n        claims.get(\"exp\"), (int,\
+        \ float)\n    ) and claims[\"exp\"] > time.time(),\n    \"tenant_id\": isinstance(\n\
+        \        claims.get(\"tenant_id\"), str\n    ) and bool(claims[\"tenant_id\"\
+        ].strip()),\n    \"workspace_id\": isinstance(\n        claims.get(\"workspace_id\"\
+        ), str\n    ) and bool(claims[\"workspace_id\"].strip()),\n}\n\nfor name,\
+        \ passed in checks.items():\n    print(\n        name + \":\",\n        \"\
+        PASS\" if passed else \"FAIL\"\n    )\n\nfailed = [\n    name for name, passed\
+        \ in checks.items()\n    if not passed\n]\n\nif failed:\n    raise SystemExit(\n\
+        \        \"STOP: Required JWT claims missing or invalid: \"\n        + \"\
+        , \".join(failed)\n    )\n\nprint(\"PASS: Required JWT claims present\")\n\
+        print(\"Secrets printed: NO\")\nprint(\"JWT printed: NO\")\nPYCODE"
+    - name: Shutdown test environment
+      if: always()
+      run: docker compose down --remove-orphans || true
