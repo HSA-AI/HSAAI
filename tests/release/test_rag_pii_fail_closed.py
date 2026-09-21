@@ -44,7 +44,7 @@ async def test_pii_rejection_never_persists_document(
         },
     )
 
-    url = "http://pii_detector:8092/v1/pii/check-document"
+    url = "http://pii-detector:8092/v1/pii/check-document"
     request = httpx.Request("POST", url)
 
     responses = {
