@@ -479,10 +479,10 @@ jobs:
         if first.returncode:\n    diagnostic = (\n        first.stdout[-1200:]\n \
         \       + first.stderr[-400:]\n    ).replace(token, \"[REDACTED]\")\n\n  \
         \  raise SystemExit(\n        \"STOP: Document upload/index/search failed\\\
-        n\"\n        + diagnostic\n    )\n\nprint(first.stdout)\n\ndoc_matches = re.findall(\n\
-        \    r\"^DOC_ID=([0-9a-fA-F-]{36})$\",\n    first.stdout,\n    re.M\n)\n\n\
-        marker_matches = re.findall(\n    r\"^MARKER=(hsaai-e2e-[0-9a-f]{32})$\",\n\
-        \    first.stdout,\n    re.M\n)\n\nif len(doc_matches) != 1 or len(marker_matches)\
+        n\"\n        + diagnostic\n    )\n\nprint(first.stdout)\n\nimport re\n\ndoc_matches\
+        \ = re.findall(\n    r\"^DOC_ID=([0-9a-fA-F-]{36})$\",\n    first.stdout,\n\
+        \    re.M\n)\n\nmarker_matches = re.findall(\n    r\"^MARKER=(hsaai-e2e-[0-9a-f]{32})$\"\
+        ,\n    first.stdout,\n    re.M\n)\n\nif len(doc_matches) != 1 or len(marker_matches)\
         \ != 1:\n    raise SystemExit(\n        \"STOP: Cannot recover test document\
         \ identifiers\"\n    )\n\ndoc_id = doc_matches[0]\ndocument_marker = marker_matches[0]\n\
         \nrestart = subprocess.run(\n    [\n        \"docker\", \"compose\", \"restart\"\
