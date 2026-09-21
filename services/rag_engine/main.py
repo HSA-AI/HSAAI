@@ -394,43 +394,6 @@ async def upload_document(
     filename = secure_name(file.filename or f"doc-{uuid.uuid4()}.txt")
     doc_id = str(uuid.uuid4())
 
-    # FIX v2.2 (Phase 2): Store the document in MinIO object storage (S3-compatible)
-    # instead of local disk. This enables horizontal scaling (any pod can read any
-    # document), lifecycle management, versioning, and survives pod reschedules.
-    # Falls back to local disk in dev environments where MinIO is not configured.
-    USE_OBJECT_STORAGE = os.getenv("USE_OBJECT_STORAGE", "true").lower() == "true"
-    object_key = None
-    if USE_OBJECT_STORAGE:
-        try:
-            import sys as _sys
-            _sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'packages'))
-            from common.storage import storage_client
-            object_key = storage_client.upload_document(
-                tenant_id=tenant_id,
-                workspace_id=workspace_id,
-                document_id=f"{doc_id}-{filename}",
-                data=raw,
-                content_type=file.content_type or "application/octet-stream",
-                metadata={
-                    "uploaded_by": "rag_engine",
-                    "classification": classification,
-                    "original_filename": filename,
-                    "tenant_id": tenant_id,
-                    "workspace_id": workspace_id,
-                },
-            )
-            logger.info("Document stored in MinIO: %s", object_key)
-        except Exception as exc:
-            logger.warning("MinIO upload failed (%s) — falling back to local disk", exc)
-            object_key = None
-
-    if object_key is None:
-        # Fallback: local disk (dev environments only)
-        target_dir = STORAGE / secure_name(tenant_id) / secure_name(workspace_id)
-        target_dir.mkdir(parents=True, exist_ok=True)
-        target = target_dir / f"{doc_id}-{filename}"
-        target.write_bytes(raw)
-
     extracted = await run_in_threadpool(extract_text_with_metadata, filename, raw, enable_ocr=True)
     text = extracted["text"]
 
@@ -485,6 +448,43 @@ async def upload_document(
     chunk_objs = chunk_text_advanced(text, size=CHUNK_SIZE, overlap=CHUNK_OVERLAP, page_map=extracted.get("page_map") or None)
     if not chunk_objs:
         raise HTTPException(400, "No extractable text. OCR dependencies may be missing for scanned files: tesseract-ocr, tesseract-ocr-ara, poppler-utils.")
+
+    # FIX v2.2 (Phase 2): Store the document in MinIO object storage (S3-compatible)
+    # instead of local disk. This enables horizontal scaling (any pod can read any
+    # document), lifecycle management, versioning, and survives pod reschedules.
+    # Falls back to local disk in dev environments where MinIO is not configured.
+    USE_OBJECT_STORAGE = os.getenv("USE_OBJECT_STORAGE", "true").lower() == "true"
+    object_key = None
+    if USE_OBJECT_STORAGE:
+        try:
+            import sys as _sys
+            _sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'packages'))
+            from common.storage import storage_client
+            object_key = storage_client.upload_document(
+                tenant_id=tenant_id,
+                workspace_id=workspace_id,
+                document_id=f"{doc_id}-{filename}",
+                data=raw,
+                content_type=file.content_type or "application/octet-stream",
+                metadata={
+                    "uploaded_by": "rag_engine",
+                    "classification": classification,
+                    "original_filename": filename,
+                    "tenant_id": tenant_id,
+                    "workspace_id": workspace_id,
+                },
+            )
+            logger.info("Document stored in MinIO: %s", object_key)
+        except Exception as exc:
+            logger.warning("MinIO upload failed (%s) — falling back to local disk", exc)
+            object_key = None
+
+    if object_key is None:
+        # Fallback: local disk (dev environments only)
+        target_dir = STORAGE / secure_name(tenant_id) / secure_name(workspace_id)
+        target_dir.mkdir(parents=True, exist_ok=True)
+        target = target_dir / f"{doc_id}-{filename}"
+        target.write_bytes(raw)
 
     # FIX v0.1 (P0): Use batched embedding instead of serial per-chunk calls.
     # Previously: `[embed_text(c.text) for c in chunk_objs]` — serial, 10-20x
