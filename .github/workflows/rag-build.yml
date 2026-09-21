@@ -1,0 +1,74 @@
+name: HSAAI RAG Docker Build Validation
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rag-build:
+    name: Build RAG Docker Image
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check Docker environment
+        run: |
+          set -euo pipefail
+          docker version
+          docker info
+          df -h .
+          docker system df
+
+      - name: Check available disk space
+        run: |
+          set -euo pipefail
+
+          available_kb=$(df -Pk . | awk 'NR==2 {print $4}')
+          minimum_kb=$((12 * 1024 * 1024))
+
+          echo "Available disk: ${available_kb} KB"
+          echo "Minimum required for this build attempt: ${minimum_kb} KB"
+
+          if [ "$available_kb" -lt "$minimum_kb" ]; then
+            echo "ERROR: Insufficient free disk space for RAG build attempt."
+            echo "Use a larger runner or the dedicated workstation."
+            exit 1
+          fi
+
+      - name: Validate RAG Dockerfile
+        run: |
+          set -euo pipefail
+          test -s services/rag_engine/Dockerfile
+          test -s services/rag_engine/requirements.txt
+          test -s packages/common/requirements.txt
+          test -s services/rag_engine/embedding.py
+          echo "PASS: Required RAG build files exist"
+
+      - name: Build RAG image
+        run: |
+          set -euo pipefail
+
+          docker build \
+            --progress=plain \
+            -f services/rag_engine/Dockerfile \
+            -t hsaai-rag:ci \
+            .
+
+      - name: Verify image
+        run: |
+          set -euo pipefail
+          docker image inspect hsaai-rag:ci \
+            --format 'Image: {{.Id}}'
+          docker image ls hsaai-rag:ci
+          echo "PASS: RAG Docker image built successfully"
+
+      - name: Report disk usage
+        if: always()
+        run: |
+          df -h .
+          docker system df
