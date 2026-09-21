@@ -1,0 +1,328 @@
+name: HSAAI RAG Integration
+'on':
+  workflow_dispatch: null
+permissions:
+  contents: read
+jobs:
+  rag-integration:
+    name: RAG Authenticated Integration
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Docker information
+      run: 'docker --version
+
+        docker compose version
+
+        df -h
+
+        '
+    - name: Prepare CI environment
+      shell: bash
+      run: "set -euo pipefail\n\nif [ -f .env.example ]; then\n  cp .env.example .env\n\
+        else\n  touch .env\nfi\n\nchmod 600 .env\n\n{\n  printf '%s\\n' \\\n    'POSTGRES_USER=hsaai'\
+        \ \\\n    'POSTGRES_DB=hsaai' \\\n    'APP_ENV=test' \\\n    'HSAAI_APP_ENV=test'\
+        \ \\\n    'APP_PUBLIC_URL=http://localhost:3000' \\\n    'KEYCLOAK_PUBLIC_URL=http://localhost:8080'\
+        \ \\\n    'OPENAI_API_KEY=ci-placeholder-not-real'\n\n  for name in \\\n \
+        \   POSTGRES_PASSWORD \\\n    SESSION_SECRET \\\n    JWT_SECRET \\\n    NEO4J_PASSWORD\
+        \ \\\n    MINIO_ROOT_PASSWORD \\\n    KEYCLOAK_ADMIN_PASSWORD \\\n    GRAFANA_PASSWORD;\
+        \ do\n    printf '%s=%s\\n' \"$name\" \"$(openssl rand -hex 32)\"\n  done\n\
+        } >> .env\n"
+    - name: Validate Compose
+      run: 'docker compose config --quiet
+
+        '
+    - name: Build backend image
+      run: 'docker compose build --pull backend-core
+
+        '
+    - name: Start databases
+      run: "docker compose up -d --no-deps \\\n  postgres redis qdrant\n\ndocker compose\
+        \ ps --all\n"
+    - name: Wait for PostgreSQL
+      shell: bash
+      run: "set -euo pipefail\n\nfor i in $(seq 1 36); do\n  if docker compose exec\
+        \ -T postgres \\\n    pg_isready -U hsaai -d hsaai; then\n    break\n  fi\n\
+        \n  sleep 5\ndone\n\ndocker compose exec -T postgres \\\n  psql -U hsaai -d\
+        \ hsaai \\\n  -v ON_ERROR_STOP=1 \\\n  -Atqc \"SELECT 1\"\n"
+    - name: Validate Redis
+      shell: bash
+      run: "set -euo pipefail\n\nfor i in $(seq 1 24); do\n  if docker compose exec\
+        \ -T redis redis-cli ping \\\n    | grep -qx PONG; then\n    echo \"Redis\
+        \ ready\"\n    exit 0\n  fi\n\n  sleep 5\ndone\n\nexit 1\n"
+    - name: Validate Qdrant
+      shell: bash
+      run: "set -euo pipefail\n\nfor i in $(seq 1 24); do\n  if curl -fsS \\\n   \
+        \ http://127.0.0.1:6333/healthz; then\n    echo \"Qdrant ready\"\n    exit\
+        \ 0\n  fi\n\n  sleep 5\ndone\n\nexit 1\n"
+    - name: Start backend
+      run: 'docker compose up -d --no-deps backend-core
+
+        docker compose ps --all
+
+        '
+    - name: Validate backend health
+      shell: bash
+      run: "set -euo pipefail\n\nfor i in $(seq 1 36); do\n  if docker compose exec\
+        \ -T backend-core \\\n    python3 -c \\\n    \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health',\
+        \ timeout=5)\"; then\n    echo \"Backend health passed\"\n    exit 0\n  fi\n\
+        \n  sleep 5\ndone\n\necho \"Backend health failed\"\nexit 1\n"
+    - name: Validate internal connectivity
+      shell: bash
+      run: "set -euo pipefail\n\ndocker compose exec -T backend-core python3 -c '\n\
+        import socket\n\ntargets = [\n    (\"postgres\", 5432),\n    (\"redis\", 6379),\n\
+        \    (\"qdrant\", 6333),\n]\n\nfor host, port in targets:\n    with socket.create_connection((host,\
+        \ port), timeout=5):\n        print(\"CONNECTED\", host, port)\n'\n"
+    - name: Verify Keycloak database
+      shell: bash
+      run: 'set -euo pipefail
+
+
+        docker compose exec -T postgres             psql -U hsaai -d keycloak             -v
+        ON_ERROR_STOP=1             -Atqc "SELECT 1" | grep -qx 1
+
+
+        echo "Keycloak database verified"
+
+        '
+    - name: Start Keycloak
+      shell: bash
+      run: 'set -euo pipefail
+
+
+        docker compose up -d --no-deps keycloak
+
+
+        docker compose ps --all
+
+        '
+    - name: Validate Keycloak realm
+      shell: bash
+      run: "set -euo pipefail\n\nURL=\"http://127.0.0.1:8080/realms/hsaai/.well-known/openid-configuration\"\
+        \n\nfor i in $(seq 1 60); do\n\n  if curl -fsS -o /dev/null \"$URL\"; then\n\
+        \    echo \"Keycloak realm is available\"\n    exit 0\n  fi\n\n  sleep 5\n\
+        done\n\necho \"ERROR: Keycloak realm did not become available\"\nexit 1\n"
+    - name: Validate Keycloak JWKS
+      shell: bash
+      run: 'set -euo pipefail
+
+
+        curl -fsS             http://127.0.0.1:8080/realms/hsaai/protocol/openid-connect/certs             |
+        python3 -c ''
+
+        import json
+
+        import sys
+
+
+        data = json.load(sys.stdin)
+
+
+        assert isinstance(data.get("keys"), list)
+
+        assert data["keys"], "JWKS contains no keys"
+
+
+        print("Keycloak JWKS validation passed")
+
+        ''
+
+        '
+    - name: Build RAG and PII images
+      run: docker compose build rag-service pii-detector
+    - name: Start PII detector
+      timeout-minutes: 6
+      run: "set -euo pipefail\n\ndocker compose up -d --no-deps pii-detector\n\nfor\
+        \ i in $(seq 1 90); do\n  id=$(docker compose ps -q pii-detector)\n\n  if\
+        \ [ -n \"$id\" ]; then\n    status=$(docker inspect \\\n      --format '{{.State.Health.Status}}'\
+        \ \"$id\")\n\n    if [ \"$status\" = \"healthy\" ]; then\n      echo \"PASS:\
+        \ PII detector healthy\"\n      exit 0\n    fi\n  fi\n\n  sleep 3\ndone\n\n\
+        echo \"STOP: PII health timeout\"\ndocker compose ps --all\nexit 1"
+    - name: Initialize RAG model cache permissions
+      run: "set -euo pipefail\n\nVOLUME=\"hsaai_embedding_models\"\n\ndocker volume\
+        \ create \"$VOLUME\" >/dev/null\ndocker volume inspect \"$VOLUME\" >/dev/null\n\
+        \n# Independent helper: does not inherit rag-service cap_drop.\ndocker run\
+        \ --rm \\\n  --network none \\\n  --user 0:0 \\\n  --cap-drop ALL \\\n  --cap-add\
+        \ CHOWN \\\n  --cap-add DAC_OVERRIDE \\\n  --mount \"type=volume,source=${VOLUME},target=/models\"\
+        \ \\\n  alpine:3.20 sh -ec '\n    mkdir -p /models/hub\n    chown -R 1000:1000\
+        \ /models\n    stat -c \"%u:%g %n\" /models /models/hub\n  '\n\n# Verify permissions\
+        \ with the real RAG application UID.\ndocker run --rm \\\n  --network none\
+        \ \\\n  --user 1000:1000 \\\n  --cap-drop ALL \\\n  --mount \"type=volume,source=${VOLUME},target=/models\"\
+        \ \\\n  alpine:3.20 sh -ec '\n    set -e\n    mkdir -p /models/hub/models--sentence-transformers--paraphrase-multilingual-MiniLM-L12-v2\n\
+        \    touch /models/hub/models--sentence-transformers--paraphrase-multilingual-MiniLM-L12-v2/.permission-test\n\
+        \    rm /models/hub/models--sentence-transformers--paraphrase-multilingual-MiniLM-L12-v2/.permission-test\n\
+        \  '\n\necho \"PASS: Model cache writable by RAG user\"\n"
+    - name: Start RAG Engine
+      run: 'set -euo pipefail
+
+
+        docker compose up -d --no-deps rag-service
+
+        docker compose ps --all rag-service
+
+        '
+    - name: Validate RAG container health
+      run: "set -euo pipefail\n\nid=\"$(docker compose ps -q rag-service)\"\ntest\
+        \ -n \"$id\"\n\nfor attempt in $(seq 1 72); do\n\n  state=$(docker inspect\
+        \ \\\n    --format '{{.State.Status}}' \"$id\")\n\n  health=$(docker inspect\
+        \ \\\n    --format '{{.State.Health.Status}}' \"$id\")\n\n  echo \"Attempt\
+        \ $attempt/72: state=$state health=$health\"\n\n  if [ \"$health\" = \"healthy\"\
+        \ ]; then\n    echo \"PASS: RAG container healthy\"\n    exit 0\n  fi\n\n\
+        \  if [ \"$state\" != \"running\" ] || \\\n     [ \"$health\" = \"unhealthy\"\
+        \ ]; then\n\n    docker inspect \\\n      --format '{{range .State.Health.Log}}{{println\
+        \ .ExitCode .Output}}{{end}}' \\\n      \"$id\" || true\n\n    docker compose\
+        \ logs \\\n      --no-color --tail=80 rag-service || true\n\n    exit 1\n\
+        \  fi\n\n  sleep 5\ndone\n\necho \"ERROR: RAG health timeout\"\ndocker compose\
+        \ logs --tail=80 rag-service\nexit 1\n"
+    - name: Validate RAG dependencies
+      run: "set -euo pipefail\n\ndocker compose exec -T rag-service python - <<'PYRAG'\n\
+        import json\nimport urllib.request\n\nbase = \"http://127.0.0.1:8030\"\n\n\
+        def fetch(path):\n    with urllib.request.urlopen(\n        base + path, timeout=120\n\
+        \    ) as response:\n        assert response.status == 200\n        return\
+        \ json.load(response)\n\nhealth = fetch(\"/health\")\n\nprint(\"RAG status:\"\
+        , health.get(\"status\"))\nprint(\"Qdrant:\", health.get(\"qdrant\"))\n\n\
+        embedding = health.get(\"embedding\", {})\n\nprint(\n    \"Real embedding:\"\
+        ,\n    embedding.get(\"real_embedding_enabled\")\n)\n\nprint(\n    \"Embedding\
+        \ dimension:\",\n    embedding.get(\"vector_size\")\n)\n\nprint(\"Embedding\
+        \ error:\", embedding.get(\"error\"))\n\nassert health.get(\"status\") ==\
+        \ \"ok\"\nassert health.get(\"qdrant\") is True\n\nassert (\n    embedding.get(\"\
+        real_embedding_enabled\") is True\n), \"Embedding model failed to load\"\n\
+        \nassert embedding.get(\"vector_size\") == 384\n\nauth = fetch(\"/health/auth\"\
+        )\n\nprint(\n    \"Auth module available:\",\n    auth.get(\"auth_available\"\
+        )\n)\n\nassert auth.get(\"auth_available\") is True\nassert auth.get(\"fail_closed\"\
+        ) is True\n\nready = fetch(\"/ready\")\n\nassert ready.get(\"status\") ==\
+        \ \"ready\"\n\nprint(\"PASS: RAG dependency validation\")\nPYRAG\n"
+    - name: Validate JWT and service integration
+      timeout-minutes: 10
+      run: "set -euo pipefail\n\npython - <<'PYCODE'\nimport subprocess\nimport json\n\
+        import base64\nimport urllib.request\nimport urllib.parse\nimport urllib.error\n\
+        import time\n\ndef docker(*args):\n    result = subprocess.run(\n        [\"\
+        docker\", \"compose\", \"exec\", \"-T\", \"keycloak\", *args],\n        capture_output=True,\n\
+        \        text=True\n    )\n\n    if result.returncode:\n        raise SystemExit(\n\
+        \            \"STOP: Keycloak administration command failed\"\n        )\n\
+        \n    return result.stdout\n\n# Authenticate using the ephemeral CI administrator.\n\
+        login = subprocess.run(\n    [\n        \"docker\", \"compose\", \"exec\"\
+        , \"-T\",\n        \"keycloak\", \"sh\", \"-ec\",\n        '/opt/keycloak/bin/kcadm.sh\
+        \ config credentials '\n        '--server http://localhost:8080 '\n      \
+        \  '--realm master '\n        '--user \"$KEYCLOAK_ADMIN\" '\n        '--password\
+        \ \"$KEYCLOAK_ADMIN_PASSWORD\" '\n        '>/dev/null'\n    ],\n    capture_output=True,\n\
+        \    text=True\n)\n\nif login.returncode:\n    raise SystemExit(\"STOP: Keycloak\
+        \ admin authentication failed\")\n\nprint(\"PASS: Keycloak admin authentication\"\
+        )\n\nclients = json.loads(docker(\n    \"/opt/keycloak/bin/kcadm.sh\",\n \
+        \   \"get\", \"clients\",\n    \"-r\", \"hsaai\",\n    \"-q\", \"clientId=hsaai-api\"\
+        \n))\n\nmatches = [\n    client for client in clients\n    if client.get(\"\
+        clientId\") == \"hsaai-api\"\n]\n\nif len(matches) != 1:\n    raise SystemExit(\"\
+        STOP: hsaai-api client not found uniquely\")\n\nclient = matches[0]\n\nif\
+        \ not client.get(\"serviceAccountsEnabled\"):\n    raise SystemExit(\"STOP:\
+        \ Service account not enabled\")\n\nclient_id = client[\"id\"]\n\nsecret_data\
+        \ = json.loads(docker(\n    \"/opt/keycloak/bin/kcadm.sh\",\n    \"get\",\n\
+        \    f\"clients/{client_id}/client-secret\",\n    \"-r\", \"hsaai\"\n))\n\n\
+        secret = secret_data.get(\"value\")\n\nif not secret:\n    raise SystemExit(\"\
+        STOP: Client secret unavailable\")\n\nprint(\"PASS: Service account and secret\
+        \ available\")\n\nimport os\n\nrun_id = os.environ.get(\"GITHUB_RUN_ID\",\
+        \ \"\")\n\nif not run_id.isdigit():\n    raise SystemExit(\"STOP: Invalid\
+        \ GitHub run ID\")\n\nci_tenant = \"ci-tenant-\" + run_id\nci_workspace =\
+        \ \"ci-workspace-\" + run_id\n\nservice_user = json.loads(docker(\n    \"\
+        /opt/keycloak/bin/kcadm.sh\",\n    \"get\",\n    f\"clients/{client_id}/service-account-user\"\
+        ,\n    \"-r\", \"hsaai\"\n))\n\nservice_user_id = service_user.get(\"id\"\
+        )\n\nif not service_user_id:\n    raise SystemExit(\"STOP: Service account\
+        \ user not found\")\n\nattributes = dict(service_user.get(\"attributes\")\
+        \ or {})\n\nfor name, expected in (\n    (\"tenant_id\", ci_tenant),\n   \
+        \ (\"workspace_id\", ci_workspace),\n):\n    current = attributes.get(name)\n\
+        \n    if current and current != [expected]:\n        raise SystemExit(\n \
+        \           \"STOP: Refusing to overwrite existing \" + name\n        )\n\n\
+        \    attributes[name] = [expected]\n\nupdate = subprocess.run(\n    [\n  \
+        \      \"docker\", \"compose\", \"exec\", \"-T\",\n        \"keycloak\",\n\
+        \        \"/opt/keycloak/bin/kcadm.sh\",\n        \"update\",\n        f\"\
+        users/{service_user_id}\",\n        \"-r\", \"hsaai\",\n        \"-s\",\n\
+        \        \"attributes=\" + json.dumps(\n            attributes,\n        \
+        \    separators=(\",\", \":\")\n        )\n    ],\n    capture_output=True,\n\
+        \    text=True\n)\n\nif update.returncode:\n    raise SystemExit(\n      \
+        \  \"STOP: Service account attribute update failed\"\n    )\n\nverified_user\
+        \ = json.loads(docker(\n    \"/opt/keycloak/bin/kcadm.sh\",\n    \"get\",\n\
+        \    f\"users/{service_user_id}\",\n    \"-r\", \"hsaai\"\n))\n\nverified_attributes\
+        \ = verified_user.get(\"attributes\") or {}\n\nif (\n    verified_attributes.get(\"\
+        tenant_id\") != [ci_tenant]\n    or verified_attributes.get(\"workspace_id\"\
+        ) != [ci_workspace]\n):\n    raise SystemExit(\n        \"STOP: Service account\
+        \ attributes not persisted\"\n    )\n\nprint(\"PASS: CI service account attributes\
+        \ configured\")\n\n\nendpoint = (\n    \"http://127.0.0.1:8080/realms/hsaai/\"\
+        \n    \"protocol/openid-connect/token\"\n)\n\npayload = urllib.parse.urlencode({\n\
+        \    \"grant_type\": \"client_credentials\",\n    \"client_id\": \"hsaai-api\"\
+        ,\n    \"client_secret\": secret,\n}).encode()\n\nrequest = urllib.request.Request(\n\
+        \    endpoint,\n    data=payload,\n    method=\"POST\"\n)\n\ntry:\n    with\
+        \ urllib.request.urlopen(\n        request, timeout=20\n    ) as response:\n\
+        \        token_response = json.load(response)\nexcept urllib.error.HTTPError\
+        \ as exc:\n    raise SystemExit(\n        f\"STOP: Token issuance failed:\
+        \ HTTP {exc.code}\"\n    )\n\ntoken = token_response.get(\"access_token\"\
+        )\n\nif not token:\n    raise SystemExit(\"STOP: No access token issued\"\
+        )\n\nprint(\"PASS: Real access token issued\")\n\n# Diagnostic inspection\
+        \ only: decoding the payload here\n# does not cryptographically verify the\
+        \ JWT signature.\ntry:\n    encoded = token.split(\".\")[1]\n    encoded +=\
+        \ \"=\" * (-len(encoded) % 4)\n    claims = json.loads(\n        base64.urlsafe_b64decode(encoded)\n\
+        \    )\nexcept Exception:\n    raise SystemExit(\"STOP: Invalid JWT structure\"\
+        )\n\nprint(\"===== JWT CLAIM VALIDATION =====\")\n\nissuer = (\n    \"http://localhost:8080/realms/hsaai\"\
+        \n)\n\naud = claims.get(\"aud\", [])\n\nif isinstance(aud, str):\n    aud\
+        \ = [aud]\n\nchecks = {\n    \"issuer\": claims.get(\"iss\") == issuer,\n\
+        \    \"audience\": \"hsaai-api\" in aud,\n    \"subject\": bool(claims.get(\"\
+        sub\")),\n    \"expiration\": isinstance(\n        claims.get(\"exp\"), (int,\
+        \ float)\n    ) and claims[\"exp\"] > time.time(),\n    \"tenant_id\": isinstance(\n\
+        \        claims.get(\"tenant_id\"), str\n    ) and bool(claims[\"tenant_id\"\
+        ].strip()),\n    \"workspace_id\": isinstance(\n        claims.get(\"workspace_id\"\
+        ), str\n    ) and bool(claims[\"workspace_id\"].strip()),\n}\n\nchecks[\"\
+        tenant_id\"] = claims.get(\"tenant_id\") == ci_tenant\nchecks[\"workspace_id\"\
+        ] = claims.get(\"workspace_id\") == ci_workspace\n\nfor name, passed in checks.items():\n\
+        \    print(\n        name + \":\",\n        \"PASS\" if passed else \"FAIL\"\
+        \n    )\n\nfailed = [\n    name for name, passed in checks.items()\n    if\
+        \ not passed\n]\n\nif failed:\n    raise SystemExit(\n        \"STOP: Required\
+        \ JWT claims missing or invalid: \"\n        + \", \".join(failed)\n    )\n\
+        \nprint(\"PASS: Required JWT claims present\")\n\n\nprobe = '\\nimport sys\\\
+        nimport json\\nimport urllib.request\\nimport urllib.error\\n\\nconfig = json.load(sys.stdin)\\\
+        n\\ntoken = config[\"token\"]\\n\\nRAG = \"http://127.0.0.1:8030\"\\nPII =\
+        \ \"http://pii-detector:8092\"\\n\\ndef call(url, payload=None, auth=True):\\\
+        n    headers = {}\\n\\n    if auth:\\n        headers[\"Authorization\"] =\
+        \ \"Bearer \" + token\\n\\n    data = None\\n\\n    if payload is not None:\\\
+        n        data = json.dumps(payload).encode()\\n        headers[\"Content-Type\"\
+        ] = \"application/json\"\\n\\n    request = urllib.request.Request(\\n   \
+        \     url,\\n        data=data,\\n        headers=headers,\\n        method=\"\
+        POST\" if data is not None else \"GET\"\\n    )\\n\\n    try:\\n        with\
+        \ urllib.request.urlopen(\\n            request,\\n            timeout=60\\\
+        n        ) as response:\\n            return response.status, response.read()\\\
+        n\\n    except urllib.error.HTTPError as exc:\\n        return exc.code, b\"\
+        \"\\n\\nstatus, _ = call(RAG + \"/health\")\\n\\nif status != 200:\\n    raise\
+        \ SystemExit(\"STOP: RAG health failed\")\\n\\nprint(\"PASS: RAG health\"\
+        )\\n\\nstatus, _ = call(PII + \"/health\")\\n\\nif status != 200:\\n    raise\
+        \ SystemExit(\\n        \"STOP: RAG to PII connectivity failed\"\\n    )\\\
+        n\\nprint(\"PASS: RAG to PII connectivity\")\\n\\nstatus, _ = call(\\n   \
+        \ RAG + \"/v1/search\",\\n    {\"query\": \"integration test\"},\\n    auth=False\\\
+        n)\\n\\nif status != 401:\\n    raise SystemExit(\\n        \"STOP: Missing\
+        \ JWT was not rejected\"\\n    )\\n\\nprint(\"PASS: Missing JWT rejected\"\
+        )\\n\\nstatus, _ = call(\\n    RAG + \"/v1/search\",\\n    {\\n        \"\
+        query\": \"integration test\",\\n        \"top_k\": 3\\n    }\\n)\\n\\nif\
+        \ status != 200:\\n    raise SystemExit(\\n        f\"STOP: Authenticated\
+        \ RAG search HTTP {status}\"\\n    )\\n\\nprint(\"PASS: Authenticated RAG\
+        \ search\")\\n\\nstatus, body = call(\\n    PII + \"/v1/pii/check-document\"\
+        ,\\n    {\\n        \"text\": \"Enterprise integration document.\",\\n   \
+        \     \"redact\": True,\\n        \"tenant_id\": config[\"tenant\"],\\n  \
+        \      \"workspace_id\": config[\"workspace\"]\\n    }\\n)\\n\\nif status\
+        \ != 200:\\n    raise SystemExit(\\n        f\"STOP: Authenticated PII request\
+        \ HTTP {status}\"\\n    )\\n\\ntry:\\n    decision = json.loads(body)[\"decision\"\
+        ]\\nexcept Exception:\\n    raise SystemExit(\"STOP: Invalid PII response\"\
+        )\\n\\nif decision != \"allow\":\\n    raise SystemExit(\\n        \"STOP:\
+        \ Safe document not allowed\"\\n    )\\n\\nprint(\"PASS: Authenticated PII\
+        \ screening\")\\nprint(\"PASS: RAG integration smoke test\")\\n'\n\nresult\
+        \ = subprocess.run(\n    [\n        \"docker\", \"compose\",\n        \"exec\"\
+        , \"-T\",\n        \"rag-service\",\n        \"python\", \"-c\", probe\n \
+        \   ],\n    input=json.dumps({\n        \"token\": token,\n        \"tenant\"\
+        : ci_tenant,\n        \"workspace\": ci_workspace\n    }),\n    capture_output=True,\n\
+        \    text=True,\n    timeout=180\n)\n\nif result.returncode:\n    raise SystemExit(\n\
+        \        \"STOP: Integration probe failed\\\\n\"\n        + result.stdout[-1500:]\n\
+        \        + \"\\\\n\"\n        + result.stderr[-500:]\n    )\n\nprint(result.stdout)\n\
+        \nprint(\"Secrets printed: NO\")\nprint(\"JWT printed: NO\")\nPYCODE"
+    - name: Collect failure status
+      if: failure()
+      run: docker compose ps --all
+    - name: Shutdown test environment
+      if: always()
+      run: docker compose down --remove-orphans || true
