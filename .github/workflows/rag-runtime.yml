@@ -104,6 +104,7 @@ jobs:
 
           VOLUME="hsaai_embedding_models"
 
+          docker volume create "$VOLUME" >/dev/null
           docker volume inspect "$VOLUME" >/dev/null
 
           # Independent helper: does not inherit rag-service cap_drop.
