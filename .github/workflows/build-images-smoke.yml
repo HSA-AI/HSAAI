@@ -1,0 +1,98 @@
+name: HSAAI Docker Image Build Smoke Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-image:
+    name: Build ${{ matrix.service }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - backend-core
+          - api-gateway
+          - web
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Docker information
+        run: |
+          docker --version
+          docker compose version
+          df -h
+
+      - name: Prepare isolated CI environment
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ -f .env.example ]; then
+            cp .env.example .env
+          else
+            touch .env
+          fi
+
+          chmod 600 .env
+
+          {
+            printf '%s\n' \
+              'APP_PUBLIC_URL=https://ci.example.invalid' \
+              'KEYCLOAK_PUBLIC_URL=https://idp.ci.example.invalid' \
+              'POSTGRES_USER=postgres' \
+              'POSTGRES_DB=hsaai' \
+              'MINIO_ROOT_USER=minioadmin' \
+              'OPENAI_API_KEY=ci-placeholder-not-real'
+
+            for name in \
+              APP_DB_PASSWORD \
+              AUDIT_HMAC_KEY \
+              DATA_ENCRYPTION_KEY \
+              JWT_SECRET \
+              KEYCLOAK_ADMIN_PASSWORD \
+              KEYCLOAK_DB_PASSWORD \
+              MIGRATION_DB_PASSWORD \
+              MINIO_ROOT_PASSWORD \
+              MLFLOW_DB_PASSWORD \
+              SESSION_SECRET \
+              POSTGRES_PASSWORD \
+              REDIS_PASSWORD \
+              NEO4J_PASSWORD \
+              GRAFANA_PASSWORD \
+              GRAFANA_ADMIN_PASSWORD; do
+
+              printf '%s=%s\n' "$name" "$(openssl rand -hex 32)"
+            done
+          } >> .env
+
+      - name: Validate Compose configuration
+        run: |
+          docker compose config --quiet
+
+      - name: Build actual Docker image
+        shell: bash
+        env:
+          SERVICE: ${{ matrix.service }}
+        run: |
+          set -euo pipefail
+
+          echo "Building service: $SERVICE"
+
+          docker compose --progress plain build --pull "$SERVICE"
+
+          echo "Build completed: $SERVICE"
+
+      - name: Build report
+        if: always()
+        run: |
+          docker images
+          docker system df
+          df -h
