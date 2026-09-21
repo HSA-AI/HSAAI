@@ -196,7 +196,7 @@
     },
     {
       "alias": "HSAAI Admin MFA Conditional",
-      "description": "FIX I-11: Require OTP for hsaai_admin role. Conditional subflow: only fires when the authenticated user has the hsaai_admin realm role. Triggers CONFIGURE_TOTP enrollment (userSetupAllowed=true) if admin has not yet enrolled, so admins cannot skip MFA forever.",
+      "description": "Conditional admin MFA: require OTP for hsaai_admin and enroll TOTP when not configured.",
       "providerId": "basic-flow",
       "topLevel": false,
       "builtIn": false,
