@@ -1,262 +1,164 @@
-> **Current download snapshot2026-09-19 — HSAAI_v1.zip.** Backend690PASS;coverage56.56%. Production approval remains blocked. See START_HERE_AR.md and FINAL_PRODUCTION_READINESS_REPORT.md. Earlier numerical statements below are historical.
+# HSAAI — Enterprise AI Operating System
 
-# Current delivery — HSAAI_v1.zip
+**An enterprise AI platform for knowledge discovery, intelligent assistants, agent workflows, and governed AI operations.**
 
-**B – PRODUCTION CANDIDATE – BLOCKERS REMAIN**. Source release4.0.0-rc.2. Backend598 PASS; Frontend38 PASS; Python coverage54.78% (<80%). Actual Docker/Kubernetes/full-stack validation and mandatory PDF work remain open. The current authoritative handover starts at [START_HERE_AR.md](START_HERE_AR.md) and [FINAL_PRODUCTION_READINESS_REPORT.md](FINAL_PRODUCTION_READINESS_REPORT.md). Previous documentation below is retained as history; historical readiness claims are not a current production approval.
+**منصة الذكاء الاصطناعي المؤسسية لإدارة المعرفة والمساعدين الأذكياء وسير العمل وحوكمة الذكاء الاصطناعي.**
 
----
+HSAAI (Hayel Saeed Anam Artificial Intelligence) is designed around the organizational requirements of **Hayel Saeed Anam & Co. (HSA Group)**. It brings together enterprise knowledge, conversational AI, retrieval-augmented generation (RAG), agents, workflow approvals, integrations, and observability in a unified architecture.
 
-<div align="center">
+> **Release status — production candidate, not production approved.** The repository's September 19, 2026 delivery snapshot reports **690 passing backend tests and 56.56% coverage**. These figures are snapshot-specific and must be regenerated for the current commit. An earlier release report cites **598 backend tests, 38 frontend tests, and 54.78% Python coverage**; those are historical results, not an additional current test claim. Full enterprise runtime, real Kubernetes deployment, the ≥80% coverage gate, and outstanding acceptance and security checks require separate evidence. Refer to [`START_HERE_AR.md`](START_HERE_AR.md) and [`FINAL_PRODUCTION_READINESS_REPORT.md`](FINAL_PRODUCTION_READINESS_REPORT.md) for the repository's release assessment. Do not interpret the presence of configuration or documentation as proof of live operation.
 
-# HSAAI
-### Enterprise AI Operating System
-
-**منصة التشغيل الذكي المؤسسية — مجموعة هائل سعيد أنعم وشركاه**
-
-[![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)](VERSION)
-[![License](https://img.shields.io/badge/license-Enterprise-green.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.12-blue.svg)](https://python.org)
-[![Next.js](https://img.shields.io/badge/Next.js-15-black.svg)](https://nextjs.org)
-
-</div>
-
-> ## v3.0.0 — Full Platform Audit Applied
->
-> This release passed a complete project-wide audit (build, runtime, security,
-> configuration, tests, docs). Highlights: the broken root `docker-compose.yml`
-> restructured (all 56 services now parse), 27 Dockerfiles repaired, unauthenticated
-> backend endpoints locked behind JWT, datastore ports bound to loopback,
-> demo-IdP credentials removed from the production path, changelog files
-> consolidated. See `CHANGELOG.md` for details.
+[Documentation](#documentation) · [Architecture](#architecture) · [Deployment](#deployment) · [Testing-and-release-evidence](#testing-and-release-evidence) · [Security](#security)
 
 ---
 
-## نظرة عامة
+## Overview | نظرة عامة
 
-**HSAAI** (Hayel Saeed Anam Artificial Intelligence) هو نظام تشغيل ذكاء اصطناعي مؤسسي
-موحّد، يجمع المحادثة، المعرفة، الوكلاء، الحوكمة، الموافقات، البحث، التكاملات المؤسسية،
-تتبع التكلفة، والمراقبة ضمن تجربة تشغيل واحدة.
+HSAAI is a modular enterprise AI platform intended to connect organizational knowledge and business workflows across documents, internal systems, and teams. Its codebase includes a web experience, API and identity components, knowledge retrieval, LLM routing, agent orchestration, workflow automation, governance, and infrastructure configurations.
 
-المنصة مصممة خصيصاً لمجموعة **هائل سعيد أنعم وشركاه (HSA Group)** اليمنية،
-لتوحيد الوصول إلى المعرفة المؤسسية الموزعة عبر ملفات، أنظمة ERP/HR/IT، إدارات متعددة،
-ورسائل داخلية.
+**HSAAI** منصة معيارية تهدف إلى توحيد الوصول إلى المعرفة المؤسسية وإدارة التفاعل مع نماذج الذكاء الاصطناعي والوكلاء وسير العمل عبر واجهة تشغيل متكاملة. صُممت بنيتها لتتكامل مع الملفات والأنظمة الداخلية والفرق المختلفة، مع مراعاة المصادقة والصلاحيات والتدقيق والمراقبة.
+
+### Platform capabilities | مكونات المنصة
+
+| Area | Components represented in the repository |
+| --- | --- |
+| Enterprise knowledge | Document ingestion, RAG, embeddings, Qdrant, retrieval and knowledge graph integrations |
+| AI applications | Conversational interface, LLM gateway, model routing, AI agents and tool execution |
+| Process automation | Workflow engine, human-in-the-loop approvals and enterprise integrations |
+| Governance | Authentication, authorization, RBAC/ABAC, policy enforcement and audit components |
+| Operations | Docker Compose, Kubernetes manifests, Helm, monitoring, logging and tracing configurations |
+| User experience | Next.js web application with Arabic-first and RTL-oriented design |
+
+These are **repository capabilities and architectural components**. Their availability and operational readiness depend on the deployment profile and the corresponding validation results.
 
 ---
 
-## الهيكلية المؤسسية
+## Architecture
 
-```
+The source is organized into independently developed applications, services, shared packages and deployment assets:
+
+```text
 HSAAI/
-│
-├── apps/                          # تجربة المستخدم (Frontend)
-│   └── web/                       # Next.js 15 (App Router, RTL Arabic-first)
-│
-├── services/                      # الـ Microservices (34 خدمة)
-│   ├── backend_core/              # الموجّه المركزي للـ Enterprise OS
-│   ├── api_gateway/               # البوابة (auth + rate limit + routing)
-│   ├── auth_service/              # Keycloak OIDC + PKCE + MFA
-│   ├── rag_engine/                # Qdrant + sentence-transformers
-│   ├── llm_gateway/               # Ollama + Model Routing (internal-only)
-│   ├── multi_agents/              # Department Agents + Tool Calling
-│   ├── workflow_engine/           # Workflows + HITL Approvals
-│   ├── model_training/            # QLoRA/SFT Training (PEFT + TRL)
-│   ├── pii_detector/              # Presidio PII Detection
-│   ├── mcp_server/                # MCP JSON-RPC Server
-│   ├── governance/                # RBAC + ABAC + Audit + Policy Engines
-│   ├── ai_alignment/              # Safety / Alignment Layer
-│   └── ...                        # + 21 طبقة ذكاء (engines) — انظر أدناه
-│
-├── packages/                      # المكتبات المشتركة (packages/common — 52 حزمة)
-│   └── common/
-│       ├── auth/                  # مصادقة الخدمات (verify_service_auth)
-│       ├── abac/                  # عميل OPA للـ ABAC (fail-closed)
-│       ├── prompt_security/       # حماية من حقن الأوامر
-│       ├── tool_registry/         # سجل الأدوات + Dispatcher
-│       ├── rate_limit/            # Rate Limiting per-tenant
-│       ├── resilience/            # Circuit Breaker + Retry + Bulkhead
-│       ├── observability/         # OpenTelemetry + Tracing + Logging
-│       ├── security/              # mTLS + Encryption + CORS
-│       ├── vault_client.py        # HashiCorp Vault client
-│       └── siem_sink.py           # SIEM Streaming (Splunk/Sentinel)
-│
-├── infrastructure/                # البنية التحتية + IaC
-│   ├── docker/                    # Compose variants (dev + internal + production)
-│   ├── kubernetes/                # K8s Manifests + Kustomize Overlays
-│   ├── helm/                      # Helm Charts
-│   ├── patroni/                   # PostgreSQL HA (3 nodes + PgBouncer)
-│   ├── qdrant-cluster/            # Qdrant Clustering (3 nodes + sharding)
-│   ├── redis-sentinel/            # Redis Sentinel HA (3 nodes)
-│   ├── monitoring/                # Prometheus + Grafana + Alertmanager + OTel
-│   ├── postgres/                  # init.sql (extensions + roles + DBs)
-│   ├── keycloak/                  # Keycloak Realm Configuration
-│   ├── opa/                       # ABAC Engine (Open Policy Agent)
-│   ├── vault/                     # Secrets Management (HashiCorp Vault)
-│   ├── thanos/                    # Long-term metrics storage
-│   ├── waf/ + mtls/ + nginx/      # WAF rules, mTLS certs, ingress
-│   └── secrets/                   # Secrets Templates (examples only)
-│
-├── alembic/                       # Database Migrations (0001 … 0005 — 5 revisions)
-├── docs/                          # التوثيق (architecture, api, security, reports, …)
-│   └── history/                   # سجلات التغيير القديمة المؤرشفة
-├── tests/                         # 20 مجلد اختبار (unit, backend, security, e2e, …)
-├── scripts/                       # عمليات: qa/, dr/, seed/, backup_*, deploy-production, …
-├── deployment/                    # native (dockerless) + production systemd paths
-├── mobile/                        # تطبيق Expo/RN (غير مدمج في CI بعد)
-├── .adr/                          # Architecture Decision Records (12 ADR)
-├── runbooks/                      # Operational Runbooks (10 Runbooks)
-├── .github/workflows/             # CI/CD (ci, security-scan, docker-build)
-│
-├── .env.example                   # Environment Template
-├── .env.hsa-internal.example      # Internal Deployment Template
-├── .env.production.example        # Production Template
-├── .dockerignore / apps/web/.dockerignore
-├── .gitignore                     # FIXED — يغطي .env و node_modules و build artifacts
-├── alembic.ini / pytest.ini / pyproject.toml / Makefile
-├── LICENSE / VERSION / CHANGELOG.md / RELEASE_NOTES_v3.md / QUICKSTART.md
-└── README.md                      # هذا الملف
+├── apps/web/                 # Enterprise web application
+├── services/                 # API, authentication, RAG, LLM, agents and workflows
+├── packages/common/          # Shared authentication, security and observability
+├── infrastructure/
+│   ├── docker/               # Container configuration
+│   ├── kubernetes/           # Kubernetes manifests and overlays
+│   ├── helm/                 # Deployment charts
+│   ├── monitoring/           # Observability configuration
+│   └── vault/                # Secrets-management integration
+├── alembic/                  # Database migrations
+├── tests/                    # Automated test suites
+├── scripts/                  # Validation and operational scripts
+├── deployment/               # Additional deployment paths
+├── runbooks/                 # Operating procedures
+├── docs/                     # Architecture, security and release documentation
+└── .github/workflows/        # CI workflows
 ```
 
-### طبقة محركات الذكاء (Intelligence Engines)
+### Main application services
 
-إلى جانب الخدمات الأساسية الـ 12 أعلاه، تتضمن المنصة 21 محركاً ذاتياً
-(`consciousness_stream`, `dream_engine`, `empathy_engine`, `wisdom_marketplace`,
-`quantum_decision_engine`, `immune_system`, …) تعمل عبر Redis وتشارك
-`packages/common`. جميعها في `docker-compose.yml` بمنافذ 8070–8096
-(باستثناء consciousness-stream على المضيف 8100 لتجنّب التعارض مع workflow-engine).
+| Service | Responsibility |
+| --- | --- |
+| `web` | Web interface and user experience |
+| `api-gateway` | API routing and request controls |
+| `backend-core` | Central application APIs |
+| `auth-service` | Identity and authentication integration |
+| `rag-engine` | Knowledge retrieval and RAG workflows |
+| `llm-gateway` | Model access and routing |
+| `multi_agents` | Agent coordination and tool execution |
+| `workflow-engine` | Workflow execution and approvals |
+| `governance` | Governance and policy components |
 
----
+The repository also contains additional services and experimental or extended components. **Use the active Compose or Kubernetes configuration as the source of truth** for service names, dependencies, ports and enabled profiles; do not assume every directory is a running production service.
 
-## الخدمات الأساسية (Core Services)
+### Data and infrastructure integrations
 
-| # | Service | Internal Port | Host Port | Purpose |
-|---|---------|---------------|-----------|---------|
-| 1 | `web` (Next.js) | 3000 | 3000 | الواجهة (RTL/LTR) |
-| 2 | `api-gateway` | 8000 | 8000 | البوابة، Auth، Rate Limiting |
-| 3 | `backend-core` | 8000 | 127.0.0.1:8001 | الموجّه المركزي للـ Enterprise OS |
-| 4 | `auth-service` | 8010 | — | Keycloak OIDC + PKCE + MFA |
-| 5 | `rag-engine` | 8030 | — | Qdrant + Reranker |
-| 6 | `agent-runtime` (multi_agents) | 8040 | — | Department Agents + Tools |
-| 7 | `workflow-engine` | 8070 | 8070 | Workflows + HITL |
-| 8 | `llm-gateway` | 8090 | 8090 | Ollama + Model Routing |
-| 9 | `model-training` | 8090 | 8091 | QLoRA/SFT Training |
-| 10 | `pii-detector` | 8092 | 8092 | PII Detection |
-| 11 | `mcp-server` | 8094 | 8094 | MCP JSON-RPC |
-| 12 | `governance-service` | 8011 | 8011 | Governance + Audit |
-
-**ملاحظة أمنية:** منافذ مخازن البيانات (postgres, redis, qdrant, neo4j, kafka,
-minio, vault, opa, mlflow, prometheus, tempo, loki, thanos) وbackend-core
-مرتبطة بـ `127.0.0.1` فقط — غير معرّضة للشبكة. Grafana على 3001 (3000 للواجهة).
+Repository configuration includes integrations for PostgreSQL, Redis, Qdrant, Neo4j, Kafka, MinIO, Keycloak, Ollama, MLflow, Prometheus, Grafana, Loki, Tempo, Thanos and Vault. Some deployments require additional capacity, external secrets, model downloads or separately configured infrastructure.
 
 ---
 
-## الميزات الرئيسية
+## Deployment
 
-### 🤖 هندسة الذكاء الاصطناعي
-- **RAG Pipeline** كامل (Qdrant + sentence-transformers + hybrid reranker)
-- **Prompt Injection Defense** (40+ patterns + sanitize + block)
-- **PII Detection** (Presidio + Arabic patterns + auto-block على uploads)
-- **Real Tool Calling** (أدوات حقيقية مع dispatch mechanism)
-- **MCP Server** (متوافق مع Claude Desktop, Cursor, Cline)
-- **Model Training** (QLoRA/SFT حقيقي عبر PEFT + bitsandbytes + MLflow registry)
-- **Knowledge Graph** (Neo4j native: shortest path, communities, PageRank)
-- **Multi-Agent System** (Supervisor + department agents)
+### Prerequisites
 
-### 🔒 الأمن السيبراني
-- **Keycloak OIDC + PKCE + MFA** (httpOnly cookies)
-- **JWT على كل نقاط النهاية الحساسة** — FIXED: أُغلقت 19+ نقطة غير محمية في backend-core
-- **ABAC** via Open Policy Agent (**fail-closed** افتراضياً)
-- **HashiCorp Vault** (dynamic DB credentials + AppRole auth)
-- **SIEM Streaming** (Splunk + Azure Sentinel + CloudWatch)
-- **WAF** (SQL injection, XSS, prompt injection, geo-block, bot)
-- **HMAC-signed Audit Logs** (tamper-evident)
-- **Image Signing** (cosign + SBOM via Syft)
-- **لا أسرار مُ commit-zة**: hsaai-ctl يفشل عند غياب `.env.native`، ولا IdP تجريبي في وحدات الإنتاج
+- A Linux host with a working Docker Engine and Docker Compose v2 for container-based deployment.
+- CPU, memory, storage and network capacity sized to the **selected** service profile; the entire enterprise stack is substantially larger than the core CI stack.
+- An appropriately configured secrets source. Never commit actual credentials, private keys or production `.env` files.
+- Kubernetes access, a container image registry and suitable persistent storage **only** when performing Kubernetes deployment.
 
-### 🏗️ البنية المؤسسية
-- **PostgreSQL HA** (Patroni 3 nodes + PgBouncer + HAProxy)
-- **Qdrant Clustering** (3 nodes + sharding)
-- **Redis Sentinel** (3 nodes + automatic failover)
-- **Thanos** (long-term metrics عبر MinIO)
-- **Circuit Breakers** بين الخدمات
-- **Per-Tenant Rate Limiting** (Redis-based, tiered quotas)
-- **Alembic هو مصدر الحقيقة الوحيد للـ Schema** — الترحيلات تُشغَّل عند الإقلاع في production
+### Docker Compose — controlled validation
 
-### 🌍 الهوية العربية
-- **Arabic-first** (UI, embeddings, system prompts, intent detection, OCR)
-- **RTL** Support كامل + تبديل LTR للإنجليزية
-- **Arabic PII patterns** (Saudi Iqama, Emirates ID, Arabic names)
-- **Arabic Compliance** (NDMO Saudi + PDPL UAE)
-
----
-
-## النشر السريع
-
-### Docker Compose (موصى به)
 ```bash
-cp .env.example .env        # ثم املأ: POSTGRES_PASSWORD, KEYCLOAK_ADMIN_PASSWORD,
-                            # MINIO_ROOT_PASSWORD, GRAFANA_PASSWORD, SESSION_SECRET
-./start.sh                  # أو: docker compose up -d
+# Run on a host with a Docker daemon; Termux without a daemon is not a runtime host.
+cp .env.example .env
+# Configure environment-specific values securely before starting services.
+docker compose config --quiet
+# Select and review the required services and profiles before deployment.
+docker compose ps --all
 ```
 
-بعد الإقلاع:
-- الواجهة: http://localhost:3000
-- API Gateway: http://localhost:8000
-- Grafana: http://localhost:3001
-- سحب نموذج LLM الافتراضي: `docker exec -it $(docker ps -qf name=ollama) ollama pull qwen2.5:7b-instruct`
-  (أو `scripts/bootstrap_ollama_models.sh`)
+After reviewing dependencies and host capacity, start the intended configuration with the project's deployment runbooks. Avoid treating an ephemeral CI runner as a persistent production host. Do not use demonstration credentials or test environment values for production.
 
-### النشر بدون Docker (Native)
-```bash
-cp deployment/native/env.native.example .env.native   # املأ الأسرار
-./deployment/native/hsaai-ctl start
-```
-> للأمان: `hsaai-ctl` يرفض العمل بدون أسرار حقيقية. للتجربة المعزولة فقط
-> أضف `HSAAI_ALLOW_INSECURE_DEMO=1`.
+### Kubernetes
 
-### الأوامر المتاحة (Makefile)
-```bash
-make help          # Show all commands
-make dev-up        # Start development stack
-make prod-up       # Start production stack
-make ha-up         # Start HA infrastructure
-make init-db       # Run Alembic migrations
-make init-qdrant   # Create Qdrant collection
-make init-vault    # Initialize Vault (credentials shown out-of-band only)
-make test          # Run all tests
-make test-unit     # Run unit tests only
-make test-load     # Run load tests (locust)
-make lint          # Lint all code
-make security-scan # Run security scans
-make backup        # Backup databases (backup-qdrant أيضاً)
-make docs          # Generate documentation
-```
+Kubernetes manifests, overlays and Helm assets are located under [`infrastructure/kubernetes/`](infrastructure/kubernetes/) and [`infrastructure/helm/`](infrastructure/helm/). Inspect and render the actual chart or manifests, supply approved image references and secrets, run server-side validation, then deploy to an authorized staging cluster before any production rollout. Kubernetes readiness remains subject to real-cluster acceptance results.
+
+### Native deployment
+
+Additional non-container deployment assets are available under [`deployment/`](deployment/). Follow the matching environment template and operational documentation; development-only or insecure demo modes are not production defaults.
 
 ---
 
-## التوثيق
+## Security
 
-- [`QUICKSTART.md`](QUICKSTART.md) — البدء السريع المحدَّث
-- [`CHANGELOG.md`](CHANGELOG.md) — سجل الإصدارات الكامل (موحّد)
-- [`RELEASE_NOTES_v3.md`](RELEASE_NOTES_v3.md) — ملاحظات الإصدار الحالي
-- [`docs/architecture/`](docs/architecture/) — المعمارية الشاملة
-- [`docs/security/`](docs/security/) — الأمن السيبراني + Pen Test Checklist
-- [`docs/reports/`](docs/reports/) — تقارير التدقيق والإصلاحات (V2 → v5.1)
-- [`.adr/`](.adr/) — Architecture Decision Records (12 ADR) + [`docs/adr/`](docs/adr/) (ADRs التحتية)
-- [`runbooks/`](runbooks/) — Operational Runbooks (10 Runbooks)
+HSAAI includes code and configuration for identity integration, access controls, policy checks, prompt-safety controls, PII handling, audit logs, network isolation and secrets management. The existence of these controls **does not establish that a given deployment has passed a security audit**.
+
+Before production approval, verify the active settings and evidence for identity and authorization, tenant isolation, secrets rotation, dependency and image scanning, network exposure, logging and backup recovery. Treat any exposed credentials as compromised and rotate them. Review [`docs/security/`](docs/security/) and the release readiness report for the relevant scope and open findings.
+
+**Security reporting:** Follow the repository's [security policy](SECURITY.md), where available. Do not disclose credentials or exploitable findings in public issues.
 
 ---
 
-## الترخيص
+## Testing and release evidence
 
-**Enterprise Internal Use** — Hayel Saeed Anam Group (HSA Group)
+The repository contains backend, frontend, integration, security and end-to-end test assets. CI results describe the **exact commit and workflow configuration tested**, not every deployment profile.
 
-© 2026 HSA Group. All rights reserved.
+| Validation area | What constitutes evidence |
+| --- | --- |
+| Source and container build | Successful build workflow for the target commit |
+| Core runtime | Actual container startup, health checks and HTTP integration tests |
+| Full enterprise stack | Service-by-service readiness, connectivity, persistence and failure-recovery checks |
+| Kubernetes | Rendered manifests, real-cluster deployment, pod/service health and storage tests |
+| Test coverage | Current coverage report with an enforced threshold of at least 80% |
+| Security | Current scans, manual review of high-risk areas and approved remediation status |
+
+**Reported snapshot, September 19, 2026:** 690 passing backend tests and 56.56% coverage. **Historical report:** 598 backend passes, 38 frontend passes and 54.78% Python coverage. These measurements are from different documented snapshots and must not be combined. Consult current CI runs and generated reports for current evidence.
+
+### Production approval criteria
+
+A release should be designated production-ready only after its required runtime, Kubernetes (where applicable), coverage, security, persistence, disaster recovery and acceptance checks have passed and the approval is recorded. Until then, describe it as a **production candidate**.
 
 ---
 
-<div align="center">
+## Documentation
 
-**Hayel Saeed Anam Group** | Yemen
-**Enterprise AI Operating System** | Version 3.0.0
+| Resource | Purpose |
+| --- | --- |
+| [`START_HERE_AR.md`](START_HERE_AR.md) | Arabic handover and starting point |
+| [`FINAL_PRODUCTION_READINESS_REPORT.md`](FINAL_PRODUCTION_READINESS_REPORT.md) | Release status, evidence and unresolved blockers |
+| [`QUICKSTART.md`](QUICKSTART.md) | Getting started |
+| [`CHANGELOG.md`](CHANGELOG.md) | Change history |
+| [`docs/`](docs/) | Architecture, API, operations and security documentation |
+| [`runbooks/`](runbooks/) | Operational procedures |
 
-</div>
+Older release notes and version badges may describe historical milestones. The authoritative current release number should be taken from the repository's `VERSION` file and the latest applicable release record; update both together when cutting a new release.
+
+---
+
+## Repository scope and license
+
+Designed around the enterprise requirements of **Hayel Saeed Anam & Co. (HSA Group)**. Review [`LICENSE`](LICENSE) for the actual rights, restrictions and permitted use. This README does not grant additional redistribution or production-deployment rights.
+
+**HSAAI — Enterprise AI Operating System | Enterprise Knowledge · AI Agents · RAG · Governance · MLOps**
