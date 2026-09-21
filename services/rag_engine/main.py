@@ -475,6 +475,8 @@ async def upload_document(
 
                 _event("upload", tenant_id, workspace_id, doc_id=doc_id, filename=filename,
                        pii_decision=pii_decision, pii_risk=pii_risk)
+    except HTTPException:
+        raise
     except httpx.HTTPError as exc:
         logger.warning("PII detector service unavailable: %s — continuing without PII check", exc)
     except Exception as exc:
