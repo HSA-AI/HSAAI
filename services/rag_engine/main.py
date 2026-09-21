@@ -402,7 +402,7 @@ async def upload_document(
     try:
         async with httpx.AsyncClient(timeout=30) as pii_client:
             pii_response = await pii_client.post(
-                "http://pii_detector:8092/v1/pii/check-document",
+                "http://pii-detector:8092/v1/pii/check-document",
                 headers=outgoing_headers(),
                 json={
                     "text": text[:50000],  # scan first 50K chars (balance speed vs coverage)
