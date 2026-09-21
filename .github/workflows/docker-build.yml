@@ -67,13 +67,19 @@ jobs:
 
       - name: Validate Docker Compose Configuration
         run: |
-          docker compose config
+          docker compose config --quiet
 
 
       - name: Validate Production Compose Configuration
         run: |
           if [ -f docker-compose.production.yml ]; then
-            docker compose -f docker-compose.production.yml config
+            # Temporary CI-only values for configuration validation.
+            export APP_PUBLIC_URL="https://ci.example.invalid"
+            export KEYCLOAK_PUBLIC_URL="https://idp.ci.example.invalid"
+            for name in APP_DB_PASSWORD AUDIT_HMAC_KEY DATA_ENCRYPTION_KEY JWT_SECRET KEYCLOAK_ADMIN_PASSWORD KEYCLOAK_DB_PASSWORD MIGRATION_DB_PASSWORD MINIO_ROOT_PASSWORD MLFLOW_DB_PASSWORD SESSION_SECRET; do
+              export "$name=$(openssl rand -hex 32)"
+            done
+            docker compose -f docker-compose.production.yml config --quiet
           else
             echo "Production compose file not found - skipped"
           fi
