@@ -98,6 +98,21 @@ jobs:
           docker compose logs --tail=60 qdrant
           exit 1
 
+      - name: Initialize RAG model cache permissions
+        run: |
+          set -euo pipefail
+
+          docker compose run --rm --no-deps \
+            --user 0:0 \
+            --entrypoint sh \
+            rag-service -c '
+              mkdir -p /models/hub
+              chown 1000:1000 /models /models/hub
+              stat -c "%u:%g %n" /models /models/hub
+            '
+
+          echo "PASS: RAG model cache permissions initialized"
+
       - name: Start RAG Engine
         run: |
           set -euo pipefail
