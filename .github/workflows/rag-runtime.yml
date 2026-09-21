@@ -1,0 +1,232 @@
+name: HSAAI RAG Runtime Validation
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rag-runtime:
+    name: Validate RAG Runtime
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare CI environment
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ -f .env.example ]; then
+            cp .env.example .env
+          else
+            touch .env
+          fi
+
+          chmod 600 .env
+
+          {
+            printf '%s\n' \
+              'POSTGRES_USER=hsaai' \
+              'POSTGRES_DB=hsaai' \
+              'APP_ENV=test' \
+              'HSAAI_APP_ENV=test' \
+              'APP_PUBLIC_URL=http://localhost:3000' \
+              'KEYCLOAK_PUBLIC_URL=http://localhost:8080'
+
+            for name in \
+              POSTGRES_PASSWORD \
+              SESSION_SECRET \
+              JWT_SECRET \
+              NEO4J_PASSWORD \
+              MINIO_ROOT_PASSWORD \
+              KEYCLOAK_ADMIN_PASSWORD \
+              GRAFANA_PASSWORD; do
+
+              printf '%s=%s\n' \
+                "$name" "$(openssl rand -hex 32)"
+
+            done
+          } >> .env
+
+      - name: Validate Docker Compose
+        run: |
+          set -euo pipefail
+          docker compose config --quiet
+          echo "PASS: Docker Compose"
+
+      - name: Check available disk space
+        run: |
+          set -euo pipefail
+
+          df -h .
+
+          available=$(df -Pk . | awk 'NR==2 {print $4}')
+          minimum=$((12 * 1024 * 1024))
+
+          if [ "$available" -lt "$minimum" ]; then
+            echo "ERROR: Less than 12 GiB available."
+            exit 1
+          fi
+
+      - name: Build RAG image
+        run: |
+          set -euo pipefail
+          docker compose build rag-service
+
+      - name: Start Qdrant
+        run: |
+          set -euo pipefail
+          docker compose up -d --no-deps qdrant
+
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent \
+              http://127.0.0.1:6333/readyz >/dev/null; then
+
+              echo "PASS: Qdrant ready"
+              exit 0
+            fi
+
+            echo "Waiting for Qdrant: $attempt/60"
+            sleep 3
+          done
+
+          docker compose logs --tail=60 qdrant
+          exit 1
+
+      - name: Start RAG Engine
+        run: |
+          set -euo pipefail
+
+          docker compose up -d --no-deps rag-service
+          docker compose ps --all rag-service
+
+      - name: Validate RAG container health
+        run: |
+          set -euo pipefail
+
+          id="$(docker compose ps -q rag-service)"
+          test -n "$id"
+
+          for attempt in $(seq 1 72); do
+
+            state=$(docker inspect \
+              --format '{{.State.Status}}' "$id")
+
+            health=$(docker inspect \
+              --format '{{.State.Health.Status}}' "$id")
+
+            echo "Attempt $attempt/72: state=$state health=$health"
+
+            if [ "$health" = "healthy" ]; then
+              echo "PASS: RAG container healthy"
+              exit 0
+            fi
+
+            if [ "$state" != "running" ] || \
+               [ "$health" = "unhealthy" ]; then
+
+              docker inspect \
+                --format '{{range .State.Health.Log}}{{println .ExitCode .Output}}{{end}}' \
+                "$id" || true
+
+              docker compose logs \
+                --no-color --tail=80 rag-service || true
+
+              exit 1
+            fi
+
+            sleep 5
+          done
+
+          echo "ERROR: RAG health timeout"
+          docker compose logs --tail=80 rag-service
+          exit 1
+
+      - name: Validate RAG dependencies
+        run: |
+          set -euo pipefail
+
+          docker compose exec -T rag-service python - <<'PYRAG'
+          import json
+          import urllib.request
+
+          base = "http://127.0.0.1:8030"
+
+          def fetch(path):
+              with urllib.request.urlopen(
+                  base + path, timeout=120
+              ) as response:
+                  assert response.status == 200
+                  return json.load(response)
+
+          health = fetch("/health")
+
+          print("RAG status:", health.get("status"))
+          print("Qdrant:", health.get("qdrant"))
+
+          embedding = health.get("embedding", {})
+
+          print(
+              "Real embedding:",
+              embedding.get("real_embedding_enabled")
+          )
+
+          print(
+              "Embedding dimension:",
+              embedding.get("vector_size")
+          )
+
+          print("Embedding error:", embedding.get("error"))
+
+          assert health.get("status") == "ok"
+          assert health.get("qdrant") is True
+
+          assert (
+              embedding.get("real_embedding_enabled") is True
+          ), "Embedding model failed to load"
+
+          assert embedding.get("vector_size") == 384
+
+          auth = fetch("/health/auth")
+
+          print(
+              "Auth module available:",
+              auth.get("auth_available")
+          )
+
+          assert auth.get("auth_available") is True
+          assert auth.get("fail_closed") is True
+
+          ready = fetch("/ready")
+
+          assert ready.get("status") == "ready"
+
+          print("PASS: RAG dependency validation")
+          PYRAG
+
+      - name: Runtime report
+        if: success()
+        run: |
+          docker compose ps --all
+          df -h .
+          echo "PASS: RAG runtime validation"
+
+      - name: Collect failure logs
+        if: failure()
+        run: |
+          docker compose ps --all || true
+          docker compose logs \
+            --no-color \
+            --tail=100 \
+            qdrant rag-service || true
+
+      - name: Shutdown test environment
+        if: always()
+        run: |
+          docker compose down --remove-orphans || true
+          df -h .
