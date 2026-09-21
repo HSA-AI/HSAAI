@@ -268,30 +268,56 @@ jobs:
         run: |
           set -euo pipefail
 
-          ID=$(docker compose ps -q web)
-
+          ID=$(docker compose ps -a -q web)
           test -n "$ID"
 
-          for i in $(seq 1 12); do
+          show_health() {
+            docker inspect --format '{{json .State.Health}}' "$ID" |
+              python3 -c '
+          import sys, json
 
-            STATUS=$(docker inspect               --format '{{.State.Health.Status}}' "$ID")
+          health = json.load(sys.stdin)
 
-            echo "Web health status: $STATUS"
+          if not health:
+              print("ERROR: No Docker healthcheck configured")
+              sys.exit(0)
+
+          print("Docker health status:", health.get("Status"))
+
+          for entry in health.get("Log", [])[-5:]:
+              print("Exit code:", entry.get("ExitCode"))
+              print("Output:", entry.get("Output", "")[-1000:])
+          '
+          }
+
+          for i in $(seq 1 48); do
+
+            STATE=$(docker inspect               --format '{{.State.Status}}' "$ID")
+
+            STATUS=$(docker inspect               --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}no-healthcheck{{end}}'               "$ID")
+
+            echo "Attempt $i/48: container=$STATE health=$STATUS"
 
             if [ "$STATUS" = "healthy" ]; then
               echo "Web container health passed"
               exit 0
             fi
 
-            if [ "$STATUS" = "unhealthy" ]; then
-              echo "ERROR: Web container unhealthy"
+            if [ "$STATUS" = "unhealthy" ] ||
+               [ "$STATUS" = "no-healthcheck" ] ||
+               [ "$STATE" != "running" ]; then
+
+              echo "ERROR: Web container health failed"
+              show_health
               exit 1
+
             fi
 
             sleep 5
           done
 
-          echo "ERROR: Web container did not become healthy"
+          echo "ERROR: Web health timeout after 240 seconds"
+          show_health
           exit 1
 
       - name: Runtime report
