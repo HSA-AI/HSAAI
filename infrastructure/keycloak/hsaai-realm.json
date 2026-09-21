@@ -207,13 +207,7 @@
           "requirement": "REQUIRED",
           "priority": 10,
           "userSetupAllowed": false,
-          "config": {
-            "alias": "hsaai_admin-role-condition",
-            "config": {
-              "role": "hsaai_admin",
-              "negate": "false"
-            }
-          }
+          "authenticatorConfig": "hsaai_admin-role-condition"
         },
         {
           "authenticator": "condition-user-configured-otp",
@@ -248,6 +242,15 @@
       "enabled": true,
       "defaultAction": true,
       "priority": 20
+    }
+  ],
+  "authenticatorConfig": [
+    {
+      "alias": "hsaai_admin-role-condition",
+      "config": {
+        "role": "hsaai_admin",
+        "negate": "false"
+      }
     }
   ]
 }
