@@ -107,10 +107,20 @@ jobs:
             --entrypoint sh \
             rag-service -c '
               mkdir -p /models/hub
-              chown 1000:1000 /models /models/hub
+              chown -R 1000:1000 /models
               stat -c "%u:%g %n" /models /models/hub
             '
 
+          docker compose run --rm --no-deps \
+            --user 1000:1000 \
+            --entrypoint sh \
+            rag-service -c '
+              mkdir -p /models/hub/models--sentence-transformers--paraphrase-multilingual-MiniLM-L12-v2
+              touch /models/hub/models--sentence-transformers--paraphrase-multilingual-MiniLM-L12-v2/.permission-test
+              rm /models/hub/models--sentence-transformers--paraphrase-multilingual-MiniLM-L12-v2/.permission-test
+            '
+
+          echo "PASS: Model cache writable by RAG user"
           echo "PASS: RAG model cache permissions initialized"
 
       - name: Start RAG Engine
