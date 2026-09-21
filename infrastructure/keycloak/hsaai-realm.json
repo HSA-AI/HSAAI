@@ -6,7 +6,6 @@
   "resetPasswordAllowed": true,
   "rememberMe": true,
   "sslRequired": "external",
-  "_comment_browserFlow": "FIX I-11: Realm-level browserFlow now points to 'HSAAI Browser Flow' (was unset, so Keycloak used the default 'browser' flow and the HSAAI flow was a dead shell).",
   "browserFlow": "HSAAI Browser Flow",
   "attributes": {
     "acr.loa.map": "{\"0\":\"silver\",\"1\":\"gold\"}",
