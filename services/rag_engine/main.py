@@ -403,6 +403,7 @@ async def upload_document(
         async with httpx.AsyncClient(timeout=30) as pii_client:
             pii_response = await pii_client.post(
                 "http://pii_detector:8092/v1/pii/check-document",
+                headers=outgoing_headers(),
                 json={
                     "text": text[:50000],  # scan first 50K chars (balance speed vs coverage)
                     "redact": True,
@@ -411,10 +412,21 @@ async def upload_document(
                 },
                 timeout=30.0,
             )
+            pii_response.raise_for_status()
             if pii_response.status_code < 400:
                 pii_result = pii_response.json()
-                pii_decision = pii_result.get("decision", "allow")
-                pii_risk = pii_result.get("risk_level", "none")
+                if not isinstance(pii_result, dict):
+                    raise HTTPException(503, "Invalid PII screening response")
+                pii_decision = pii_result.get("decision")
+                pii_risk = pii_result.get("risk_level")
+                if pii_decision not in {"allow", "warn", "block"}:
+                    raise HTTPException(503, "Invalid PII screening decision")
+                if pii_risk not in {"none", "low", "medium", "high", "critical"}:
+                    raise HTTPException(503, "Invalid PII risk level")
+                if pii_risk == "critical" and pii_decision != "block":
+                    raise HTTPException(503, "Inconsistent PII screening decision")
+                if pii_risk in {"high", "medium"} and pii_decision == "allow":
+                    raise HTTPException(503, "Inconsistent PII screening decision")
 
                 # Block critical PII (national IDs, credit cards)
                 if pii_decision == "block":
@@ -428,7 +440,9 @@ async def upload_document(
                     )
 
                 # For warn/allow with PII: use the redacted text for indexing (keep original in storage)
-                if pii_decision == "warn" and pii_result.get("redacted_text"):
+                if pii_decision == "warn":
+                    if not isinstance(pii_result.get("redacted_text"), str) or not pii_result["redacted_text"].strip():
+                        raise HTTPException(503, "PII redaction result missing")
                     logger.info("Document %s contains PII (risk=%s) — indexing redacted version",
                                 doc_id, pii_risk)
                     text = pii_result["redacted_text"]
@@ -441,9 +455,11 @@ async def upload_document(
     except HTTPException:
         raise
     except httpx.HTTPError as exc:
-        logger.warning("PII detector service unavailable: %s — continuing without PII check", exc)
+        logger.error("PII screening unavailable: %s", type(exc).__name__)
+        raise HTTPException(503, "PII screening unavailable; upload rejected") from exc
     except Exception as exc:
-        logger.warning("PII detection failed: %s — continuing without check", exc)
+        logger.error("PII screening failed: %s", type(exc).__name__)
+        raise HTTPException(503, "PII screening failed; upload rejected") from exc
 
     chunk_objs = chunk_text_advanced(text, size=CHUNK_SIZE, overlap=CHUNK_OVERLAP, page_map=extracted.get("page_map") or None)
     if not chunk_objs:
