@@ -171,7 +171,33 @@ jobs:
         \    f\"clients/{client_id}/client-secret\",\n    \"-r\", \"hsaai\"\n))\n\n\
         secret = secret_data.get(\"value\")\n\nif not secret:\n    raise SystemExit(\"\
         STOP: Client secret unavailable\")\n\nprint(\"PASS: Service account and secret\
-        \ available\")\n\nendpoint = (\n    \"http://127.0.0.1:8080/realms/hsaai/\"\
+        \ available\")\n\nimport os\n\nrun_id = os.environ.get(\"GITHUB_RUN_ID\",\
+        \ \"\")\n\nif not run_id.isdigit():\n    raise SystemExit(\"STOP: Invalid\
+        \ GitHub run ID\")\n\nci_tenant = \"ci-tenant-\" + run_id\nci_workspace =\
+        \ \"ci-workspace-\" + run_id\n\nservice_user = json.loads(docker(\n    \"\
+        /opt/keycloak/bin/kcadm.sh\",\n    \"get\",\n    f\"clients/{client_id}/service-account-user\"\
+        ,\n    \"-r\", \"hsaai\"\n))\n\nservice_user_id = service_user.get(\"id\"\
+        )\n\nif not service_user_id:\n    raise SystemExit(\"STOP: Service account\
+        \ user not found\")\n\nattributes = dict(service_user.get(\"attributes\")\
+        \ or {})\n\nfor name, expected in (\n    (\"tenant_id\", ci_tenant),\n   \
+        \ (\"workspace_id\", ci_workspace),\n):\n    current = attributes.get(name)\n\
+        \n    if current and current != [expected]:\n        raise SystemExit(\n \
+        \           \"STOP: Refusing to overwrite existing \" + name\n        )\n\n\
+        \    attributes[name] = [expected]\n\nupdate = subprocess.run(\n    [\n  \
+        \      \"docker\", \"compose\", \"exec\", \"-T\",\n        \"keycloak\",\n\
+        \        \"/opt/keycloak/bin/kcadm.sh\",\n        \"update\",\n        f\"\
+        users/{service_user_id}\",\n        \"-r\", \"hsaai\",\n        \"-s\",\n\
+        \        \"attributes=\" + json.dumps(\n            attributes,\n        \
+        \    separators=(\",\", \":\")\n        )\n    ],\n    capture_output=True,\n\
+        \    text=True\n)\n\nif update.returncode:\n    raise SystemExit(\n      \
+        \  \"STOP: Service account attribute update failed\"\n    )\n\nverified_user\
+        \ = json.loads(docker(\n    \"/opt/keycloak/bin/kcadm.sh\",\n    \"get\",\n\
+        \    f\"users/{service_user_id}\",\n    \"-r\", \"hsaai\"\n))\n\nverified_attributes\
+        \ = verified_user.get(\"attributes\") or {}\n\nif (\n    verified_attributes.get(\"\
+        tenant_id\") != [ci_tenant]\n    or verified_attributes.get(\"workspace_id\"\
+        ) != [ci_workspace]\n):\n    raise SystemExit(\n        \"STOP: Service account\
+        \ attributes not persisted\"\n    )\n\nprint(\"PASS: CI service account attributes\
+        \ configured\")\n\n\nendpoint = (\n    \"http://127.0.0.1:8080/realms/hsaai/\"\
         \n    \"protocol/openid-connect/token\"\n)\n\npayload = urllib.parse.urlencode({\n\
         \    \"grant_type\": \"client_credentials\",\n    \"client_id\": \"hsaai-api\"\
         ,\n    \"client_secret\": secret,\n}).encode()\n\nrequest = urllib.request.Request(\n\
@@ -194,13 +220,15 @@ jobs:
         \ float)\n    ) and claims[\"exp\"] > time.time(),\n    \"tenant_id\": isinstance(\n\
         \        claims.get(\"tenant_id\"), str\n    ) and bool(claims[\"tenant_id\"\
         ].strip()),\n    \"workspace_id\": isinstance(\n        claims.get(\"workspace_id\"\
-        ), str\n    ) and bool(claims[\"workspace_id\"].strip()),\n}\n\nfor name,\
-        \ passed in checks.items():\n    print(\n        name + \":\",\n        \"\
-        PASS\" if passed else \"FAIL\"\n    )\n\nfailed = [\n    name for name, passed\
-        \ in checks.items()\n    if not passed\n]\n\nif failed:\n    raise SystemExit(\n\
-        \        \"STOP: Required JWT claims missing or invalid: \"\n        + \"\
-        , \".join(failed)\n    )\n\nprint(\"PASS: Required JWT claims present\")\n\
-        print(\"Secrets printed: NO\")\nprint(\"JWT printed: NO\")\nPYCODE"
+        ), str\n    ) and bool(claims[\"workspace_id\"].strip()),\n}\n\nchecks[\"\
+        tenant_id\"] = claims.get(\"tenant_id\") == ci_tenant\nchecks[\"workspace_id\"\
+        ] = claims.get(\"workspace_id\") == ci_workspace\n\nfor name, passed in checks.items():\n\
+        \    print(\n        name + \":\",\n        \"PASS\" if passed else \"FAIL\"\
+        \n    )\n\nfailed = [\n    name for name, passed in checks.items()\n    if\
+        \ not passed\n]\n\nif failed:\n    raise SystemExit(\n        \"STOP: Required\
+        \ JWT claims missing or invalid: \"\n        + \", \".join(failed)\n    )\n\
+        \nprint(\"PASS: Required JWT claims present\")\nprint(\"Secrets printed: NO\"\
+        )\nprint(\"JWT printed: NO\")\nPYCODE"
     - name: Shutdown test environment
       if: always()
       run: docker compose down --remove-orphans || true
