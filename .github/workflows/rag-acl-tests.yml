@@ -201,8 +201,10 @@ jobs:
         \n\nif ! docker compose exec -T --user 0 rag-service   python -m pytest --version\
         \ >/dev/null 2>&1; then\n\n  docker compose exec -T --user 0 rag-service \
         \    python -m pip install --no-cache-dir 'pytest==8.4.2'\nfi\n\ndocker compose\
-        \ exec -T --user 0 rag-service   python -m pytest   -q   -ra   /tmp/test_rag_document_acl.py\n\
-        \necho \"PASS: Document ACL regression tests\"\n"
+        \ exec -T --user 0 -e RAG_EVENT_DB=/tmp/hsaai-acl-ci-events.db -e LOCAL_FILE_STORAGE=/tmp/hsaai-acl-ci-storage\
+        \ -e HSAAI_HOME=/tmp/hsaai-acl-ci rag-service python -m pytest   -q   -ra\
+        \   /tmp/test_rag_document_acl.py\n\necho \"PASS: Document ACL regression\
+        \ tests\"\n"
     - name: Collect failure status
       if: failure()
       run: docker compose ps --all
