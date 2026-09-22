@@ -659,7 +659,11 @@ def get_document(doc_id: str, claims: dict = Depends(_auth_dep)):
         results = client.scroll(COLLECTION, scroll_filter=flt, limit=1, with_payload=True)
         for point in results[0]:
             p = point.payload or {}
-            if not p.get("deleted"):
+            if not p.get("deleted") and _is_allowed(
+                p,
+                claims.get("sub"),
+                claims.get("roles") or (claims.get("realm_access") or {}).get("roles", []),
+            ):
                 return _doc_view(p)
     except Exception as exc:
         logger.error("Failed to get document from Qdrant: %s", exc)
