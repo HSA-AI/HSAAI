@@ -672,48 +672,163 @@ def get_document(doc_id: str, claims: dict = Depends(_auth_dep)):
 
 @app.delete("/v1/documents/{doc_id}")
 def delete_document(doc_id: str, claims: dict = Depends(_auth_dep)):
-    """
-    Delete a document.
-    SECURITY FIX: tenant_id and workspace_id come from Claims ONLY.
-    Prevents cross-tenant deletion (IDOR).
-    """
-    tenant_id = claims.get("tenant_id")
-    workspace_id = claims.get("workspace_id", "default")
-    if not tenant_id:
-        raise HTTPException(403, "Missing tenant_id in authentication claims")
-    """
-    Soft-delete a document by marking its metadata and chunks as deleted.
+    # Authentication claims are supplied by the verified JWT dependency.
+    tenant_id, workspace_id = verified_scope(claims)
 
-    FIX: Previously only updated in-memory dicts. Now updates Qdrant payloads.
-    """
+    permissions = claims.get("permissions") or []
+    if isinstance(permissions, str):
+        permissions = permissions.replace(",", " ").split()
+
+    scopes = claims.get("scope") or ""
+    if isinstance(scopes, str):
+        scopes = scopes.split()
+
+    granted = set(permissions) | set(scopes)
+
+    if "knowledge:delete" not in granted:
+        raise HTTPException(
+            403,
+            "Missing knowledge:delete permission"
+        )
+
     client = get_qdrant()
+
     if not client:
-        raise HTTPException(503, "Qdrant is not available")
+        raise HTTPException(
+            503,
+            "Qdrant is not available"
+        )
 
-    # Find and mark the document metadata point
+    metadata_filter = Filter(must=[
+        FieldCondition(
+            key="point_type",
+            match=MatchValue(value="document_metadata"),
+        ),
+        FieldCondition(
+            key="doc_id",
+            match=MatchValue(value=doc_id),
+        ),
+        FieldCondition(
+            key="tenant_id",
+            match=MatchValue(value=tenant_id),
+        ),
+        FieldCondition(
+            key="workspace_id",
+            match=MatchValue(value=workspace_id),
+        ),
+    ])
+
+    document_filter = Filter(must=[
+        FieldCondition(
+            key="doc_id",
+            match=MatchValue(value=doc_id),
+        ),
+        FieldCondition(
+            key="tenant_id",
+            match=MatchValue(value=tenant_id),
+        ),
+        FieldCondition(
+            key="workspace_id",
+            match=MatchValue(value=workspace_id),
+        ),
+    ])
+
     try:
-        flt = Filter(must=[
-            FieldCondition(key="doc_id", match=MatchValue(value=doc_id)),
-            FieldCondition(key="tenant_id", match=MatchValue(value=tenant_id)),
-        ])
-        results = client.scroll(COLLECTION, scroll_filter=flt, limit=1000, with_payload=True)
-        # FIX v2.0: Removed dead points_to_update code with bogus vector=[0.0]*1
-        filename = ""
+        metadata_points, _ = client.scroll(
+            COLLECTION,
+            scroll_filter=metadata_filter,
+            limit=1,
+            with_payload=True,
+        )
+
+        if not metadata_points:
+            raise HTTPException(
+                404,
+                "Document not found"
+            )
+
+        metadata = metadata_points[0].payload or {}
+
+        roles = (
+            claims.get("roles")
+            or (claims.get("realm_access") or {}).get("roles", [])
+        )
+
+        if not _is_allowed(
+            metadata,
+            claims.get("sub"),
+            roles,
+        ):
+            raise HTTPException(
+                404,
+                "Document not found"
+            )
+
+        filename = metadata.get("filename", "")
+
         point_ids = []
-        for point in results[0]:
-            p = dict(point.payload or {})
-            if not filename and p.get("filename"):
-                filename = p.get("filename", "")
-            point_ids.append(point.id)
+        offset = None
 
-        if point_ids:
-            client.set_payload(COLLECTION, payload={"deleted": True}, points=point_ids)
+        while True:
+            points, next_offset = client.scroll(
+                COLLECTION,
+                scroll_filter=document_filter,
+                limit=100,
+                offset=offset,
+                with_payload=False,
+            )
 
-    except Exception as exc:
-        logger.error("Failed to delete document from Qdrant: %s", exc)
+            point_ids.extend(
+                point.id for point in points
+            )
 
-    _event("document_deleted", tenant_id, workspace_id, doc_id=doc_id, filename=filename)
-    return {"status": "deleted", "doc_id": doc_id}
+            if next_offset is None:
+                break
+
+            if next_offset == offset:
+                raise RuntimeError(
+                    "Qdrant scroll cursor did not advance"
+                )
+
+            offset = next_offset
+
+        if not point_ids:
+            raise RuntimeError(
+                "Document metadata exists but no points were found"
+            )
+
+        client.set_payload(
+            COLLECTION,
+            payload={"deleted": True},
+            points=point_ids,
+            wait=True,
+        )
+
+    except HTTPException:
+        raise
+
+    except Exception:
+        logger.exception(
+            "Document deletion failed in Qdrant"
+        )
+
+        raise HTTPException(
+            503,
+            "Document deletion failed"
+        )
+
+    _event(
+        "document_deleted",
+        tenant_id,
+        workspace_id,
+        doc_id=doc_id,
+        filename=filename,
+    )
+
+    return {
+        "status": "deleted",
+        "doc_id": doc_id,
+    }
 
 
 @app.post("/v1/analytics")
