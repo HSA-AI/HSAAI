@@ -954,7 +954,7 @@ def search(req: SearchRequest, claims: dict = Depends(_auth_dep)):
 
     results = [r for r in results if _is_allowed(r, req.user_id, req.user_roles)]
     doc_ids = list({r.get("doc_id") for r in results if r.get("doc_id")})
-    _event("search", req.tenant_id, req.workspace_id, query=req.query, mode=req.mode, hits=len(results), doc_ids=doc_ids)
+    _event("search", req.tenant_id, req.workspace_id, mode=req.mode, hits=len(results), doc_ids=doc_ids)
 
     if req.mode in {"lexical", "hybrid"}:
         lexical_scores = bm25_scores(req.query, [r.get("text", "") for r in results])
@@ -965,7 +965,15 @@ def search(req: SearchRequest, claims: dict = Depends(_auth_dep)):
     if req.mode == "lexical":
         results.sort(key=lambda x: x.get("lexical_score", 0.0), reverse=True)
     elif req.mode == "hybrid":
-        results = rerank(req.query, results)
+        rerank_started = time.perf_counter()
+        try:
+            results = rerank(req.query, results)
+        finally:
+            logger.info(
+                "RAG reranking duration_ms=%.2f candidates=%d",
+                (time.perf_counter() - rerank_started) * 1000,
+                len(results),
+            )
     else:
         results.sort(key=lambda x: x.get("score", 0.0), reverse=True)
 
