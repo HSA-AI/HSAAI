@@ -529,6 +529,10 @@ async def upload_document(
         target = target_dir / f"{doc_id}-{filename}"
         target.write_bytes(raw)
 
+    storage_reference = object_key if object_key else (
+        f"{secure_name(tenant_id)}/{secure_name(workspace_id)}/{doc_id}-{filename}"
+    )
+
     points = []
     acl = {
         "tenant_id": tenant_id,
@@ -557,6 +561,8 @@ async def upload_document(
             "classification": classification,
             "tags": doc_tags,
             "acl": acl,
+            "storage_backend": "object" if object_key else "local",
+            "storage_key": storage_reference,
             "created_at": time.time(),
             "deleted": False,
         },
@@ -589,7 +595,49 @@ async def upload_document(
     all_points = [doc_metadata_point] + points
 
     if client:
-        client.upsert(COLLECTION, [PointStruct(id=p["id"], vector=p["vector"], payload=p["payload"]) for p in all_points])
+        try:
+            update = client.upsert(
+                COLLECTION,
+                [
+                    PointStruct(
+                        id=p["id"],
+                        vector=p["vector"],
+                        payload=p["payload"],
+                    )
+                    for p in all_points
+                ],
+                wait=True,
+            )
+
+            status = getattr(update, "status", None)
+            if status is not None:
+                value = str(getattr(status, "value", status)).lower()
+                if value != "completed":
+                    raise RuntimeError(
+                        "Qdrant did not confirm completed indexing"
+                    )
+
+        except Exception as exc:
+            logger.error(
+                "Indexing not confirmed for document %s: %s",
+                doc_id,
+                type(exc).__name__,
+            )
+
+            _event(
+                "document_indexing_failed",
+                tenant_id,
+                workspace_id,
+                doc_id=doc_id,
+                filename=filename,
+                storage_backend="object" if object_key else "local",
+            )
+
+            raise HTTPException(
+                503,
+                "Document stored but indexing was not confirmed; "
+                "reconciliation required",
+            ) from exc
     else:
         # FIX: No more silent fallback to MEMORY_POINTS
         if REQUIRE_QDRANT:
