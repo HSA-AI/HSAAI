@@ -465,6 +465,30 @@ async def upload_document(
     if not chunk_objs:
         raise HTTPException(400, "No extractable text. OCR dependencies may be missing for scanned files: tesseract-ocr, tesseract-ocr-ara, poppler-utils.")
 
+    # FIX v0.1 (P0): Use batched embedding instead of serial per-chunk calls.
+    # Previously: `[embed_text(c.text) for c in chunk_objs]` — serial, 10-20x
+    # slower on ingest. Now uses embed_texts() which batches cache misses
+    # into a single model.encode() call with batch_size=32.
+    try:
+        vectors = embed_texts([chunk.text for chunk in chunk_objs])
+    except NameError:
+        # Fallback if embed_texts not available (older embedding.py)
+        vectors = [embed_text(chunk.text) for chunk in chunk_objs]
+    # Validate embeddings before persisting the original document.
+    if not vectors or len(vectors) != len(chunk_objs):
+        raise HTTPException(
+            503,
+            "Embedding generation incomplete; upload rejected",
+        )
+
+    # Reject a known Qdrant outage before writing the original file.
+    client = get_qdrant(len(vectors[0]))
+    if not client and REQUIRE_QDRANT:
+        raise HTTPException(
+            503,
+            "Qdrant unavailable; upload rejected before storage",
+        )
+
     # FIX v2.2 (Phase 2): Store the document in MinIO object storage (S3-compatible)
     # instead of local disk. This enables horizontal scaling (any pod can read any
     # document), lifecycle management, versioning, and survives pod reschedules.
@@ -492,25 +516,23 @@ async def upload_document(
             )
             logger.info("Document stored in MinIO: %s", object_key)
         except Exception as exc:
-            logger.warning("MinIO upload failed (%s) — falling back to local disk", exc)
-            object_key = None
+            logger.error("MinIO upload failed: %s", type(exc).__name__)
+            raise HTTPException(503, "Object storage unavailable; upload rejected") from exc
+
+    if USE_OBJECT_STORAGE and not object_key:
+        raise HTTPException(503, "Object storage did not confirm upload")
 
     if object_key is None:
-        # Fallback: local disk (dev environments only)
+        # Local storage is used only when object storage is disabled
         target_dir = STORAGE / secure_name(tenant_id) / secure_name(workspace_id)
         target_dir.mkdir(parents=True, exist_ok=True)
         target = target_dir / f"{doc_id}-{filename}"
         target.write_bytes(raw)
 
-    # FIX v0.1 (P0): Use batched embedding instead of serial per-chunk calls.
-    # Previously: `[embed_text(c.text) for c in chunk_objs]` — serial, 10-20x
-    # slower on ingest. Now uses embed_texts() which batches cache misses
-    # into a single model.encode() call with batch_size=32.
-    try:
-        vectors = embed_texts([chunk.text for chunk in chunk_objs])
-    except NameError:
-        # Fallback if embed_texts not available (older embedding.py)
-        vectors = [embed_text(chunk.text) for chunk in chunk_objs]
+    storage_reference = object_key if object_key else (
+        f"{secure_name(tenant_id)}/{secure_name(workspace_id)}/{doc_id}-{filename}"
+    )
+
     points = []
     acl = {
         "tenant_id": tenant_id,
@@ -539,6 +561,8 @@ async def upload_document(
             "classification": classification,
             "tags": doc_tags,
             "acl": acl,
+            "storage_backend": "object" if object_key else "local",
+            "storage_key": storage_reference,
             "created_at": time.time(),
             "deleted": False,
         },
@@ -570,14 +594,63 @@ async def upload_document(
     # Add the metadata point
     all_points = [doc_metadata_point] + points
 
-    client = get_qdrant(len(vectors[0]))
     if client:
-        client.upsert(COLLECTION, [PointStruct(id=p["id"], vector=p["vector"], payload=p["payload"]) for p in all_points])
+        try:
+            update = client.upsert(
+                COLLECTION,
+                [
+                    PointStruct(
+                        id=p["id"],
+                        vector=p["vector"],
+                        payload=p["payload"],
+                    )
+                    for p in all_points
+                ],
+                wait=True,
+            )
+
+            status = getattr(update, "status", None)
+            if status is not None:
+                value = str(getattr(status, "value", status)).lower()
+                if value != "completed":
+                    raise RuntimeError(
+                        "Qdrant did not confirm completed indexing"
+                    )
+
+        except Exception as exc:
+            logger.error(
+                "Indexing not confirmed for document %s: %s",
+                doc_id,
+                type(exc).__name__,
+            )
+
+            _event(
+                "document_indexing_failed",
+                tenant_id,
+                workspace_id,
+                doc_id=doc_id,
+                filename=filename,
+                storage_backend="object" if object_key else "local",
+            )
+
+            raise HTTPException(
+                503,
+                "Document stored but indexing was not confirmed; "
+                "reconciliation required",
+            ) from exc
     else:
         # FIX: No more silent fallback to MEMORY_POINTS
         if REQUIRE_QDRANT:
             raise HTTPException(503, "Qdrant is required for document storage but is not reachable")
-        logger.error("Qdrant not available; document was saved to disk but not indexed for search")
+        logger.warning("Document stored but not indexed: Qdrant unavailable")
+        return {
+            "status": "stored_unindexed",
+            "doc_id": doc_id,
+            "filename": filename,
+            "tenant_id": tenant_id,
+            "workspace_id": workspace_id,
+            "persistence": "object" if object_key else "local",
+        }
 
     _event("document_uploaded", tenant_id, workspace_id, doc_id=doc_id, filename=filename, chunks=len(chunk_objs), classification=classification)
     return {
@@ -672,48 +745,163 @@ def get_document(doc_id: str, claims: dict = Depends(_auth_dep)):
 
 @app.delete("/v1/documents/{doc_id}")
 def delete_document(doc_id: str, claims: dict = Depends(_auth_dep)):
-    """
-    Delete a document.
-    SECURITY FIX: tenant_id and workspace_id come from Claims ONLY.
-    Prevents cross-tenant deletion (IDOR).
-    """
-    tenant_id = claims.get("tenant_id")
-    workspace_id = claims.get("workspace_id", "default")
-    if not tenant_id:
-        raise HTTPException(403, "Missing tenant_id in authentication claims")
-    """
-    Soft-delete a document by marking its metadata and chunks as deleted.
+    # Authentication claims are supplied by the verified JWT dependency.
+    tenant_id, workspace_id = verified_scope(claims)
 
-    FIX: Previously only updated in-memory dicts. Now updates Qdrant payloads.
-    """
+    permissions = claims.get("permissions") or []
+    if isinstance(permissions, str):
+        permissions = permissions.replace(",", " ").split()
+
+    scopes = claims.get("scope") or ""
+    if isinstance(scopes, str):
+        scopes = scopes.split()
+
+    granted = set(permissions) | set(scopes)
+
+    if "knowledge:delete" not in granted:
+        raise HTTPException(
+            403,
+            "Missing knowledge:delete permission"
+        )
+
     client = get_qdrant()
+
     if not client:
-        raise HTTPException(503, "Qdrant is not available")
+        raise HTTPException(
+            503,
+            "Qdrant is not available"
+        )
 
-    # Find and mark the document metadata point
+    metadata_filter = Filter(must=[
+        FieldCondition(
+            key="point_type",
+            match=MatchValue(value="document_metadata"),
+        ),
+        FieldCondition(
+            key="doc_id",
+            match=MatchValue(value=doc_id),
+        ),
+        FieldCondition(
+            key="tenant_id",
+            match=MatchValue(value=tenant_id),
+        ),
+        FieldCondition(
+            key="workspace_id",
+            match=MatchValue(value=workspace_id),
+        ),
+    ])
+
+    document_filter = Filter(must=[
+        FieldCondition(
+            key="doc_id",
+            match=MatchValue(value=doc_id),
+        ),
+        FieldCondition(
+            key="tenant_id",
+            match=MatchValue(value=tenant_id),
+        ),
+        FieldCondition(
+            key="workspace_id",
+            match=MatchValue(value=workspace_id),
+        ),
+    ])
+
     try:
-        flt = Filter(must=[
-            FieldCondition(key="doc_id", match=MatchValue(value=doc_id)),
-            FieldCondition(key="tenant_id", match=MatchValue(value=tenant_id)),
-        ])
-        results = client.scroll(COLLECTION, scroll_filter=flt, limit=1000, with_payload=True)
-        # FIX v2.0: Removed dead points_to_update code with bogus vector=[0.0]*1
-        filename = ""
+        metadata_points, _ = client.scroll(
+            COLLECTION,
+            scroll_filter=metadata_filter,
+            limit=1,
+            with_payload=True,
+        )
+
+        if not metadata_points:
+            raise HTTPException(
+                404,
+                "Document not found"
+            )
+
+        metadata = metadata_points[0].payload or {}
+
+        roles = (
+            claims.get("roles")
+            or (claims.get("realm_access") or {}).get("roles", [])
+        )
+
+        if not _is_allowed(
+            metadata,
+            claims.get("sub"),
+            roles,
+        ):
+            raise HTTPException(
+                404,
+                "Document not found"
+            )
+
+        filename = metadata.get("filename", "")
+
         point_ids = []
-        for point in results[0]:
-            p = dict(point.payload or {})
-            if not filename and p.get("filename"):
-                filename = p.get("filename", "")
-            point_ids.append(point.id)
+        offset = None
 
-        if point_ids:
-            client.set_payload(COLLECTION, payload={"deleted": True}, points=point_ids)
+        while True:
+            points, next_offset = client.scroll(
+                COLLECTION,
+                scroll_filter=document_filter,
+                limit=100,
+                offset=offset,
+                with_payload=False,
+            )
 
-    except Exception as exc:
-        logger.error("Failed to delete document from Qdrant: %s", exc)
+            point_ids.extend(
+                point.id for point in points
+            )
 
-    _event("document_deleted", tenant_id, workspace_id, doc_id=doc_id, filename=filename)
-    return {"status": "deleted", "doc_id": doc_id}
+            if next_offset is None:
+                break
+
+            if next_offset == offset:
+                raise RuntimeError(
+                    "Qdrant scroll cursor did not advance"
+                )
+
+            offset = next_offset
+
+        if not point_ids:
+            raise RuntimeError(
+                "Document metadata exists but no points were found"
+            )
+
+        client.set_payload(
+            COLLECTION,
+            payload={"deleted": True},
+            points=point_ids,
+            wait=True,
+        )
+
+    except HTTPException:
+        raise
+
+    except Exception:
+        logger.exception(
+            "Document deletion failed in Qdrant"
+        )
+
+        raise HTTPException(
+            503,
+            "Document deletion failed"
+        )
+
+    _event(
+        "document_deleted",
+        tenant_id,
+        workspace_id,
+        doc_id=doc_id,
+        filename=filename,
+    )
+
+    return {
+        "status": "deleted",
+        "doc_id": doc_id,
+    }
 
 
 @app.post("/v1/analytics")
@@ -839,7 +1027,7 @@ def search(req: SearchRequest, claims: dict = Depends(_auth_dep)):
 
     results = [r for r in results if _is_allowed(r, req.user_id, req.user_roles)]
     doc_ids = list({r.get("doc_id") for r in results if r.get("doc_id")})
-    _event("search", req.tenant_id, req.workspace_id, query=req.query, mode=req.mode, hits=len(results), doc_ids=doc_ids)
+    _event("search", req.tenant_id, req.workspace_id, mode=req.mode, hits=len(results), doc_ids=doc_ids)
 
     if req.mode in {"lexical", "hybrid"}:
         lexical_scores = bm25_scores(req.query, [r.get("text", "") for r in results])
@@ -850,7 +1038,15 @@ def search(req: SearchRequest, claims: dict = Depends(_auth_dep)):
     if req.mode == "lexical":
         results.sort(key=lambda x: x.get("lexical_score", 0.0), reverse=True)
     elif req.mode == "hybrid":
-        results = rerank(req.query, results)
+        rerank_started = time.perf_counter()
+        try:
+            results = rerank(req.query, results)
+        finally:
+            logger.info(
+                "RAG reranking duration_ms=%.2f candidates=%d",
+                (time.perf_counter() - rerank_started) * 1000,
+                len(results),
+            )
     else:
         results.sort(key=lambda x: x.get("score", 0.0), reverse=True)
 

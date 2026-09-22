@@ -323,9 +323,16 @@ def _mmr_rerank(
 
     # Default similarity: token Jaccard (cheap, no deps).
     if similarity_fn is None:
+        token_cache: dict[str, set[str]] = {}
+
+        def cached_tokens(text: str) -> set[str]:
+            if text not in token_cache:
+                token_cache[text] = set(tokenize(text))
+            return token_cache[text]
+
         def similarity_fn(a: str, b: str) -> float:
-            ta = set(tokenize(a))
-            tb = set(tokenize(b))
+            ta = cached_tokens(a)
+            tb = cached_tokens(b)
             if not ta or not tb:
                 return 0.0
             return len(ta & tb) / len(ta | tb)

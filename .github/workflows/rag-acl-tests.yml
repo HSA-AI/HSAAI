@@ -205,6 +205,106 @@ jobs:
         \ -e HSAAI_HOME=/tmp/hsaai-acl-ci rag-service python -m pytest   -q   -ra\
         \   /tmp/test_rag_document_acl.py\n\necho \"PASS: Document ACL regression\
         \ tests\"\n"
+    - name: Run document deletion security regression tests
+      run: |
+        set -euo pipefail
+        
+        CONTAINER="$(docker compose ps -q rag-service)"
+        
+        if [ -z "$CONTAINER" ]; then
+            echo "STOP: RAG container missing"
+            exit 1
+        fi
+        
+        docker cp   tests/release/test_rag_delete_security.py   "$CONTAINER:/tmp/test_rag_delete_security.py"
+        
+        docker compose exec -T --user 0   -e RAG_EVENT_DB=/tmp/hsaai-delete-ci-events.db   -e LOCAL_FILE_STORAGE=/tmp/hsaai-delete-ci-storage   -e HSAAI_HOME=/tmp/hsaai-delete-ci   rag-service python -m pytest -q -ra   /tmp/test_rag_delete_security.py
+    - name: Run search and storage regression tests
+      run: |
+        set -euo pipefail
+        
+        CONTAINER="$(docker compose ps -q rag-service)"
+        test -n "$CONTAINER" || {
+            echo "STOP: RAG container missing"
+            exit 1
+        }
+        
+        docker cp tests/release/test_rag_search_storage_regression.py   "$CONTAINER:/tmp/test_rag_search_storage_regression.py"
+        
+        docker compose exec -T --user 0   -e RAG_EVENT_DB=/tmp/hsaai-storage-ci-events.db   -e LOCAL_FILE_STORAGE=/tmp/hsaai-storage-ci-files   -e HSAAI_HOME=/tmp/hsaai-storage-ci   rag-service python -m pytest -q -ra   /tmp/test_rag_search_storage_regression.py
+    - name: Check tracked files for sensitive credentials
+      run: |
+        set -euo pipefail
+        python - <<'SECURITY_PY'
+        import pathlib
+        import re
+        import subprocess
+        import sys
+        
+        tracked = subprocess.check_output(
+            ["git", "ls-files", "-z"]
+        ).split(bytes([0]))
+        
+        patterns = [
+            re.compile(rb"-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----"),
+            re.compile(rb"gh[pousr]_[A-Za-z0-9_]{30,}"),
+            re.compile(rb"github_pat_[A-Za-z0-9_]{30,}"),
+            re.compile(rb"AKIA[0-9A-Z]{16}"),
+        ]
+        
+        issues = []
+        scanned = 0
+        skipped = 0
+        
+        for entry in tracked:
+            if not entry:
+                continue
+        
+            path = pathlib.Path(entry.decode("utf-8", "surrogateescape"))
+            name = path.name.lower()
+        
+            if (
+                name == ".env"
+                or (
+                    name.startswith(".env.")
+                    and not name.endswith((".example", ".sample", ".template", ".dist"))
+                )
+            ):
+                issues.append((str(path), "tracked environment file"))
+        
+            try:
+                if not path.is_file() or path.stat().st_size > 1048576:
+                    skipped += 1
+                    continue
+                content = path.read_bytes()
+            except OSError:
+                skipped += 1
+                continue
+        
+            if bytes([0]) in content:
+                skipped += 1
+                continue
+        
+            scanned += 1
+        
+            if any(pattern.search(content) for pattern in patterns):
+                issues.append((str(path), "possible embedded credential"))
+        
+        print(f"Text files scanned: {scanned}")
+        print(f"Files skipped: {skipped}")
+        
+        if scanned == 0:
+            print("SECURITY REVIEW REQUIRED: zero text files scanned")
+            sys.exit(1)
+        
+        
+        if issues:
+            for path, reason in sorted(set(issues)):
+                print(f"SECURITY REVIEW REQUIRED: {path} ({reason})")
+            sys.exit(1)
+        
+        print("PASS: No matching credential indicators in scanned files")
+        SECURITY_PY
     - name: Collect failure status
       if: failure()
       run: docker compose ps --all
