@@ -492,11 +492,14 @@ async def upload_document(
             )
             logger.info("Document stored in MinIO: %s", object_key)
         except Exception as exc:
-            logger.warning("MinIO upload failed (%s) — falling back to local disk", exc)
-            object_key = None
+            logger.error("MinIO upload failed: %s", type(exc).__name__)
+            raise HTTPException(503, "Object storage unavailable; upload rejected") from exc
+
+    if USE_OBJECT_STORAGE and not object_key:
+        raise HTTPException(503, "Object storage did not confirm upload")
 
     if object_key is None:
-        # Fallback: local disk (dev environments only)
+        # Local storage is used only when object storage is disabled
         target_dir = STORAGE / secure_name(tenant_id) / secure_name(workspace_id)
         target_dir.mkdir(parents=True, exist_ok=True)
         target = target_dir / f"{doc_id}-{filename}"
@@ -577,7 +580,15 @@ async def upload_document(
         # FIX: No more silent fallback to MEMORY_POINTS
         if REQUIRE_QDRANT:
             raise HTTPException(503, "Qdrant is required for document storage but is not reachable")
-        logger.error("Qdrant not available; document was saved to disk but not indexed for search")
+        logger.warning("Document stored but not indexed: Qdrant unavailable")
+        return {
+            "status": "stored_unindexed",
+            "doc_id": doc_id,
+            "filename": filename,
+            "tenant_id": tenant_id,
+            "workspace_id": workspace_id,
+            "persistence": "object" if object_key else "local",
+        }
 
     _event("document_uploaded", tenant_id, workspace_id, doc_id=doc_id, filename=filename, chunks=len(chunk_objs), classification=classification)
     return {
