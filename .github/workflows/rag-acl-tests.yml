@@ -1,0 +1,213 @@
+name: HSAAI Document ACL Tests
+permissions:
+  contents: read
+jobs:
+  rag-integration:
+    name: Document ACL Regression
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Docker information
+      run: 'docker --version
+
+        docker compose version
+
+        df -h
+
+        '
+    - name: Prepare CI environment
+      shell: bash
+      run: "set -euo pipefail\n\nif [ -f .env.example ]; then\n  cp .env.example .env\n\
+        else\n  touch .env\nfi\n\nchmod 600 .env\n\n{\n  printf '%s\\n' \\\n    'POSTGRES_USER=hsaai'\
+        \ \\\n    'POSTGRES_DB=hsaai' \\\n    'APP_ENV=test' \\\n    'HSAAI_APP_ENV=test'\
+        \ \\\n    'APP_PUBLIC_URL=http://localhost:3000' \\\n    'KEYCLOAK_PUBLIC_URL=http://localhost:8080'\
+        \ \\\n    'OPENAI_API_KEY=ci-placeholder-not-real'\n\n  for name in \\\n \
+        \   POSTGRES_PASSWORD \\\n    SESSION_SECRET \\\n    JWT_SECRET \\\n    NEO4J_PASSWORD\
+        \ \\\n    MINIO_ROOT_PASSWORD \\\n    KEYCLOAK_ADMIN_PASSWORD \\\n    GRAFANA_PASSWORD;\
+        \ do\n    printf '%s=%s\\n' \"$name\" \"$(openssl rand -hex 32)\"\n  done\n\
+        } >> .env\n"
+    - name: Validate Compose
+      run: 'docker compose config --quiet
+
+        '
+    - name: Build backend image
+      run: 'docker compose build --pull backend-core
+
+        '
+    - name: Start databases
+      run: "docker compose up -d --no-deps \\\n  postgres redis qdrant\n\ndocker compose\
+        \ ps --all\n"
+    - name: Wait for PostgreSQL
+      shell: bash
+      run: "set -euo pipefail\n\nfor i in $(seq 1 36); do\n  if docker compose exec\
+        \ -T postgres \\\n    pg_isready -U hsaai -d hsaai; then\n    break\n  fi\n\
+        \n  sleep 5\ndone\n\ndocker compose exec -T postgres \\\n  psql -U hsaai -d\
+        \ hsaai \\\n  -v ON_ERROR_STOP=1 \\\n  -Atqc \"SELECT 1\"\n"
+    - name: Validate Redis
+      shell: bash
+      run: "set -euo pipefail\n\nfor i in $(seq 1 24); do\n  if docker compose exec\
+        \ -T redis redis-cli ping \\\n    | grep -qx PONG; then\n    echo \"Redis\
+        \ ready\"\n    exit 0\n  fi\n\n  sleep 5\ndone\n\nexit 1\n"
+    - name: Validate Qdrant
+      shell: bash
+      run: "set -euo pipefail\n\nfor i in $(seq 1 24); do\n  if curl -fsS \\\n   \
+        \ http://127.0.0.1:6333/healthz; then\n    echo \"Qdrant ready\"\n    exit\
+        \ 0\n  fi\n\n  sleep 5\ndone\n\nexit 1\n"
+    - name: Start backend
+      run: 'docker compose up -d --no-deps backend-core
+
+        docker compose ps --all
+
+        '
+    - name: Validate backend health
+      shell: bash
+      run: "set -euo pipefail\n\nfor i in $(seq 1 36); do\n  if docker compose exec\
+        \ -T backend-core \\\n    python3 -c \\\n    \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health',\
+        \ timeout=5)\"; then\n    echo \"Backend health passed\"\n    exit 0\n  fi\n\
+        \n  sleep 5\ndone\n\necho \"Backend health failed\"\nexit 1\n"
+    - name: Validate internal connectivity
+      shell: bash
+      run: "set -euo pipefail\n\ndocker compose exec -T backend-core python3 -c '\n\
+        import socket\n\ntargets = [\n    (\"postgres\", 5432),\n    (\"redis\", 6379),\n\
+        \    (\"qdrant\", 6333),\n]\n\nfor host, port in targets:\n    with socket.create_connection((host,\
+        \ port), timeout=5):\n        print(\"CONNECTED\", host, port)\n'\n"
+    - name: Verify Keycloak database
+      shell: bash
+      run: 'set -euo pipefail
+
+
+        docker compose exec -T postgres             psql -U hsaai -d keycloak             -v
+        ON_ERROR_STOP=1             -Atqc "SELECT 1" | grep -qx 1
+
+
+        echo "Keycloak database verified"
+
+        '
+    - name: Start Keycloak
+      shell: bash
+      run: 'set -euo pipefail
+
+
+        docker compose up -d --no-deps keycloak
+
+
+        docker compose ps --all
+
+        '
+    - name: Validate Keycloak realm
+      shell: bash
+      run: "set -euo pipefail\n\nURL=\"http://127.0.0.1:8080/realms/hsaai/.well-known/openid-configuration\"\
+        \n\nfor i in $(seq 1 60); do\n\n  if curl -fsS -o /dev/null \"$URL\"; then\n\
+        \    echo \"Keycloak realm is available\"\n    exit 0\n  fi\n\n  sleep 5\n\
+        done\n\necho \"ERROR: Keycloak realm did not become available\"\nexit 1\n"
+    - name: Validate Keycloak JWKS
+      shell: bash
+      run: 'set -euo pipefail
+
+
+        curl -fsS             http://127.0.0.1:8080/realms/hsaai/protocol/openid-connect/certs             |
+        python3 -c ''
+
+        import json
+
+        import sys
+
+
+        data = json.load(sys.stdin)
+
+
+        assert isinstance(data.get("keys"), list)
+
+        assert data["keys"], "JWKS contains no keys"
+
+
+        print("Keycloak JWKS validation passed")
+
+        ''
+
+        '
+    - name: Build RAG and PII images
+      run: docker compose build rag-service pii-detector
+    - name: Start PII detector
+      timeout-minutes: 6
+      run: "set -euo pipefail\n\ndocker compose up -d --no-deps pii-detector\n\nfor\
+        \ i in $(seq 1 90); do\n  id=$(docker compose ps -q pii-detector)\n\n  if\
+        \ [ -n \"$id\" ]; then\n    status=$(docker inspect \\\n      --format '{{.State.Health.Status}}'\
+        \ \"$id\")\n\n    if [ \"$status\" = \"healthy\" ]; then\n      echo \"PASS:\
+        \ PII detector healthy\"\n      exit 0\n    fi\n  fi\n\n  sleep 3\ndone\n\n\
+        echo \"STOP: PII health timeout\"\ndocker compose ps --all\nexit 1"
+    - name: Initialize RAG model cache permissions
+      run: "set -euo pipefail\n\nVOLUME=\"hsaai_embedding_models\"\n\ndocker volume\
+        \ create \"$VOLUME\" >/dev/null\ndocker volume inspect \"$VOLUME\" >/dev/null\n\
+        \n# Independent helper: does not inherit rag-service cap_drop.\ndocker run\
+        \ --rm \\\n  --network none \\\n  --user 0:0 \\\n  --cap-drop ALL \\\n  --cap-add\
+        \ CHOWN \\\n  --cap-add DAC_OVERRIDE \\\n  --mount \"type=volume,source=${VOLUME},target=/models\"\
+        \ \\\n  alpine:3.20 sh -ec '\n    mkdir -p /models/hub\n    chown -R 1000:1000\
+        \ /models\n    stat -c \"%u:%g %n\" /models /models/hub\n  '\n\n# Verify permissions\
+        \ with the real RAG application UID.\ndocker run --rm \\\n  --network none\
+        \ \\\n  --user 1000:1000 \\\n  --cap-drop ALL \\\n  --mount \"type=volume,source=${VOLUME},target=/models\"\
+        \ \\\n  alpine:3.20 sh -ec '\n    set -e\n    mkdir -p /models/hub/models--sentence-transformers--paraphrase-multilingual-MiniLM-L12-v2\n\
+        \    touch /models/hub/models--sentence-transformers--paraphrase-multilingual-MiniLM-L12-v2/.permission-test\n\
+        \    rm /models/hub/models--sentence-transformers--paraphrase-multilingual-MiniLM-L12-v2/.permission-test\n\
+        \  '\n\necho \"PASS: Model cache writable by RAG user\"\n"
+    - name: Start RAG Engine
+      run: 'set -euo pipefail
+
+
+        docker compose up -d --no-deps rag-service
+
+        docker compose ps --all rag-service
+
+        '
+    - name: Validate RAG container health
+      run: "set -euo pipefail\n\nid=\"$(docker compose ps -q rag-service)\"\ntest\
+        \ -n \"$id\"\n\nfor attempt in $(seq 1 72); do\n\n  state=$(docker inspect\
+        \ \\\n    --format '{{.State.Status}}' \"$id\")\n\n  health=$(docker inspect\
+        \ \\\n    --format '{{.State.Health.Status}}' \"$id\")\n\n  echo \"Attempt\
+        \ $attempt/72: state=$state health=$health\"\n\n  if [ \"$health\" = \"healthy\"\
+        \ ]; then\n    echo \"PASS: RAG container healthy\"\n    exit 0\n  fi\n\n\
+        \  if [ \"$state\" != \"running\" ] || \\\n     [ \"$health\" = \"unhealthy\"\
+        \ ]; then\n\n    docker inspect \\\n      --format '{{range .State.Health.Log}}{{println\
+        \ .ExitCode .Output}}{{end}}' \\\n      \"$id\" || true\n\n    docker compose\
+        \ logs \\\n      --no-color --tail=80 rag-service || true\n\n    exit 1\n\
+        \  fi\n\n  sleep 5\ndone\n\necho \"ERROR: RAG health timeout\"\ndocker compose\
+        \ logs --tail=80 rag-service\nexit 1\n"
+    - name: Validate RAG dependencies
+      run: "set -euo pipefail\n\ndocker compose exec -T rag-service python - <<'PYRAG'\n\
+        import json\nimport urllib.request\n\nbase = \"http://127.0.0.1:8030\"\n\n\
+        def fetch(path):\n    with urllib.request.urlopen(\n        base + path, timeout=120\n\
+        \    ) as response:\n        assert response.status == 200\n        return\
+        \ json.load(response)\n\nhealth = fetch(\"/health\")\n\nprint(\"RAG status:\"\
+        , health.get(\"status\"))\nprint(\"Qdrant:\", health.get(\"qdrant\"))\n\n\
+        embedding = health.get(\"embedding\", {})\n\nprint(\n    \"Real embedding:\"\
+        ,\n    embedding.get(\"real_embedding_enabled\")\n)\n\nprint(\n    \"Embedding\
+        \ dimension:\",\n    embedding.get(\"vector_size\")\n)\n\nprint(\"Embedding\
+        \ error:\", embedding.get(\"error\"))\n\nassert health.get(\"status\") ==\
+        \ \"ok\"\nassert health.get(\"qdrant\") is True\n\nassert (\n    embedding.get(\"\
+        real_embedding_enabled\") is True\n), \"Embedding model failed to load\"\n\
+        \nassert embedding.get(\"vector_size\") == 384\n\nauth = fetch(\"/health/auth\"\
+        )\n\nprint(\n    \"Auth module available:\",\n    auth.get(\"auth_available\"\
+        )\n)\n\nassert auth.get(\"auth_available\") is True\nassert auth.get(\"fail_closed\"\
+        ) is True\n\nready = fetch(\"/ready\")\n\nassert ready.get(\"status\") ==\
+        \ \"ready\"\n\nprint(\"PASS: RAG dependency validation\")\nPYRAG\n"
+    - name: Run document ACL regression tests
+      timeout-minutes: 10
+      run: "set -euo pipefail\n\necho \"===== HSAAI ACL REGRESSION TESTS =====\"\n\
+        \nCONTAINER=\"$(docker compose ps -q rag-service)\"\n\nif [ -z \"$CONTAINER\"\
+        \ ]; then\n  echo \"STOP: RAG container not found\"\n  exit 1\nfi\n\ndocker\
+        \ cp   tests/release/test_rag_document_acl.py   \"$CONTAINER:/tmp/test_rag_document_acl.py\"\
+        \n\nif ! docker compose exec -T --user 0 rag-service   python -m pytest --version\
+        \ >/dev/null 2>&1; then\n\n  docker compose exec -T --user 0 rag-service \
+        \    python -m pip install --no-cache-dir 'pytest==8.4.2'\nfi\n\ndocker compose\
+        \ exec -T --user 0 rag-service   python -m pytest   -q   -ra   /tmp/test_rag_document_acl.py\n\
+        \necho \"PASS: Document ACL regression tests\"\n"
+    - name: Collect failure status
+      if: failure()
+      run: docker compose ps --all
+    - name: Shutdown test environment
+      if: always()
+      run: docker compose down --remove-orphans || true
+'on':
+  workflow_dispatch: null
