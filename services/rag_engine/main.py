@@ -465,6 +465,30 @@ async def upload_document(
     if not chunk_objs:
         raise HTTPException(400, "No extractable text. OCR dependencies may be missing for scanned files: tesseract-ocr, tesseract-ocr-ara, poppler-utils.")
 
+    # FIX v0.1 (P0): Use batched embedding instead of serial per-chunk calls.
+    # Previously: `[embed_text(c.text) for c in chunk_objs]` — serial, 10-20x
+    # slower on ingest. Now uses embed_texts() which batches cache misses
+    # into a single model.encode() call with batch_size=32.
+    try:
+        vectors = embed_texts([chunk.text for chunk in chunk_objs])
+    except NameError:
+        # Fallback if embed_texts not available (older embedding.py)
+        vectors = [embed_text(chunk.text) for chunk in chunk_objs]
+    # Validate embeddings before persisting the original document.
+    if not vectors or len(vectors) != len(chunk_objs):
+        raise HTTPException(
+            503,
+            "Embedding generation incomplete; upload rejected",
+        )
+
+    # Reject a known Qdrant outage before writing the original file.
+    client = get_qdrant(len(vectors[0]))
+    if not client and REQUIRE_QDRANT:
+        raise HTTPException(
+            503,
+            "Qdrant unavailable; upload rejected before storage",
+        )
+
     # FIX v2.2 (Phase 2): Store the document in MinIO object storage (S3-compatible)
     # instead of local disk. This enables horizontal scaling (any pod can read any
     # document), lifecycle management, versioning, and survives pod reschedules.
@@ -505,15 +529,6 @@ async def upload_document(
         target = target_dir / f"{doc_id}-{filename}"
         target.write_bytes(raw)
 
-    # FIX v0.1 (P0): Use batched embedding instead of serial per-chunk calls.
-    # Previously: `[embed_text(c.text) for c in chunk_objs]` — serial, 10-20x
-    # slower on ingest. Now uses embed_texts() which batches cache misses
-    # into a single model.encode() call with batch_size=32.
-    try:
-        vectors = embed_texts([chunk.text for chunk in chunk_objs])
-    except NameError:
-        # Fallback if embed_texts not available (older embedding.py)
-        vectors = [embed_text(chunk.text) for chunk in chunk_objs]
     points = []
     acl = {
         "tenant_id": tenant_id,
@@ -573,7 +588,6 @@ async def upload_document(
     # Add the metadata point
     all_points = [doc_metadata_point] + points
 
-    client = get_qdrant(len(vectors[0]))
     if client:
         client.upsert(COLLECTION, [PointStruct(id=p["id"], vector=p["vector"], payload=p["payload"]) for p in all_points])
     else:
