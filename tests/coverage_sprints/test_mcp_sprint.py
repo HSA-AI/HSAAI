@@ -105,7 +105,7 @@ async def test_llm_tool_fails_closed_when_scanner_missing_or_blocks(monkeypatch)
     m = _module()
 
     monkeypatch.setattr(m, "_PROMPT_SECURITY_AVAILABLE", False)
-    monkeypatch.setattr(m, "_PROMPT_SECURITY_LOAD_ERROR", "unit-test")
+    monkeypatch.setattr(m, "_PROMPT_SECURITY_LOAD_ERROR", "unit-test", raising=False)
     with pytest.raises(HTTPException) as exc:
         await m._call_tool("4", "hsaai_llm_generate", {"prompt": "hello"}, {})
     assert exc.value.status_code == 503
