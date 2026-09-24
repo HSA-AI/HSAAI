@@ -1,5 +1,7 @@
 # HSAAI — Enterprise AI Operating System
 
+**Enterprise AI · RAG · AI Agents · Knowledge Management · Workflow Automation · AI Governance · MLOps · Kubernetes**
+
 **An enterprise AI platform for knowledge discovery, intelligent assistants, agent workflows, and governed AI operations.**
 
 **منصة الذكاء الاصطناعي المؤسسية لإدارة المعرفة والمساعدين الأذكياء وسير العمل وحوكمة الذكاء الاصطناعي.**
@@ -9,6 +11,35 @@ HSAAI (Hayel Saeed Anam Artificial Intelligence) is designed around the organiza
 > **Release status — production candidate, not production approved.** The repository's September 19, 2026 delivery snapshot reports **690 passing backend tests and 56.56% coverage**. These figures are snapshot-specific and must be regenerated for the current commit. An earlier release report cites **598 backend tests, 38 frontend tests, and 54.78% Python coverage**; those are historical results, not an additional current test claim. Full enterprise runtime, real Kubernetes deployment, the ≥80% coverage gate, and outstanding acceptance and security checks require separate evidence. Refer to [`START_HERE_AR.md`](START_HERE_AR.md) and [`FINAL_PRODUCTION_READINESS_REPORT.md`](FINAL_PRODUCTION_READINESS_REPORT.md) for the repository's release assessment. Do not interpret the presence of configuration or documentation as proof of live operation.
 
 [Documentation](#documentation) · [Architecture](#architecture) · [Deployment](#deployment) · [Testing-and-release-evidence](#testing-and-release-evidence) · [Security](#security)
+
+---
+
+
+## Current validation status | حالة التحقق الحالية
+
+**Release status:** Production candidate — not yet production approved.
+
+Current verified CI snapshot from **September 24, 2026**:
+
+| Validation | Current status |
+|---|---|
+| Python test suite | **759 passed, 13 skipped, 0 failed** |
+| Python coverage | **63.41%** |
+| Required coverage gate | **80% — not yet satisfied** |
+| Docker Build Validation | **Passing** |
+| Continuous Integration | **Passing** |
+| Python dependency audit | **Passing** |
+| Frontend dependency audit | **Passing** |
+| Security Validation | **Passing** |
+| Full Backend Coverage | **Blocked only by the 80% coverage requirement** |
+
+The current engineering priority is to increase meaningful automated test coverage from **63.41% to at least 80%** without lowering the threshold or excluding production modules from measurement.
+
+The remaining production-readiness work also includes validation of the skipped end-to-end tests on an authorized runtime environment, full enterprise-stack verification, real Kubernetes deployment and acceptance, secure production secret handling, and final security and release approval.
+
+الحالة الحالية للمشروع هي **مرشح للإنتاج** وليست نسخة معتمدة للإنتاج حتى الآن. نجحت اختبارات البناء والتكامل والتدقيق الأمني الحالية، بينما ما تزال بوابة التغطية الاختبارية البالغة **80%** والمتطلبات التشغيلية النهائية قيد الاستكمال.
+
+**Core technologies:** Enterprise AI · Retrieval-Augmented Generation (RAG) · AI Agents · Multi-Agent Systems · Knowledge Management · LLM Gateway · Workflow Automation · AI Governance · MLOps · FastAPI · Next.js · PostgreSQL · Redis · Qdrant · Neo4j · Kafka · MinIO · Keycloak · Docker · Kubernetes · Helm · Prometheus · Grafana · Loki · Tempo · Vault
 
 ---
 
