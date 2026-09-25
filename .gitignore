@@ -9,3 +9,13 @@ dist/
 build/
 .vscode/
 .idea/
+
+# Python coverage artifacts
+.coverage
+.coverage.*
+coverage.json
+htmlcov/
+tests/coverage_html/
+tests/coverage_sprint2/
+tests/coverage_sprint4/
+tests/coverage_sprint5/
