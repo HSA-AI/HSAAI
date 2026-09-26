@@ -52,7 +52,7 @@ def _module():
 
         sys.modules["prometheus_client"] = prometheus
 
-    return importlib.import_module("services.backend_core.main")
+    return importlib.import_module("backend_core.main")
 
 
 class FakeUpload:
