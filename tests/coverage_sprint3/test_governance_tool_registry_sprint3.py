@@ -2,7 +2,7 @@ import json
 import pytest
 
 def test_governance_rbac_abac_allow_deny_and_fail_closed():
-    import governance.main as g
+    import services.governance.main as g
 
     rbac = g.RBACEngine()
     assert rbac.has_permission(g.Role.SUPER_ADMIN, "anything:anything") is True
@@ -78,7 +78,7 @@ class FakeRedis:
 
 
 def test_governance_audit_hash_chain_query(monkeypatch):
-    import governance.main as g
+    import services.governance.main as g
 
     audit = g.AuditLogger.__new__(g.AuditLogger)
     audit.redis = FakeRedis()
@@ -117,6 +117,10 @@ def test_governance_audit_hash_chain_query(monkeypatch):
 @pytest.mark.asyncio
 async def test_tool_registry_dispatch_unknown_success_and_failure(monkeypatch):
     import common.tool_registry as tr
+
+    # Isolate the global tool registry for this test. The test registers
+    # temporary tools and must not leak them into later tests.
+    monkeypatch.setattr(tr, "_REGISTRY", dict(tr._REGISTRY))
 
     unknown = await tr.dispatch_tool("__missing__", {}, {"tenant_id": "t"})
     assert unknown["success"] is False

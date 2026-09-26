@@ -21,10 +21,12 @@ async def test_reasoning_all_strategies_with_mocked_llm(monkeypatch):
             return "10\n8\n6", 2
         if "Final answer" in prompt or "provide a final answer" in prompt:
             return "Final answer", 2
-        if "Critique:" in prompt:
-            return "Needs stronger evidence", 2
+        # A revision prompt also contains the text "Critique:", so match
+        # the more specific Revise prompt before the Critique prompt.
         if "Revise:" in prompt:
             return "Revised answer", 2
+        if "Critique:" in prompt:
+            return "Needs stronger evidence", 2
         if "Think, then act" in prompt:
             return "Thought: enough\nAction: finish[Completed]", 2
         return "step one\nstep two", 2
