@@ -168,7 +168,67 @@ class TestPIIDetection:
     def test_rag_upload_calls_pii_detector(self):
         filepath = PROJECT_ROOT / "services" / "rag_engine" / "main.py"
         content = filepath.read_text()
-        assert "pii_detector" in content, "RAG upload not calling PII detector"
+        import ast
+
+        tree = ast.parse(content)
+        uploads = [
+            node for node in tree.body
+            if isinstance(node, ast.AsyncFunctionDef)
+            and node.name == "upload_document"
+        ]
+        assert len(uploads) == 1, "RAG upload handler missing"
+
+        upload = uploads[0]
+        calls = [
+            node for node in ast.walk(upload)
+            if isinstance(node, ast.Call)
+        ]
+
+        screening = [
+            node for node in calls
+            if isinstance(node.func, ast.Attribute)
+            and node.func.attr == "post"
+            and any(
+                isinstance(child, ast.Constant)
+                and isinstance(child.value, str)
+                and "/v1/pii/check-document" in child.value
+                for child in ast.walk(node)
+            )
+        ]
+
+        chunking = [
+            node for node in calls
+            if isinstance(node.func, ast.Name)
+            and node.func.id == "chunk_text_advanced"
+        ]
+
+        assert len(screening) == 1, "PII screening call missing"
+        assert chunking, "Document chunking call missing"
+        assert screening[0].lineno < min(
+            node.lineno for node in chunking
+        ), "PII screening must precede document chunking"
+
+        http_errors = [
+            node for node in ast.walk(upload)
+            if isinstance(node, ast.ExceptHandler)
+            and isinstance(node.type, ast.Attribute)
+            and node.type.attr == "HTTPError"
+            and isinstance(node.type.value, ast.Name)
+            and node.type.value.id == "httpx"
+        ]
+
+        assert http_errors, "PII service failure handler missing"
+        assert any(
+            isinstance(node, ast.Raise)
+            and isinstance(node.exc, ast.Call)
+            and isinstance(node.exc.func, ast.Name)
+            and node.exc.func.id == "HTTPException"
+            and node.exc.args
+            and isinstance(node.exc.args[0], ast.Constant)
+            and node.exc.args[0].value == 503
+            for handler in http_errors
+            for node in ast.walk(handler)
+        ), "PII service errors must reject upload with HTTP 503"
 
 
 class TestNoSilentExceptions:

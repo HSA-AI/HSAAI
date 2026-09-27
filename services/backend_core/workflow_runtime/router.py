@@ -23,4 +23,4 @@ def schedules(): return {'schedules': service.schedules()}
 def approvals(): return {'approvals': service.approvals.pending()}
 
 @router.get('/metrics', dependencies=[Depends(require_permission('workflows:read'))])
-def metrics(): return service.metrics()
+async def metrics(): return await service.metrics()
