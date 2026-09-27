@@ -305,24 +305,8 @@ def test_wisdom_listing_applicability_and_application(
     )
 
 
-def test_failure_memory_full_lifecycle(
-    monkeypatch,
-):
+def test_failure_memory_full_lifecycle():
     m = _m()
-
-    clock = iter(
-        [
-            100.0,
-            200.0,
-            300.0,
-        ]
-    )
-
-    monkeypatch.setattr(
-        m.time,
-        "time",
-        lambda: next(clock),
-    )
 
     memory = m.FailureMemory()
 
@@ -367,6 +351,11 @@ def test_failure_memory_full_lifecycle(
     assert first.failure_id == "failure-0001"
     assert second.failure_id == "failure-0002"
     assert third.failure_id == "failure-0003"
+
+    # Stabilize ordering without monkeypatching the global time module.
+    first.occurred_at = 100.0
+    second.occurred_at = 200.0
+    third.occurred_at = 300.0
 
     assert (
         memory.get_failure(
