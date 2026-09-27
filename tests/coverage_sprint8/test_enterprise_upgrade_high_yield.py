@@ -807,7 +807,7 @@ def test_connector_create_supported_and_unsupported():
 
 
 @pytest.mark.parametrize(
-    "connector_type,base_url,expected",
+    "connector_type,configured_url,expected",
     [
         (
             "sap",
@@ -833,7 +833,7 @@ def test_connector_create_supported_and_unsupported():
 )
 def test_connector_test_health_paths(
     connector_type,
-    base_url,
+    configured_url,
     expected,
 ):
     m = _m()
@@ -841,7 +841,7 @@ def test_connector_test_health_paths(
     row = Connector(
         key="conn-1",
         connector_type=connector_type,
-        base_url=base_url,
+        base_url=configured_url,
         tenant_id="t1",
         workspace_id="w1",
     )
