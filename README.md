@@ -1,6 +1,5 @@
 # HSAAI — Enterprise AI Operating System
-
-**Enterprise AI Platform for RAG · AI Agents · Knowledge Management · Workflow Automation · AI Governance · MLOps · Kubernetes**
+**Secure Enterprise AI Platform for RAG · Agentic AI · AI Agents · Multi-Agent Systems · Knowledge Graphs · Workflow Automation · AI Governance · LLMOps · MLOps · Kubernetes**
 
 HSAAI is a modular **Enterprise Artificial Intelligence Operating System** designed for secure organizational knowledge discovery, Retrieval-Augmented Generation (RAG), intelligent assistants, multi-agent workflows, enterprise automation, governed LLM operations, MLOps, and cloud-native deployment.
 
@@ -8,15 +7,35 @@ HSAAI is a modular **Enterprise Artificial Intelligence Operating System** desig
 
 منصة **HSAAI** هي نظام تشغيل للذكاء الاصطناعي المؤسسي يجمع بين إدارة المعرفة، وتقنيات RAG، والوكلاء الأذكياء، وأتمتة سير العمل، وحوكمة الذكاء الاصطناعي، وإدارة النماذج، والتكاملات المؤسسية ضمن بنية موحدة وآمنة وقابلة للتوسع.
 
-> **Release status: Production Candidate — validation in progress.**
->
-> Latest verified coverage evidence from the active production-hardening work reports **17,302 Python statements, 11,420 covered statements, and 66.00% coverage**.
->
-> The enforced production coverage target remains **≥80%**, requiring **2,422 additional covered statements** at the current measured code size.
->
-> Docker build validation, dependency auditing, continuous integration, and the current security-validation workflow are passing. The **Full Backend Coverage** check remains open. Full runtime acceptance, remaining E2E validation, real Kubernetes deployment, production secrets validation, and final production approval remain separate release gates.
+Release status: **Production Candidate — automated engineering quality gates passed; deployment acceptance remains in progress.**
 
-**Enterprise AI · Retrieval-Augmented Generation · AI Agents · Multi-Agent Systems · Knowledge Graphs · LLM Gateway · Workflow Automation · AI Governance · MLOps · DevSecOps · Kubernetes · Observability**
+## Current Validation Status
+
+**Source version:** `4.0.0-rc.2`  
+**Last verified:** **27 September 2026**
+
+| Quality Gate | Verified Status |
+| --- | --- |
+| GitHub quality checks | ✅ **6/6 successful** |
+| Full Backend Coverage | ✅ Passing |
+| Python backend coverage | ✅ **80.43%** |
+| Required coverage threshold | ✅ **≥80% achieved** |
+| Python statements | **17,302** |
+| Covered statements | **13,916** |
+| Missing statements | **3,386** |
+| Docker Build Validation | ✅ Passing |
+| Production Dependency Audits | ✅ Passing |
+| Continuous Integration | ✅ Passing |
+| Security Validation | ✅ Passing |
+| Real Kubernetes acceptance | 🚧 Pending |
+| Full enterprise runtime acceptance | 🚧 Pending |
+| Final production approval | 🚧 Pending |
+
+The enforced backend coverage target has been achieved without lowering the 80% threshold or excluding production modules solely to satisfy the quality gate.
+
+HSAAI remains a **Production Candidate** because production approval additionally requires real Kubernetes, complete enterprise runtime, authenticated E2E, persistence, secrets, network/TLS, backup/recovery, and operational acceptance.
+
+Enterprise AI · Retrieval-Augmented Generation · AI Agents · Multi-Agent Systems · Knowledge Graphs · LLM Gateway · Workflow Automation · AI Governance · MLOps · DevSecOps · Kubernetes · Observability**
 
 [Overview](#overview--نظرة-عامة) ·
 [Capabilities](#platform-capabilities--قدرات-المنصة) ·
@@ -409,64 +428,56 @@ See `SECURITY.md` and `docs/security/` where applicable.
 
 ## Testing & Release Evidence
 
-HSAAI includes automated testing across backend services, shared packages, security controls, integrations and release validation.
+HSAAI includes automated validation across backend services, shared packages, enterprise integrations, security controls, Docker configuration, dependencies, and production-hardening workflows.
 
 ### Current Verified Coverage Snapshot
 
-Latest available coverage evidence from the current production-hardening work:
-
-| Metric | Current evidence |
-|---|---:|
+| Metric | Verified result |
+| --- | ---: |
 | Python statements | **17,302** |
-| Covered statements | **11,420** |
-| Missing statements | **5,882** |
-| Python coverage | **66.00%** |
+| Covered statements | **13,916** |
+| Missing statements | **3,386** |
+| Python coverage | **80.43%** |
 | Required coverage | **≥80%** |
 | Covered statements required for 80% | **13,842** |
-| Additional covered statements required | **2,422** |
+| Margin above required statement count | **+74** |
+| Coverage gate | ✅ **Passed** |
 
-The production coverage threshold has **not yet been reached**.
-
-Coverage is being increased through meaningful behavioral and unit tests rather than by lowering the threshold or excluding production modules solely to satisfy the gate.
+Coverage was increased through meaningful behavioral and unit testing rather than by lowering the quality threshold.
 
 ### Current CI Status
 
-The active production-hardening validation currently shows:
-
-| Check | Status |
-|---|---|
+| GitHub Quality Gate | Status |
+| --- | --- |
+| Full Backend Coverage | ✅ Passing |
 | Docker Build Validation | ✅ Passing |
 | Production Dependency Audit — Python | ✅ Passing |
 | Production Dependency Audit — Frontend | ✅ Passing |
 | Continuous Integration | ✅ Passing |
 | Security Validation | ✅ Passing |
-| Full Backend Coverage | ❌ Coverage gate still open |
 
-The failed coverage check indicates that the enforced coverage requirement has not yet reached the required **80%** threshold.
+**Current validated quality-gate result: 6 successful · 0 failing · 0 cancelled · 0 skipped · 0 pending.**
 
 ### Production Approval Gates
 
-HSAAI should only be described as **Production Ready / Production Approved** after the required evidence has been completed for the intended deployment.
+The automated repository quality gates above are passing.
 
-Remaining release validation includes:
+Final production approval remains dependent on deployment-specific evidence for:
 
-- ≥80% Python coverage
-- remaining E2E execution on the required runtime services
-- full enterprise-stack validation
-- service-to-service connectivity verification
-- persistence validation
-- Kubernetes real-cluster deployment
-- ingress and health-check validation
-- production secrets management
-- vulnerability and security review
-- backup and recovery validation
-- final acceptance approval
+- real Kubernetes cluster deployment and acceptance
+- full enterprise-stack runtime validation
+- authenticated end-to-end execution
+- service-to-service connectivity
+- persistence and storage recovery
+- production secrets and rotation
+- TLS and network controls
+- container/runtime vulnerability acceptance
+- backup and disaster-recovery verification
+- final operational acceptance
 
-Until those gates are complete, the appropriate release description is:
+Until these deployment-specific gates are complete:
 
-> **Production Candidate — validation in progress**
-
----
+**Production Candidate — automated quality gates passed; deployment acceptance in progress.**
 
 ## Engineering Principles
 
@@ -589,26 +600,32 @@ Current validation evidence should take precedence over older test and coverage 
 
 ## Project Status
 
-HSAAI is currently under active **production-hardening and validation**.
+HSAAI is currently in the **production-hardening and deployment-acceptance** phase.
 
 | Area | Status |
-|---|---|
+| --- | --- |
+| Source version | **4.0.0-rc.2** |
 | Architecture | ✅ Implemented in repository |
-| Enterprise AI services | ✅ Implemented in repository |
-| RAG components | ✅ Implemented in repository |
-| AI agent components | ✅ Implemented in repository |
-| Governance components | ✅ Implemented in repository |
+| Enterprise AI services | ✅ Implemented |
+| Enterprise RAG | ✅ Implemented |
+| AI agents / multi-agent components | ✅ Implemented |
+| Knowledge graph components | ✅ Implemented |
+| Governance components | ✅ Implemented |
 | Docker Build Validation | ✅ Passing |
 | Dependency Audits | ✅ Passing |
 | Continuous Integration | ✅ Passing |
 | Security Validation | ✅ Passing |
-| Python Coverage | 🚧 **66.00% / target ≥80%** |
-| Full Enterprise Runtime Validation | 🚧 Pending final evidence |
-| Remaining E2E Validation | 🚧 Pending runtime services |
+| Full Backend Coverage | ✅ Passing |
+| Python Coverage | ✅ **80.43% / target ≥80% achieved** |
+| GitHub Quality Gates | ✅ **6/6 successful** |
+| Full Enterprise Runtime Acceptance | 🚧 Pending |
+| Authenticated E2E Acceptance | 🚧 Pending |
 | Real Kubernetes Acceptance | 🚧 Pending |
+| Production Secrets Acceptance | 🚧 Pending |
+| Backup / Recovery Acceptance | 🚧 Pending |
 | Final Production Approval | 🚧 Not yet granted |
 
----
+The repository has passed its current automated code-quality, coverage, Docker, dependency, CI, and security-validation gates. Final production approval remains a separate deployment-specific phase.
 
 ## Repository Scope
 
