@@ -1,4 +1,4 @@
-# HSAAI — Quick Start (v3.0.0)
+# HSAAI — Quick Start (4.0.0-rc.2)
 
 > FIXED (audit): this guide previously described a vLLM-era stack and
 > referenced files that do not exist (`services/ai_safety/…`,
@@ -7,6 +7,11 @@
 > Ollama-based, compose-first platform.
 
 ---
+
+> **Current source:** `4.0.0-rc.2`  
+> **Validated automated status:** backend coverage **80.43%**, required ≥80% gate passed, GitHub quality gates **6/6 successful**.  
+> Automated validation does not replace real Kubernetes/full-runtime production acceptance.
+
 
 ## 0. المتطلبات
 

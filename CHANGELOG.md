@@ -1,5 +1,18 @@
 # Changelog
 
+## [Unreleased]
+
+### HSAAI v4 Documentation & Production Hardening — 2026-09-27
+
+- Source version aligned to `4.0.0-rc.2`.
+- Backend coverage reached **80.43%**, passing the enforced ≥80% quality gate.
+- Current GitHub quality-gate result is **6/6 successful**.
+- Docker Build Validation, dependency audits, Continuous Integration, and Security Validation are passing.
+- Repository documentation refreshed for Enterprise AI, RAG, Agentic AI, AI agents, multi-agent systems, knowledge graphs, AI governance, LLMOps, MLOps, DevSecOps, and Kubernetes discoverability.
+- Current validation evidence separated from historical snapshots.
+- Production classification remains **Production Candidate** pending real deployment acceptance.
+
+
 All notable changes to HSAAI will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),

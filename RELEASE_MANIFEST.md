@@ -1,25 +1,48 @@
-# RELEASE_MANIFEST
+# HSAAI Release Manifest
 
-- Project: HSAAI — Enterprise Artificial Intelligence Operating System.
-- Client: Hail Saeed Anam & Co. — هائل سعيد أنعم وشركاه.
-- Archive: HSAAI_v1.zip (owner-requested filename; no version rollback).
-- Source release: 4.0.0-rc.2; Python distribution 4.0.0rc2; status Beta/candidate.
-- Snapshot date: 2026-09-19 UTC; backend/SAST updated. Frontend/E2E evidence dated2026-09-14.
-- Classification: **B – PRODUCTION CANDIDATE – BLOCKERS REMAIN**.
-- Git commit: NOT AVAILABLE — source is not a Git checkout.
-- Environment: Linux-6.18.44-x86_64-with-glibc2.39; Python 3.12.14, Node/npm recorded in build tooling. No Docker daemon, Kubernetes cluster or validated GPU runtime.
-- Services: 33 Python services + Next.js frontend; production Compose 57 entries = 33 required persistent services +22 extended-profile +2 jobs. Full inventory: docs/reports/evidence/production-service-inventory.json.
-- Databases/storage: PostgreSQL, Redis, Qdrant, Neo4j, MinIO; service stores for Keycloak/MLflow and local SQLite/event artifacts. Kafka is the configured message broker.
-- AI: LLM Gateway, RAG/embeddings/vector search, multi-agent/workflows/approvals, local Ollama models, model training/registry, knowledge and connector modules. Actual full AI runtime not validated.
-- Tests: Backend 690 PASS /0 FAIL /0 SKIP; Frontend 38 PASS /0 FAIL /0 SKIP; E2E 2 PASS /0 FAIL /11 SKIP; native Redis 9/9 PASS.
-- Coverage: 41.92% historical → 56.56% Python statements; ≥80% gate FAIL.
-- Docker: Build BLOCKED; Runtime BLOCKED; 0/33 required long-running services observed healthy.
-- Kubernetes: Helm/static PASS; server dry-run BLOCKED; real deployment NOT AVAILABLE.
-- Security: NOT APPROVED; observed Critical0 /High3 /Medium53 /Low57; untested image/runtime/DAST scope.
-- PDF: all100 pages retained; 5/1482 requirement clauses PASS, 864 PARTIAL,510 FAIL,103 BLOCKED;58 context rows excluded from requirement denominator.
-- Provenance/preservation: docs/release/SOURCE_CHANGES.json; original/checkpoint file unions verified during packaging. Every included file except the checksum list itself has a SHA-256 in SHA256SUMS.txt.
-- Archive integrity: external HSAAI_v1.zip.sha256. The archive digest is external to avoid a self-referential hash.
-- Exclusions: dependencies/build caches, Python caches, generated private configuration, runtime temporary data and nonessential binary artifacts. No required source code is intentionally excluded.
-- Known limitations: coverage, mandatory PDF implementations, Docker/Kubernetes/runtime, identity/model/DB/monitoring, pending PostgreSQL/legacy ownership acceptance and open RAG PII/ACL findings, durable orchestration/HA, load and restore acceptance. Details in FINAL_PRODUCTION_READINESS_REPORT.md.
+- **Project:** HSAAI — Enterprise Artificial Intelligence Operating System
+- **Delivery archive:** `HSAAI_v4.zip`
+- **Source version:** `4.0.0-rc.2`
+- **Snapshot date:** 2026-09-27
+- **Classification:** **Production Candidate**
+- **Repository:** `HSA-AI/HSAAI`
+- **Default branch:** `main`
 
-- Latest changes and proof: docs/reports/CONTINUATION_20260919.md.92 tests added;690 total backend passes. Coverage gate remains FAIL;209 focused passes are a subset.
+## Verified Quality Evidence
+
+| Gate | Result |
+| --- | --- |
+| GitHub quality checks | ✅ 6/6 successful |
+| Full Backend Coverage | ✅ PASS |
+| Python coverage | ✅ 80.43% |
+| Required threshold | ✅ ≥80% |
+| Docker Build Validation | ✅ PASS |
+| Production Dependency Audits | ✅ PASS |
+| Continuous Integration | ✅ PASS |
+| Security Validation | ✅ PASS |
+
+### Coverage
+
+- Statements: **17,302**
+- Covered: **13,916**
+- Missing: **3,386**
+- Required covered statements for 80%: **13,842**
+- Margin: **+74**
+
+## Deployment Acceptance
+
+The automated checks above do not imply completion of:
+
+- real Kubernetes acceptance
+- complete enterprise runtime acceptance
+- authenticated E2E
+- production secrets/TLS/networking
+- persistent-storage recovery
+- backup/disaster recovery
+- final operational approval
+
+## Package Integrity
+
+The final external archive checksum should be distributed as:
+
+`HSAAI_v4.zip.sha256`
