@@ -126,7 +126,7 @@ services:
   api-gateway:
     enabled: true
     image:
-      repository: ghcr.io/REPLACE_ORGANIZATION/hsaai-api-gateway
+      repository: ghcr.io/hsa-ai/hsaai-api-gateway
       tag: 4.0.0-rc.2
     port: 8000
     replicas: 2
@@ -142,7 +142,7 @@ services:
   auth-service:
     enabled: true
     image:
-      repository: ghcr.io/REPLACE_ORGANIZATION/hsaai-auth-service
+      repository: ghcr.io/hsa-ai/hsaai-auth-service
       tag: 4.0.0-rc.2
     port: 8010
     replicas: 2
@@ -157,7 +157,7 @@ services:
   backend-core:
     enabled: true
     image:
-      repository: ghcr.io/REPLACE_ORGANIZATION/hsaai-backend-core
+      repository: ghcr.io/hsa-ai/hsaai-backend-core
       tag: 4.0.0-rc.2
     port: 8000
     replicas: 3
@@ -180,7 +180,7 @@ services:
   rag-service:
     enabled: true
     image:
-      repository: ghcr.io/REPLACE_ORGANIZATION/hsaai-rag-service
+      repository: ghcr.io/hsa-ai/hsaai-rag-service
       tag: 4.0.0-rc.2
     port: 8030
     replicas: 1
@@ -200,7 +200,7 @@ services:
   llm-gateway:
     enabled: true
     image:
-      repository: ghcr.io/REPLACE_ORGANIZATION/hsaai-llm-gateway
+      repository: ghcr.io/hsa-ai/hsaai-llm-gateway
       tag: 4.0.0-rc.2
     port: 8090
     replicas: 2
@@ -223,7 +223,7 @@ services:
   agent-runtime:
     enabled: true
     image:
-      repository: ghcr.io/REPLACE_ORGANIZATION/hsaai-agent-runtime
+      repository: ghcr.io/hsa-ai/hsaai-agent-runtime
       tag: 4.0.0-rc.2
     port: 8040
     replicas: 1
@@ -236,7 +236,7 @@ services:
   workflow-engine:
     enabled: true
     image:
-      repository: ghcr.io/REPLACE_ORGANIZATION/hsaai-workflow-engine
+      repository: ghcr.io/hsa-ai/hsaai-workflow-engine
       tag: 4.0.0-rc.2
     port: 8070
     replicas: 2
@@ -251,7 +251,7 @@ services:
   alignment-service:
     enabled: true
     image:
-      repository: ghcr.io/REPLACE_ORGANIZATION/hsaai-alignment-service
+      repository: ghcr.io/hsa-ai/hsaai-alignment-service
       tag: 4.0.0-rc.2
     port: 8005
     replicas: 2
@@ -263,7 +263,7 @@ services:
   governance-service:
     enabled: true
     image:
-      repository: ghcr.io/REPLACE_ORGANIZATION/hsaai-governance-service
+      repository: ghcr.io/hsa-ai/hsaai-governance-service
       tag: 4.0.0-rc.2
     port: 8011
     replicas: 2
@@ -275,7 +275,7 @@ services:
   mcp-server:
     enabled: true
     image:
-      repository: ghcr.io/REPLACE_ORGANIZATION/hsaai-mcp-server
+      repository: ghcr.io/hsa-ai/hsaai-mcp-server
       tag: 4.0.0-rc.2
     port: 8094
     replicas: 2
@@ -287,7 +287,7 @@ services:
   pii-detector:
     enabled: true
     image:
-      repository: ghcr.io/REPLACE_ORGANIZATION/hsaai-pii-detector
+      repository: ghcr.io/hsa-ai/hsaai-pii-detector
       tag: 4.0.0-rc.2
     port: 8092
     replicas: 2
@@ -299,7 +299,7 @@ services:
   model-training:
     enabled: false
     image:
-      repository: ghcr.io/REPLACE_ORGANIZATION/hsaai-model-training
+      repository: ghcr.io/hsa-ai/hsaai-model-training
       tag: 4.0.0-rc.2
     port: 8090
     replicas: 1
@@ -320,7 +320,7 @@ services:
   frontend:
     enabled: true
     image:
-      repository: ghcr.io/REPLACE_ORGANIZATION/hsaai-frontend
+      repository: ghcr.io/hsa-ai/hsaai-frontend
       tag: 4.0.0-rc.2
     port: 3000
     replicas: 2
