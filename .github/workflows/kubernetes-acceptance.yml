@@ -1,0 +1,166 @@
+name: HSAAI Kubernetes Production Acceptance
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kubernetes-production-acceptance-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  kubernetes-acceptance:
+
+    name: Kubernetes / Helm Acceptance
+
+    runs-on: ubuntu-24.04
+
+    timeout-minutes: 25
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.16.4
+
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: v1.31.4
+
+
+      - name: Display tool versions
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          docker --version
+          helm version
+          kubectl version --client
+
+
+      - name: Install kind
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          KIND_VERSION="v0.27.0"
+
+          curl \
+            --fail \
+            --show-error \
+            --silent \
+            --location \
+            --output /tmp/kind \
+            "https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-linux-amd64"
+
+          chmod +x /tmp/kind
+          sudo mv /tmp/kind /usr/local/bin/kind
+
+          kind version
+
+
+      - name: Create Kubernetes acceptance cluster
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cat > /tmp/kind-config.yaml <<'KIND'
+          kind: Cluster
+          apiVersion: kind.x-k8s.io/v1alpha4
+
+          nodes:
+            - role: control-plane
+          KIND
+
+          kind create cluster \
+            --name hsaai-acceptance \
+            --config /tmp/kind-config.yaml \
+            --wait 180s
+
+          kubectl cluster-info
+          kubectl get nodes -o wide
+
+
+      - name: Run HSAAI Kubernetes acceptance
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ./scripts/kubernetes_acceptance.sh
+
+
+      - name: Kubernetes diagnostics
+        if: failure()
+        shell: bash
+        run: |
+          set +e
+
+          kubectl get namespaces
+          kubectl get all -A
+          kubectl get events -A \
+            --sort-by='.lastTimestamp' \
+            | tail -200
+
+          helm lint infrastructure/helm \
+            -f infrastructure/helm/values.yaml \
+            -f infrastructure/helm/values-production.yaml \
+            --strict
+
+
+      - name: Upload Kubernetes acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hsaai-kubernetes-acceptance-evidence
+          path: .artifacts/kubernetes-acceptance/
+          if-no-files-found: warn
+          retention-days: 14
+
+
+      - name: Acceptance summary
+        if: success()
+        shell: bash
+        run: |
+          {
+            echo "## HSAAI Kubernetes Production Acceptance"
+            echo
+            echo "✅ Helm lint passed"
+            echo
+            echo "✅ Production Helm rendering passed"
+            echo
+            echo "✅ Temporary GHCR organization placeholders rejected"
+            echo
+            echo "✅ Kubernetes API server validation passed"
+            echo
+            echo "✅ Acceptance evidence generated"
+            echo
+            echo "This gate validates Kubernetes/Helm structure."
+            echo
+            echo "Full workload runtime acceptance is handled separately."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+
+      - name: Delete kind cluster
+        if: always()
+        shell: bash
+        run: |
+          kind delete cluster \
+            --name hsaai-acceptance || true
