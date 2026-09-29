@@ -1,0 +1,116 @@
+name: HSAAI Production Enterprise Wiring
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "docker-compose.production.yml"
+      - "infrastructure/**"
+      - "scripts/production_enterprise_wiring_check.py"
+      - ".github/workflows/production-enterprise-wiring.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  production-enterprise-wiring:
+    name: Production Enterprise Wiring
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Docker information
+        run: |
+          set -euo pipefail
+          docker version
+          docker compose version
+
+      - name: Render production compose
+        run: |
+          set -euo pipefail
+
+          FILE="docker-compose.production.yml"
+
+          # Some optional production-profile services declare env_file: .env.
+          # Production secrets must never be committed, so CI creates an
+          # ephemeral non-secret file only for Compose contract validation.
+          : > .env
+          trap 'rm -f .env' EXIT
+
+          while IFS= read -r var; do
+            [ -z "${var}" ] && continue
+
+            case "${var}" in
+              *PORT*|*_REPLICAS|*_INTERVAL|*_TIMEOUT)
+                export "${var}=1"
+                ;;
+              *)
+                export "${var}=hsaai-ci-placeholder"
+                ;;
+            esac
+
+          done < <(
+            grep -hoE '\$\{[A-Z][A-Z0-9_]*:\?[^}]*\}' \
+              "${FILE}" 2>/dev/null \
+            | sed -E 's/^\$\{([A-Z][A-Z0-9_]*):\?.*$/\1/' \
+            | sort -u
+          )
+
+          docker compose \
+            -f "${FILE}" \
+            --profile "*" \
+            config \
+            --format json \
+            > /tmp/hsaai-production-compose.json
+
+          docker compose \
+            -f "${FILE}" \
+            --profile "*" \
+            config \
+            --services \
+            | sort \
+            > /tmp/hsaai-production-services.txt
+
+          echo "===== PRODUCTION SERVICES ====="
+          cat /tmp/hsaai-production-services.txt
+
+      - name: Validate enterprise service inventory and wiring
+        run: |
+          set -euo pipefail
+
+          python scripts/production_enterprise_wiring_check.py \
+            /tmp/hsaai-production-compose.json
+
+      - name: Validate production Prometheus configuration
+        run: |
+          set -euo pipefail
+
+          docker run --rm \
+            --entrypoint /bin/promtool \
+            -v "$PWD/infrastructure/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro" \
+            -v "$PWD/infrastructure/monitoring/rules:/etc/prometheus/rules:ro" \
+            prom/prometheus:v2.55.1 \
+            check config /etc/prometheus/prometheus.yml
+
+      - name: Validate production Loki configuration
+        run: |
+          set -euo pipefail
+
+          docker run --rm \
+            -v "$PWD/infrastructure/loki/loki-config.yml:/etc/loki/local-config.yaml:ro" \
+            grafana/loki:3.3.2 \
+            -config.file=/etc/loki/local-config.yaml \
+            -verify-config=true
+
+      - name: Production wiring acceptance
+        run: |
+          echo "Production enterprise services: PASS"
+          echo "Production compose rendering: PASS"
+          echo "Enterprise service wiring: PASS"
+          echo "Prometheus configuration: PASS"
+          echo "Loki production-version configuration: PASS"
