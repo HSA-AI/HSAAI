@@ -89,6 +89,9 @@ kubectl create secret generic hsaai-runtime-secrets \
     --from-literal=POSTGRES_PASSWORD='hsaai-ci-password' \
     --from-literal=APP_DB_PASSWORD='hsaai-ci-password' \
     --from-literal=MIGRATION_DB_PASSWORD='hsaai-ci-password' \
+    --from-literal=REDIS_URL='redis://redis.hsaai-data.svc.cluster.local:6379/0' \
+    --from-literal=REDIS_HOST='redis.hsaai-data.svc.cluster.local' \
+    --from-literal=REDIS_PORT='6379' \
     --from-literal=REDIS_PASSWORD='' \
     --from-literal=QDRANT_API_KEY='' \
     --from-literal=KEYCLOAK_ADMIN_PASSWORD='hsaai-ci-keycloak-password' \

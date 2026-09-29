@@ -29,6 +29,8 @@ secrets:
   POSTGRES_PASSWORD: "hsaai-ci-password"
 
   REDIS_URL: "redis://redis.hsaai-data.svc.cluster.local:6379/0"
+  REDIS_HOST: "redis.hsaai-data.svc.cluster.local"
+  REDIS_PORT: "6379"
   REDIS_PASSWORD: ""
 
   QDRANT_API_KEY: ""
