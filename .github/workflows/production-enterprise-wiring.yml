@@ -36,6 +36,12 @@ jobs:
 
           FILE="docker-compose.production.yml"
 
+          # Some optional production-profile services declare env_file: .env.
+          # Production secrets must never be committed, so CI creates an
+          # ephemeral non-secret file only for Compose contract validation.
+          : > .env
+          trap 'rm -f .env' EXIT
+
           while IFS= read -r var; do
             [ -z "${var}" ] && continue
 
