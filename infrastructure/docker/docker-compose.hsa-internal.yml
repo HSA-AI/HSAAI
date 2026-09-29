@@ -286,3 +286,4 @@ volumes:
   loki_data: null
   promtail_data: null
   grafana_data: {}
+  es_data: {}
