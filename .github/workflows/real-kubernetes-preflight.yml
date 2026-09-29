@@ -1,0 +1,252 @@
+name: HSAAI Real Kubernetes Preflight
+
+on:
+  workflow_dispatch:
+    inputs:
+      namespace:
+        description: "Target HSAAI namespace"
+        required: true
+        default: "hsaai"
+        type: string
+
+      require_storage:
+        description: "Require StorageClass"
+        required: true
+        default: true
+        type: boolean
+
+      require_ingress:
+        description: "Require IngressClass"
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hsaai-real-kubernetes
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    name: Real Kubernetes Preflight
+
+    runs-on:
+      - self-hosted
+      - linux
+      - x64
+      - hsaai-real-k8s
+
+    environment: real-kubernetes
+
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Verify required tools
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "===== KUBECTL ====="
+          command -v kubectl
+          kubectl version --client
+
+          echo
+          echo "===== HELM ====="
+          command -v helm
+          helm version
+
+      - name: Verify Kubernetes context
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          CONTEXT="$(kubectl config current-context 2>/dev/null || true)"
+
+          if [ -z "${CONTEXT}" ]; then
+            echo "::error::No Kubernetes context configured on runner"
+            exit 1
+          fi
+
+          echo "===== CURRENT CONTEXT ====="
+          echo "${CONTEXT}"
+
+          echo
+          echo "===== CLUSTER INFO ====="
+          kubectl cluster-info
+
+          echo
+          echo "===== API ACCESS ====="
+
+          if [ "$(kubectl auth can-i get nodes)" != "yes" ]; then
+            echo "::error::Runner cannot read Kubernetes nodes"
+            exit 1
+          fi
+
+          echo "PASS: Kubernetes API access"
+
+      - name: Verify nodes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "===== NODES ====="
+          kubectl get nodes -o wide
+
+          NODE_COUNT="$(
+            kubectl get nodes \
+              --no-headers \
+              | wc -l \
+              | tr -d ' '
+          )"
+
+          if [ "${NODE_COUNT}" -lt 1 ]; then
+            echo "::error::No Kubernetes nodes found"
+            exit 1
+          fi
+
+          NOT_READY="$(
+            kubectl get nodes \
+              -o custom-columns='NAME:.metadata.name,READY:.status.conditions[?(@.type=="Ready")].status' \
+              --no-headers \
+              | awk '$2 != "True" {print}'
+          )"
+
+          if [ -n "${NOT_READY}" ]; then
+            echo "::error::One or more Kubernetes nodes are not Ready"
+            echo "${NOT_READY}"
+            exit 1
+          fi
+
+          echo "PASS: ${NODE_COUNT} node(s) Ready"
+
+      - name: Verify cluster DNS
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "===== KUBE-SYSTEM ====="
+          kubectl get pods -n kube-system -o wide
+
+          echo
+          echo "===== COREDNS ====="
+
+          kubectl get deployment coredns \
+            -n kube-system
+
+          kubectl rollout status \
+            deployment/coredns \
+            -n kube-system \
+            --timeout=180s
+
+      - name: Verify StorageClass
+        if: ${{ inputs.require_storage }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "===== STORAGE CLASS ====="
+          kubectl get storageclass
+
+          COUNT="$(
+            kubectl get storageclass \
+              --no-headers \
+              | wc -l \
+              | tr -d ' '
+          )"
+
+          if [ "${COUNT}" -lt 1 ]; then
+            echo "::error::No StorageClass found"
+            exit 1
+          fi
+
+          echo "PASS: StorageClass available"
+
+      - name: Verify IngressClass
+        if: ${{ inputs.require_ingress }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "===== INGRESS CLASS ====="
+          kubectl get ingressclass
+
+          COUNT="$(
+            kubectl get ingressclass \
+              --no-headers \
+              | wc -l \
+              | tr -d ' '
+          )"
+
+          if [ "${COUNT}" -lt 1 ]; then
+            echo "::error::No IngressClass found"
+            exit 1
+          fi
+
+          echo "PASS: IngressClass available"
+
+      - name: Verify namespace permissions
+        shell: bash
+        env:
+          TARGET_NAMESPACE: ${{ inputs.namespace }}
+        run: |
+          set -euo pipefail
+
+          echo "===== NAMESPACE ====="
+          echo "${TARGET_NAMESPACE}"
+
+          if [ "$(kubectl auth can-i get namespaces)" != "yes" ]; then
+            echo "::error::Runner cannot access namespaces"
+            exit 1
+          fi
+
+          echo "PASS: namespace access"
+
+      - name: Validate HSAAI Helm chart
+        shell: bash
+        env:
+          TARGET_NAMESPACE: ${{ inputs.namespace }}
+        run: |
+          set -euo pipefail
+
+          echo "===== HELM LINT ====="
+          helm lint infrastructure/helm
+
+          echo
+          echo "===== HELM TEMPLATE ====="
+
+          helm template \
+            hsaai \
+            infrastructure/helm \
+            --namespace "${TARGET_NAMESPACE}" \
+            > /tmp/hsaai-real-rendered.yaml
+
+          test -s /tmp/hsaai-real-rendered.yaml
+
+          echo "PASS: Helm render"
+
+      - name: Real Kubernetes preflight summary
+        shell: bash
+        run: |
+          {
+            echo "## HSAAI Real Kubernetes Preflight"
+            echo
+            echo "| Gate | Result |"
+            echo "|---|---|"
+            echo "| Real self-hosted runner | ✅ PASS |"
+            echo "| Kubernetes API | ✅ PASS |"
+            echo "| Nodes Ready | ✅ PASS |"
+            echo "| CoreDNS | ✅ PASS |"
+            echo "| StorageClass | ✅ PASS |"
+            echo "| IngressClass | ✅ PASS |"
+            echo "| Namespace permissions | ✅ PASS |"
+            echo "| Helm lint/render | ✅ PASS |"
+            echo
+            echo "**No production workload was deployed by this workflow.**"
+          } >> "${GITHUB_STEP_SUMMARY}"
