@@ -75,6 +75,41 @@ kubectl create namespace "${NAMESPACE}" \
     -o yaml \
     | kubectl apply -f -
 
+echo "Creating CI runtime secret"
+
+kubectl create secret generic hsaai-runtime-secrets \
+    --namespace "${NAMESPACE}" \
+    --from-literal=JWT_SECRET='ci-runtime-jwt-secret-0123456789abcdef0123456789abcdef' \
+    --from-literal=SESSION_SECRET='ci-runtime-session-secret-0123456789abcdef0123456789abcdef' \
+    --from-literal=SECRET_KEY='ci-runtime-secret-key-0123456789abcdef0123456789abcdef' \
+    --from-literal=DATA_ENCRYPTION_KEY='0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef' \
+    --from-literal=ENCRYPTION_KEY='0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef' \
+    --from-literal=AUDIT_HMAC_KEY='ci-runtime-audit-hmac-0123456789abcdef0123456789abcdef' \
+    --from-literal=DATABASE_URL='postgresql://hsaai:hsaai-ci-password@postgres.hsaai-data.svc.cluster.local:5432/hsaai' \
+    --from-literal=POSTGRES_PASSWORD='hsaai-ci-password' \
+    --from-literal=APP_DB_PASSWORD='hsaai-ci-password' \
+    --from-literal=MIGRATION_DB_PASSWORD='hsaai-ci-password' \
+    --from-literal=REDIS_PASSWORD='' \
+    --from-literal=QDRANT_API_KEY='' \
+    --from-literal=KEYCLOAK_ADMIN_PASSWORD='hsaai-ci-keycloak-password' \
+    --from-literal=KEYCLOAK_CLIENT_SECRET='ci-runtime-keycloak-client-secret' \
+    --from-literal=OAUTH_CLIENT_SECRET='ci-runtime-oauth-client-secret' \
+    --dry-run=client \
+    -o yaml \
+    | kubectl apply -f -
+
+kubectl get secret hsaai-runtime-secrets \
+    --namespace "${NAMESPACE}" \
+    >/dev/null
+
+echo "Runtime secret keys:"
+
+kubectl get secret hsaai-runtime-secrets \
+    --namespace "${NAMESPACE}" \
+    -o json \
+    | jq -r '.data | keys[]' \
+    | sort
+
 cat <<'YAML' | kubectl apply -f -
 apiVersion: v1
 kind: PersistentVolume
@@ -277,6 +312,43 @@ helm upgrade \
 
 echo
 echo "[7/9] Wait for all HSAAI deployments"
+
+echo "Checking immediate Pod configuration state"
+
+sleep 20
+
+CONFIG_ERRORS="$(
+    kubectl get pods \
+        -n "${NAMESPACE}" \
+        -l app.kubernetes.io/part-of=hsaai \
+        -o json \
+    | jq -r '
+        .items[]
+        | . as $pod
+        | .status.containerStatuses[]?
+        | select(
+            .state.waiting.reason == "CreateContainerConfigError"
+            or .state.waiting.reason == "ImagePullBackOff"
+            or .state.waiting.reason == "ErrImagePull"
+        )
+        | "\($pod.metadata.name) \(.state.waiting.reason)"
+      '
+)"
+
+if [ -n "${CONFIG_ERRORS}" ]; then
+    echo "ERROR: Pods failed before runtime readiness:"
+    echo "${CONFIG_ERRORS}"
+
+    echo
+    echo "Recent application events:"
+
+    kubectl get events \
+        -n "${NAMESPACE}" \
+        --sort-by='.lastTimestamp' \
+        | tail -100
+
+    exit 1
+fi
 
 EXPECTED_DEPLOYMENTS=12
 
