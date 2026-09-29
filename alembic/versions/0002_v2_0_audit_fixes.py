@@ -42,7 +42,7 @@ def upgrade() -> None:
     """)
     op.execute("CREATE INDEX IF NOT EXISTS ix_agent_logs_created_at ON agent_logs (created_at)")
     op.execute("CREATE INDEX IF NOT EXISTS ix_agent_logs_tenant_workspace ON agent_logs (tenant_id, workspace_id)")
-    op.execute("CREATE INDEX IF NOT EXISTS ix_agent_logs_agent_name ON agent_logs (agent_name)")
+    op.execute("CREATE INDEX IF NOT EXISTS ix_agent_logs_agent_key ON agent_logs (agent_key)")
     op.execute("CREATE INDEX IF NOT EXISTS ix_agent_logs_success ON agent_logs (success)")
 
     # workflow_executions — runtime log for workflow runs
