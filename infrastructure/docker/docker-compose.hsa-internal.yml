@@ -14,9 +14,7 @@ services:
     depends_on:
     - backend
     - auth_service
-    - ai_orchestrator
     - rag_engine
-    - analytics
     environment:
       AI_ORCHESTRATOR_URL: http://ai_orchestrator:8020
       ALLOW_DEV_AUTH: 'false'
@@ -286,3 +284,10 @@ services:
 volumes:
   loki_data: null
   promtail_data: null
+  grafana_data: {}
+  es_data: {}
+  keycloak_data: {}
+  neo4j_data: {}
+  ollama_data: {}
+  postgres_data: {}
+  qdrant_data: {}

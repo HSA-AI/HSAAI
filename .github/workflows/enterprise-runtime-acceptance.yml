@@ -1,0 +1,489 @@
+name: HSAAI Enterprise Runtime Acceptance
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/enterprise-runtime-acceptance.yml"
+      - "infrastructure/**"
+      - "services/**"
+      - "scripts/**"
+      - "tests/**"
+      - "docker-compose*.yml"
+      - "docker-compose*.yaml"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: enterprise-runtime-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  infrastructure-contracts:
+    name: Enterprise Infrastructure Contracts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Docker information
+        run: |
+          set -euo pipefail
+          docker version
+          docker compose version
+
+      - name: Validate Compose definitions
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Production secrets are intentionally not committed.
+          # docker-compose.production.yml references this operator-managed file,
+          # so CI creates an ephemeral placeholder only for structural validation.
+          CI_ENV_FILE="infrastructure/docker/.env.production"
+          : > "${CI_ENV_FILE}"
+          trap 'rm -f "${CI_ENV_FILE}"' EXIT
+
+          # Non-secret CI placeholders used only by docker compose config.
+          export DOMAIN_NAME="ci.hsaai.invalid"
+          export KEYCLOAK_ISSUER="http://keycloak:8080/realms/hsaai"
+          export KEYCLOAK_CLIENT_ID="hsaai-frontend"
+          export KEYCLOAK_REALM="hsaai"
+
+          FILES=(
+            "infrastructure/docker/docker-compose.production.yml"
+            "infrastructure/docker/docker-compose.dev.yml"
+            "infrastructure/docker/docker-compose.hsa-internal.yml"
+            "infrastructure/monitoring/docker-compose.monitoring.yml"
+            "infrastructure/vault/docker-compose.vault.yml"
+            "infrastructure/loki/docker-compose.logging.yml"
+            "infrastructure/qdrant-cluster/docker-compose.cluster.yml"
+            "infrastructure/redis-sentinel/docker-compose.sentinel.yml"
+            "infrastructure/patroni/docker-compose.ha.yml"
+            "infrastructure/opa/docker-compose.opa.yml"
+          )
+
+          for file in "${FILES[@]}"; do
+            echo
+            echo "=================================================="
+            echo "VALIDATING: ${file}"
+            echo "=================================================="
+
+            while IFS= read -r var; do
+              [ -z "${var}" ] && continue
+              export "${var}=hsaai-ci-placeholder"
+            done < <(
+              grep -hoE '\$\{[A-Z][A-Z0-9_]*:\?[^}]*\}' \
+                "${file}" 2>/dev/null \
+              | sed -E 's/^\$\{([A-Z][A-Z0-9_]*):\?.*$/\1/' \
+              | sort -u
+            )
+
+            docker compose \
+              -f "${file}" \
+              config >/dev/null
+
+            echo "PASS: ${file}"
+          done
+
+      - name: Validate Prometheus configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          docker run --rm \
+            --entrypoint /bin/promtool \
+            -v "$PWD/infrastructure/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro" \
+            -v "$PWD/infrastructure/monitoring/rules:/etc/prometheus/rules:ro" \
+            prom/prometheus:v2.55.1 \
+            check config /etc/prometheus/prometheus.yml
+
+      - name: Validate Loki configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          docker run --rm \
+            -v "$PWD/infrastructure/loki/loki-config.yml:/etc/loki/local-config.yaml:ro" \
+            grafana/loki:3.0.0 \
+            -config.file=/etc/loki/local-config.yaml \
+            -verify-config=true
+
+      - name: Contract summary
+        run: |
+          {
+            echo "## Enterprise Infrastructure Contracts"
+            echo
+            echo "✅ Compose definitions validated"
+            echo
+            echo "✅ Prometheus configuration validated"
+            echo
+            echo "✅ Loki configuration validated"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+
+  kafka-runtime:
+    name: Kafka Runtime Acceptance
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Start Kafka
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          docker run -d \
+            --name hsaai-kafka \
+            apache/kafka:4.3.1
+
+          for attempt in $(seq 1 30); do
+            if docker exec hsaai-kafka \
+              /opt/kafka/bin/kafka-topics.sh \
+              --bootstrap-server localhost:9092 \
+              --list >/dev/null 2>&1; then
+
+              echo "Kafka is ready"
+              exit 0
+            fi
+
+            echo "Waiting for Kafka (${attempt}/30)"
+            sleep 5
+          done
+
+          docker logs hsaai-kafka
+          exit 1
+
+      - name: Kafka produce-consume acceptance
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          docker exec hsaai-kafka \
+            /opt/kafka/bin/kafka-topics.sh \
+            --bootstrap-server localhost:9092 \
+            --create \
+            --if-not-exists \
+            --topic hsaai-enterprise-acceptance \
+            --partitions 1 \
+            --replication-factor 1
+
+          printf 'hsaai-enterprise-runtime-ok\n' \
+            | docker exec -i hsaai-kafka \
+                /opt/kafka/bin/kafka-console-producer.sh \
+                --bootstrap-server localhost:9092 \
+                --topic hsaai-enterprise-acceptance
+
+          RESULT="$(
+            timeout 30 docker exec hsaai-kafka \
+              /opt/kafka/bin/kafka-console-consumer.sh \
+              --bootstrap-server localhost:9092 \
+              --topic hsaai-enterprise-acceptance \
+              --from-beginning \
+              --max-messages 1
+          )"
+
+          echo "${RESULT}"
+
+          echo "${RESULT}" \
+            | grep -q "hsaai-enterprise-runtime-ok"
+
+          echo "PASS: Kafka produce/consume"
+
+      - name: Kafka diagnostics
+        if: always()
+        run: |
+          docker ps -a
+          docker logs hsaai-kafka 2>&1 | tail -200 || true
+          docker rm -f hsaai-kafka >/dev/null 2>&1 || true
+
+
+  mlflow-runtime:
+    name: MLflow Runtime Acceptance
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Start MLflow
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          docker run -d \
+            --name hsaai-mlflow \
+            -p 5000:5000 \
+            ghcr.io/mlflow/mlflow:v3.16.1 \
+            mlflow server \
+              --host 0.0.0.0 \
+              --port 5000 \
+              --workers 1 \
+              --backend-store-uri sqlite:////tmp/mlflow.db \
+              --default-artifact-root /tmp/mlruns
+
+          for attempt in $(seq 1 30); do
+            if curl -fsS \
+              http://127.0.0.1:5000/health \
+              >/dev/null 2>&1; then
+
+              echo "PASS: MLflow health"
+              exit 0
+            fi
+
+            if curl -fsS \
+              http://127.0.0.1:5000/ \
+              >/dev/null 2>&1; then
+
+              echo "PASS: MLflow HTTP runtime"
+              exit 0
+            fi
+
+            echo "Waiting for MLflow (${attempt}/30)"
+            sleep 5
+          done
+
+          docker logs hsaai-mlflow
+          exit 1
+
+      - name: MLflow diagnostics
+        if: always()
+        run: |
+          docker ps -a
+          docker logs hsaai-mlflow 2>&1 | tail -200 || true
+          docker rm -f hsaai-mlflow >/dev/null 2>&1 || true
+
+
+  vault-runtime:
+    name: Vault Runtime Acceptance
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Start Vault CI runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          docker run -d \
+            --name hsaai-vault \
+            --cap-add IPC_LOCK \
+            -p 8200:8200 \
+            -e VAULT_DEV_ROOT_TOKEN_ID=hsaai-ci-root \
+            -e VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200 \
+            hashicorp/vault:1.16.0 \
+            server -dev
+
+          for attempt in $(seq 1 30); do
+            if curl -fsS \
+              http://127.0.0.1:8200/v1/sys/health \
+              >/dev/null 2>&1; then
+
+              echo "Vault is ready"
+              exit 0
+            fi
+
+            echo "Waiting for Vault (${attempt}/30)"
+            sleep 3
+          done
+
+          docker logs hsaai-vault
+          exit 1
+
+      - name: Vault KV read/write acceptance
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          docker exec \
+            -e VAULT_ADDR=http://127.0.0.1:8200 \
+            -e VAULT_TOKEN=hsaai-ci-root \
+            hsaai-vault \
+            vault kv put \
+              secret/hsaai/acceptance \
+              status=enterprise-runtime-ok
+
+          RESULT="$(
+            docker exec \
+              -e VAULT_ADDR=http://127.0.0.1:8200 \
+              -e VAULT_TOKEN=hsaai-ci-root \
+              hsaai-vault \
+              vault kv get \
+                -field=status \
+                secret/hsaai/acceptance
+          )"
+
+          test "${RESULT}" = "enterprise-runtime-ok"
+
+          echo "PASS: Vault KV runtime"
+
+      - name: Vault diagnostics
+        if: always()
+        run: |
+          docker logs hsaai-vault 2>&1 | tail -200 || true
+          docker rm -f hsaai-vault >/dev/null 2>&1 || true
+
+
+  tempo-thanos-runtime:
+    name: Tempo and Thanos Runtime Acceptance
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Create Tempo CI configuration
+        shell: bash
+        run: |
+          cat > /tmp/tempo.yml <<'EOF'
+          stream_over_http_enabled: true
+
+          server:
+            http_listen_port: 3200
+
+          distributor:
+            receivers:
+              otlp:
+                protocols:
+                  grpc:
+                    endpoint: "0.0.0.0:4317"
+                  http:
+                    endpoint: "0.0.0.0:4318"
+
+          storage:
+            trace:
+              backend: local
+              wal:
+                path: /tmp/tempo/wal
+              local:
+                path: /tmp/tempo/blocks
+
+          usage_report:
+            reporting_enabled: false
+          EOF
+
+          cat /tmp/tempo.yml
+
+      - name: Start Tempo
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          docker run -d \
+            --name hsaai-tempo \
+            -p 3200:3200 \
+            -p 4317:4317 \
+            -p 4318:4318 \
+            -v /tmp/tempo.yml:/etc/tempo.yml:ro \
+            grafana/tempo:3.0.3 \
+            -config.file=/etc/tempo.yml \
+            -target=all
+
+          for attempt in $(seq 1 30); do
+            if curl -fsS \
+              http://127.0.0.1:3200/ready \
+              >/dev/null 2>&1; then
+
+              echo "PASS: Tempo runtime"
+              exit 0
+            fi
+
+            echo "Waiting for Tempo (${attempt}/30)"
+            sleep 4
+          done
+
+          docker logs hsaai-tempo
+          exit 1
+
+      - name: Start Thanos Query
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          docker run -d \
+            --name hsaai-thanos \
+            -p 10902:10902 \
+            quay.io/thanos/thanos:v0.42.4 \
+            query \
+            --http-address=0.0.0.0:10902 \
+            --grpc-address=0.0.0.0:10901
+
+          for attempt in $(seq 1 30); do
+            if curl -fsS \
+              http://127.0.0.1:10902/-/ready \
+              >/dev/null 2>&1; then
+
+              echo "PASS: Thanos Query runtime"
+              exit 0
+            fi
+
+            echo "Waiting for Thanos (${attempt}/30)"
+            sleep 4
+          done
+
+          docker logs hsaai-thanos
+          exit 1
+
+      - name: Observability diagnostics
+        if: always()
+        run: |
+          docker ps -a
+
+          echo "===== TEMPO ====="
+          docker logs hsaai-tempo 2>&1 | tail -200 || true
+
+          echo "===== THANOS ====="
+          docker logs hsaai-thanos 2>&1 | tail -200 || true
+
+          docker rm -f hsaai-tempo >/dev/null 2>&1 || true
+          docker rm -f hsaai-thanos >/dev/null 2>&1 || true
+
+
+  enterprise-foundation-result:
+    name: Enterprise Foundation Acceptance
+    if: always()
+
+    needs:
+      - infrastructure-contracts
+      - kafka-runtime
+      - mlflow-runtime
+      - vault-runtime
+      - tempo-thanos-runtime
+
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Enforce enterprise foundation result
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "Infrastructure: ${{ needs.infrastructure-contracts.result }}"
+          echo "Kafka:          ${{ needs.kafka-runtime.result }}"
+          echo "MLflow:         ${{ needs.mlflow-runtime.result }}"
+          echo "Vault:          ${{ needs.vault-runtime.result }}"
+          echo "Tempo/Thanos:   ${{ needs.tempo-thanos-runtime.result }}"
+
+          test "${{ needs.infrastructure-contracts.result }}" = "success"
+          test "${{ needs.kafka-runtime.result }}" = "success"
+          test "${{ needs.mlflow-runtime.result }}" = "success"
+          test "${{ needs.vault-runtime.result }}" = "success"
+          test "${{ needs.tempo-thanos-runtime.result }}" = "success"
+
+      - name: Enterprise acceptance summary
+        run: |
+          {
+            echo "## HSAAI Enterprise Foundation Acceptance"
+            echo
+            echo "| Component | Result |"
+            echo "|---|---|"
+            echo "| Infrastructure contracts | ✅ |"
+            echo "| Kafka runtime + produce/consume | ✅ |"
+            echo "| MLflow runtime | ✅ |"
+            echo "| Vault KV runtime | ✅ |"
+            echo "| Tempo runtime | ✅ |"
+            echo "| Thanos Query runtime | ✅ |"
+            echo
+            echo "Enterprise foundation gate passed."
+          } >> "$GITHUB_STEP_SUMMARY"

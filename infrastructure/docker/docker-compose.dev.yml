@@ -8,9 +8,7 @@ services:
     depends_on:
     - backend
     - auth_service
-    - ai_orchestrator
     - rag_engine
-    - analytics
     environment:
       AI_ORCHESTRATOR_URL: http://ai_orchestrator:8020
       ALLOW_DEV_AUTH: 'true'

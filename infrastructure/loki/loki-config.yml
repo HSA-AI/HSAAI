@@ -35,7 +35,6 @@ ingester:
   chunk_idle_period: 30m
   chunk_target_size: 1572864  # 1.5MB
   max_chunk_age: 1h
-  max_transfer_retries: 0
   wal:
     enabled: true
     dir: /loki/wal
@@ -54,7 +53,6 @@ limits_config:
 
 compactor:
   working_directory: /loki/compactor
-  shared_store: filesystem
   compaction_interval: 10m
   retention_enabled: true
   retention_delete_delay: 2h

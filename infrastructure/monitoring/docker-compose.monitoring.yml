@@ -77,3 +77,6 @@ services:
     networks:
       - hsaai_internal
     restart: unless-stopped
+
+networks:
+  hsaai_internal: {}
