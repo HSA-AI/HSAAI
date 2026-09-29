@@ -273,8 +273,8 @@ data:
             if self.path == "/api/tags":
                 self.send_json({
                     "models": [{
-                        "name": "ci-stub:latest",
-                        "model": "ci-stub:latest"
+                        "name": "ci-stub",
+                        "model": "ci-stub"
                     }]
                 })
             elif self.path == "/api/version":

@@ -31,6 +31,12 @@ secrets:
   REDIS_URL: "redis://redis.hsaai-data.svc.cluster.local:6379/0"
   REDIS_HOST: "redis.hsaai-data.svc.cluster.local"
   REDIS_PORT: "6379"
+  SAFETY_REDIS_URL: "redis://redis.hsaai-data.svc.cluster.local:6379/3"
+  AUDIT_REDIS_URL: "redis://redis.hsaai-data.svc.cluster.local:6379/4"
+  GOVERNANCE_REDIS_URL: "redis://redis.hsaai-data.svc.cluster.local:6379/5"
+  RISK_REDIS_URL: "redis://redis.hsaai-data.svc.cluster.local:6379/6"
+  POLICY_REDIS_URL: "redis://redis.hsaai-data.svc.cluster.local:6379/7"
+  EXPLAIN_REDIS_URL: "redis://redis.hsaai-data.svc.cluster.local:6379/8"
   REDIS_PASSWORD: ""
 
   QDRANT_API_KEY: ""

@@ -92,6 +92,12 @@ kubectl create secret generic hsaai-runtime-secrets \
     --from-literal=REDIS_URL='redis://redis.hsaai-data.svc.cluster.local:6379/0' \
     --from-literal=REDIS_HOST='redis.hsaai-data.svc.cluster.local' \
     --from-literal=REDIS_PORT='6379' \
+    --from-literal=SAFETY_REDIS_URL='redis://redis.hsaai-data.svc.cluster.local:6379/3' \
+    --from-literal=AUDIT_REDIS_URL='redis://redis.hsaai-data.svc.cluster.local:6379/4' \
+    --from-literal=GOVERNANCE_REDIS_URL='redis://redis.hsaai-data.svc.cluster.local:6379/5' \
+    --from-literal=RISK_REDIS_URL='redis://redis.hsaai-data.svc.cluster.local:6379/6' \
+    --from-literal=POLICY_REDIS_URL='redis://redis.hsaai-data.svc.cluster.local:6379/7' \
+    --from-literal=EXPLAIN_REDIS_URL='redis://redis.hsaai-data.svc.cluster.local:6379/8' \
     --from-literal=REDIS_PASSWORD='' \
     --from-literal=QDRANT_API_KEY='' \
     --from-literal=KEYCLOAK_ADMIN_PASSWORD='hsaai-ci-keycloak-password' \
