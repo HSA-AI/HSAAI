@@ -70,7 +70,9 @@ echo "===== BUILD APPLICATION SERVICES ====="
   backend-core \
   auth-service \
   llm-gateway \
-  api-gateway
+  api-gateway \
+  minio \
+  minio-init
 
 echo
 echo "===== START DATA SERVICES ====="

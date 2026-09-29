@@ -995,7 +995,11 @@ services:
       - -f
       - http://localhost:9000/minio/health/live
       timeout: 10s
-    image: quay.io/minio/minio:RELEASE.2024-10-13T13-34-11Z
+    build:
+      context: .
+      dockerfile: infrastructure/minio/Dockerfile.server
+      args:
+        MINIO_REF: RELEASE.2025-10-15T17-29-55Z
     ports:
     - 127.0.0.1:9000:9000
     - 127.0.0.1:9001:9001
@@ -1038,7 +1042,11 @@ services:
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Required set MINIO_ROOT_PASSWORD
         env var}
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-hsaai_minio_admin}
-    image: quay.io/minio/mc:RELEASE.2024-10-02T08-27-28Z
+    build:
+      context: .
+      dockerfile: infrastructure/minio/Dockerfile.mc
+      args:
+        MC_REF: RELEASE.2025-08-13T08-35-41Z
     restart: 'no'
     networks:
     - hsaai_private
