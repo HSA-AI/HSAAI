@@ -287,3 +287,8 @@ volumes:
   promtail_data: null
   grafana_data: {}
   es_data: {}
+  keycloak_data: {}
+  neo4j_data: {}
+  ollama_data: {}
+  postgres_data: {}
+  qdrant_data: {}
