@@ -125,19 +125,31 @@ done
 echo
 echo "===== QDRANT READY ====="
 
-for attempt in $(seq 1 24); do
-  if curl -fsS http://127.0.0.1:6333/healthz >/dev/null; then
-    echo "PASS Qdrant"
-    break
-  fi
+# Production does not require Qdrant to publish its port on the host.
+# Probe it from the Compose network instead.
+"${DC[@]}" run --rm --no-deps   --entrypoint python3   backend-core - <<'PYQDRANT'
+import sys
+import time
+import urllib.request
 
-  if [[ "$attempt" -eq 24 ]]; then
-    echo "ERROR: Qdrant timeout" >&2
-    exit 1
-  fi
+url = "http://qdrant:6333/healthz"
 
-  sleep 5
-done
+for attempt in range(1, 25):
+    try:
+        with urllib.request.urlopen(url, timeout=5) as response:
+            if response.status == 200:
+                print("PASS Qdrant internal health")
+                sys.exit(0)
+    except Exception as exc:
+        print(
+            f"Qdrant attempt {attempt}/24: "
+            f"{type(exc).__name__}: {exc}"
+        )
+
+    time.sleep(5)
+
+raise SystemExit("ERROR: Qdrant internal health timeout")
+PYQDRANT
 
 echo
 echo "===== START ENTERPRISE DEPENDENCIES ====="
@@ -192,36 +204,62 @@ echo "===== START KEYCLOAK ====="
 
 "${DC[@]}" up -d --no-deps keycloak
 
-for attempt in $(seq 1 60); do
-  if curl -fsS \
-      http://127.0.0.1:8080/realms/hsaai/.well-known/openid-configuration \
-      >/dev/null; then
-    echo "PASS Keycloak realm"
-    break
-  fi
-
-  if [[ "$attempt" -eq 60 ]]; then
-    echo "ERROR: Keycloak timeout" >&2
-    exit 1
-  fi
-
-  sleep 5
-done
-
-curl -fsS \
-  http://127.0.0.1:8080/realms/hsaai/protocol/openid-connect/certs \
-  | python3 -c '
+# Probe Keycloak through the same internal network used by HSAAI services.
+"${DC[@]}" run --rm --no-deps \
+  --entrypoint python3 \
+  backend-core - <<'PYKEYCLOAK'
 import json
 import sys
+import time
+import urllib.request
 
-data = json.load(sys.stdin)
+discovery = (
+    "http://keycloak:8080/realms/hsaai/"
+    ".well-known/openid-configuration"
+)
+
+for attempt in range(1, 61):
+    try:
+        with urllib.request.urlopen(
+            discovery,
+            timeout=5,
+        ) as response:
+            if response.status == 200:
+                print("PASS Keycloak realm")
+                break
+    except Exception as exc:
+        print(
+            f"Keycloak attempt {attempt}/60: "
+            f"{type(exc).__name__}: {exc}"
+        )
+
+    time.sleep(5)
+else:
+    raise SystemExit("ERROR: Keycloak internal health timeout")
+
+jwks_url = (
+    "http://keycloak:8080/realms/hsaai/"
+    "protocol/openid-connect/certs"
+)
+
+with urllib.request.urlopen(
+    jwks_url,
+    timeout=10,
+) as response:
+    if response.status != 200:
+        raise SystemExit(
+            f"ERROR: Keycloak JWKS HTTP {response.status}"
+        )
+
+    data = json.load(response)
+
 keys = data.get("keys")
 
 assert isinstance(keys, list)
-assert keys
+assert keys, "JWKS contains no keys"
 
 print("PASS Keycloak JWKS")
-'
+PYKEYCLOAK
 
 echo
 echo "===== START BACKEND ====="
