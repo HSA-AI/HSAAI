@@ -1,0 +1,437 @@
+name: HSAAI Production Image Supply Chain
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'services/**'
+      - 'apps/web/**'
+      - 'VERSION'
+      - 'infrastructure/helm/**'
+      - '.github/workflows/production-images.yml'
+
+  push:
+    branches:
+      - main
+    paths:
+      - 'services/**'
+      - 'apps/web/**'
+      - 'VERSION'
+      - 'infrastructure/helm/**'
+      - '.github/workflows/production-images.yml'
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: production-images-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+  REGISTRY_NAMESPACE: hsa-ai
+
+jobs:
+
+  validate-image-map:
+    name: Validate Production Image Map
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate release version
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+
+          test -s VERSION
+          test -f infrastructure/helm/Chart.yaml
+          test -f infrastructure/helm/values.yaml
+
+          VERSION="$(tr -d '[:space:]' < VERSION)"
+
+          APP_VERSION="$(
+            awk '
+              /^appVersion:/ {
+                value=$2
+                gsub(/"/, "", value)
+                print value
+                exit
+              }
+            ' infrastructure/helm/Chart.yaml
+          )"
+
+          test -n "$VERSION"
+          test -n "$APP_VERSION"
+
+          echo "Canonical VERSION: $VERSION"
+          echo "Chart appVersion:   $APP_VERSION"
+
+          if [[ "$APP_VERSION" != "$VERSION" && \
+                "$APP_VERSION" != "$VERSION"-* ]]; then
+            echo "ERROR: Chart appVersion is not aligned with VERSION"
+            exit 1
+          fi
+
+          echo "PASS: release version alignment"
+
+      - name: Reject unresolved production placeholders
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+
+          if grep -Rni \
+            'REPLACE_ORGANIZATION' \
+            infrastructure/helm \
+            infrastructure/kubernetes
+          then
+            echo "ERROR: unresolved GHCR organization placeholder"
+            exit 1
+          fi
+
+          echo "PASS: no unresolved organization placeholders"
+
+      - name: Validate production Helm image map
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+
+          text = Path("infrastructure/helm/values.yaml").read_text()
+
+          expected = {
+              "api-gateway": "hsaai-api-gateway",
+              "auth-service": "hsaai-auth-service",
+              "backend-core": "hsaai-backend-core",
+              "rag-service": "hsaai-rag-service",
+              "llm-gateway": "hsaai-llm-gateway",
+              "agent-runtime": "hsaai-agent-runtime",
+              "workflow-engine": "hsaai-workflow-engine",
+              "alignment-service": "hsaai-alignment-service",
+              "governance-service": "hsaai-governance-service",
+              "mcp-server": "hsaai-mcp-server",
+              "pii-detector": "hsaai-pii-detector",
+              "frontend": "hsaai-frontend",
+          }
+
+          failed = False
+
+          for service, image in expected.items():
+              repository = f"ghcr.io/hsa-ai/{image}"
+
+              match = re.search(
+                  rf"(?ms)^  {re.escape(service)}:\n"
+                  rf"(.*?)(?=^  [A-Za-z0-9_-]+:\n|\Z)",
+                  text,
+              )
+
+              if not match:
+                  print(f"FAIL {service}: service block missing")
+                  failed = True
+                  continue
+
+              block = match.group(1)
+
+              if not re.search(
+                  rf"(?m)^\s+repository:\s*"
+                  rf"{re.escape(repository)}\s*$",
+                  block,
+              ):
+                  print(
+                      f"FAIL {service}: expected repository "
+                      f"{repository}"
+                  )
+                  failed = True
+                  continue
+
+              print(f"PASS {service}: {repository}")
+
+          if failed:
+              sys.exit(1)
+
+          print("PASS: all production image mappings validated")
+          PY
+
+      - name: Validate Dockerfiles
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+
+          files=(
+            services/api_gateway/Dockerfile
+            services/auth_service/Dockerfile
+            services/backend_core/Dockerfile
+            services/rag_engine/Dockerfile
+            services/llm_gateway/Dockerfile
+            services/multi_agents/Dockerfile
+            services/workflow_engine/Dockerfile
+            services/ai_alignment/Dockerfile
+            services/governance/Dockerfile
+            services/mcp_server/Dockerfile
+            services/pii_detector/Dockerfile
+            apps/web/Dockerfile
+          )
+
+          for file in "${files[@]}"; do
+            test -f "$file" || {
+              echo "ERROR: missing Dockerfile: $file"
+              exit 1
+            }
+
+            echo "PASS $file"
+          done
+
+
+  build-production-images:
+
+    name: Build ${{ matrix.service }}
+
+    needs:
+      - validate-image-map
+
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+
+      matrix:
+        include:
+
+          - service: api-gateway
+            image: hsaai-api-gateway
+            context: .
+            dockerfile: services/api_gateway/Dockerfile
+
+          - service: auth-service
+            image: hsaai-auth-service
+            context: .
+            dockerfile: services/auth_service/Dockerfile
+
+          - service: backend-core
+            image: hsaai-backend-core
+            context: .
+            dockerfile: services/backend_core/Dockerfile
+
+          - service: rag-service
+            image: hsaai-rag-service
+            context: .
+            dockerfile: services/rag_engine/Dockerfile
+
+          - service: llm-gateway
+            image: hsaai-llm-gateway
+            context: .
+            dockerfile: services/llm_gateway/Dockerfile
+
+          - service: agent-runtime
+            image: hsaai-agent-runtime
+            context: .
+            dockerfile: services/multi_agents/Dockerfile
+
+          - service: workflow-engine
+            image: hsaai-workflow-engine
+            context: .
+            dockerfile: services/workflow_engine/Dockerfile
+
+          - service: alignment-service
+            image: hsaai-alignment-service
+            context: .
+            dockerfile: services/ai_alignment/Dockerfile
+
+          - service: governance-service
+            image: hsaai-governance-service
+            context: .
+            dockerfile: services/governance/Dockerfile
+
+          - service: mcp-server
+            image: hsaai-mcp-server
+            context: .
+            dockerfile: services/mcp_server/Dockerfile
+
+          - service: pii-detector
+            image: hsaai-pii-detector
+            context: .
+            dockerfile: services/pii_detector/Dockerfile
+
+          - service: frontend
+            image: hsaai-frontend
+            context: ./apps/web
+            dockerfile: ./apps/web/Dockerfile
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Free runner disk space
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+
+          echo "Disk before cleanup:"
+          df -h
+
+          sudo rm -rf \
+            /usr/local/lib/android \
+            /usr/share/dotnet \
+            /opt/ghc \
+            2>/dev/null || true
+
+          docker system prune -af || true
+
+          echo
+          echo "Disk after cleanup:"
+          df -h
+
+      - name: Resolve production image tags
+        id: image
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+
+          VERSION="$(tr -d '[:space:]' < VERSION)"
+
+          APP_VERSION="$(
+            awk '
+              /^appVersion:/ {
+                value=$2
+                gsub(/"/, "", value)
+                print value
+                exit
+              }
+            ' infrastructure/helm/Chart.yaml
+          )"
+
+          SHORT_SHA="${GITHUB_SHA:0:12}"
+          SHA_TAG="sha-${SHORT_SHA}"
+
+          test -n "$VERSION"
+          test -n "$APP_VERSION"
+
+          [[ "$APP_VERSION" =~ ^[0-9A-Za-z._-]+$ ]] || {
+            echo "ERROR: invalid appVersion: $APP_VERSION"
+            exit 1
+          }
+
+          IMAGE="${REGISTRY}/${REGISTRY_NAMESPACE}/${{ matrix.image }}"
+
+          {
+            echo "image=$IMAGE"
+            echo "version=$VERSION"
+            echo "release_tag=$APP_VERSION"
+            echo "sha_tag=$SHA_TAG"
+
+            echo "tags<<TAGS"
+            echo "${IMAGE}:${APP_VERSION}"
+            echo "${IMAGE}:${SHA_TAG}"
+            echo "TAGS"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "Image:       $IMAGE"
+          echo "Release tag: $APP_VERSION"
+          echo "SHA tag:     $SHA_TAG"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build production image
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          platforms: linux/amd64
+
+          push: ${{ github.event_name != 'pull_request' }}
+
+          tags: ${{ steps.image.outputs.tags }}
+
+          labels: |
+            org.opencontainers.image.title=${{ matrix.image }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ steps.image.outputs.release_tag }}
+
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+
+          provenance: ${{ github.event_name != 'pull_request' }}
+          sbom: ${{ github.event_name != 'pull_request' }}
+
+      - name: Record image evidence
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## ${{ matrix.service }}"
+            echo
+            echo "- Registry image: \`${{ steps.image.outputs.image }}\`"
+            echo "- Release tag: \`${{ steps.image.outputs.release_tag }}\`"
+            echo "- Immutable tag: \`${{ steps.image.outputs.sha_tag }}\`"
+            echo "- Digest: \`${{ steps.build.outputs.digest }}\`"
+            echo "- Event: \`${{ github.event_name }}\`"
+            echo "- Published: \`${{ github.event_name != 'pull_request' }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+
+  production-image-gate:
+
+    name: Production Image Supply Chain
+
+    needs:
+      - validate-image-map
+      - build-production-images
+
+    if: always()
+
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    steps:
+
+      - name: Enforce production image supply chain
+        shell: bash
+        env:
+          VALIDATION_RESULT: ${{ needs.validate-image-map.result }}
+          BUILD_RESULT: ${{ needs.build-production-images.result }}
+        run: |
+          set -Eeuo pipefail
+
+          echo "Validation: $VALIDATION_RESULT"
+          echo "Image builds: $BUILD_RESULT"
+
+          if [ "$VALIDATION_RESULT" != "success" ]; then
+            echo "ERROR: production image map validation failed"
+            exit 1
+          fi
+
+          if [ "$BUILD_RESULT" != "success" ]; then
+            echo "ERROR: one or more production images failed to build"
+            exit 1
+          fi
+
+          echo
+          echo "=============================================="
+          echo " HSAAI Production Image Supply Chain: PASS"
+          echo "=============================================="
