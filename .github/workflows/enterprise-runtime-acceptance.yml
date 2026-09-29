@@ -42,6 +42,19 @@ jobs:
         run: |
           set -euo pipefail
 
+          # Production secrets are intentionally not committed.
+          # docker-compose.production.yml references this operator-managed file,
+          # so CI creates an ephemeral placeholder only for structural validation.
+          CI_ENV_FILE="infrastructure/docker/.env.production"
+          : > "${CI_ENV_FILE}"
+          trap 'rm -f "${CI_ENV_FILE}"' EXIT
+
+          # Non-secret CI placeholders used only by docker compose config.
+          export DOMAIN_NAME="ci.hsaai.invalid"
+          export KEYCLOAK_ISSUER="http://keycloak:8080/realms/hsaai"
+          export KEYCLOAK_CLIENT_ID="hsaai-frontend"
+          export KEYCLOAK_REALM="hsaai"
+
           FILES=(
             "infrastructure/docker/docker-compose.production.yml"
             "infrastructure/docker/docker-compose.dev.yml"
