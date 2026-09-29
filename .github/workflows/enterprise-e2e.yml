@@ -76,6 +76,7 @@ jobs:
               "KEYCLOAK_REALM": "hsaai",
               "KEYCLOAK_CLIENT_ID": "hsaai-frontend",
               "KEYCLOAK_ISSUER": "http://keycloak:8080/realms/hsaai",
+              "KEYCLOAK_PUBLIC_URL": "http://keycloak:8080",
               "OLLAMA_BASE_URL": "http://ollama:11434",
           }
 
