@@ -240,8 +240,6 @@ services:
     depends_on:
       pgbouncer:
         condition: service_started
-      minio:
-        condition: service_healthy
     networks:
       - hsaai-private
     # Override entrypoint to run scheduled backups.
