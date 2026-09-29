@@ -57,12 +57,14 @@ jobs:
 
           docker compose \
             -f "${FILE}" \
+            --profile "*" \
             config \
             --format json \
             > /tmp/hsaai-production-compose.json
 
           docker compose \
             -f "${FILE}" \
+            --profile "*" \
             config \
             --services \
             | sort \
