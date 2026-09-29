@@ -1,0 +1,224 @@
+name: HSAAI Kubernetes Runtime Acceptance
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'infrastructure/helm/**'
+      - 'infrastructure/kubernetes/**'
+      - 'scripts/kubernetes_runtime_acceptance.sh'
+      - '.github/workflows/kubernetes-runtime-acceptance.yml'
+
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Optional immutable GHCR image tag
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  packages: read
+
+concurrency:
+  group: kubernetes-runtime-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  runtime-acceptance:
+
+    name: Kind Production Runtime Acceptance
+
+    runs-on: ubuntu-24.04
+
+    timeout-minutes: 50
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Free runner disk space
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+
+          df -h
+
+          sudo rm -rf \
+            /usr/local/lib/android \
+            /usr/share/dotnet \
+            /opt/ghc \
+            /usr/local/share/boost \
+            2>/dev/null || true
+
+          docker system prune -af || true
+
+          df -h
+
+      - name: Resolve immutable production image tag
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            IMAGE_TAG="sha-${BASE_SHA:0:12}"
+
+          elif [ -n "${{ inputs.image_tag }}" ]; then
+            IMAGE_TAG="${{ inputs.image_tag }}"
+
+          else
+            git fetch origin main
+            BASE_SHA="$(git rev-parse origin/main)"
+            IMAGE_TAG="sha-${BASE_SHA:0:12}"
+          fi
+
+          echo "HSAAI_IMAGE_TAG=${IMAGE_TAG}" >> "$GITHUB_ENV"
+
+          echo "Immutable image tag: ${IMAGE_TAG}"
+
+      - name: Install Kind
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+
+          KIND_VERSION="v0.27.0"
+
+          curl \
+            --fail \
+            --show-error \
+            --silent \
+            --location \
+            --output /tmp/kind \
+            "https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-linux-amd64"
+
+          chmod +x /tmp/kind
+          sudo mv /tmp/kind /usr/local/bin/kind
+
+          kind version
+
+      - name: Install Helm
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+
+          HELM_VERSION="v3.22.0"
+
+          curl \
+            --fail \
+            --show-error \
+            --silent \
+            --location \
+            --output /tmp/helm.tar.gz \
+            "https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz"
+
+          tar -xzf /tmp/helm.tar.gz -C /tmp
+
+          sudo install \
+            /tmp/linux-amd64/helm \
+            /usr/local/bin/helm
+
+          helm version
+
+      - name: Kubernetes client information
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+
+          kubectl version --client
+
+      - name: Create Kind cluster
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+
+          cat > /tmp/kind-runtime.yaml <<'KIND'
+          kind: Cluster
+          apiVersion: kind.x-k8s.io/v1alpha4
+
+          nodes:
+            - role: control-plane
+          KIND
+
+          kind create cluster \
+            --name hsaai-runtime \
+            --config /tmp/kind-runtime.yaml \
+            --wait 180s
+
+          kubectl cluster-info
+          kubectl get nodes -o wide
+
+      - name: Run HSAAI Kubernetes runtime acceptance
+        shell: bash
+        env:
+          GHCR_USERNAME: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HSAAI_KIND_CLUSTER: hsaai-runtime
+        run: |
+          set -Eeuo pipefail
+
+          ./scripts/kubernetes_runtime_acceptance.sh
+
+      - name: Runtime diagnostics
+        if: failure()
+        shell: bash
+        run: |
+          set +e
+
+          echo "===== NODES ====="
+          kubectl get nodes -o wide
+
+          echo "===== APPLICATION PODS ====="
+          kubectl get pods -n hsaai -o wide
+
+          echo "===== DATA PLANE PODS ====="
+          kubectl get pods -n hsaai-data -o wide
+
+          echo "===== APPLICATION EVENTS ====="
+          kubectl get events -n hsaai \
+            --sort-by='.lastTimestamp' \
+            | tail -200
+
+          echo "===== DATA PLANE EVENTS ====="
+          kubectl get events -n hsaai-data \
+            --sort-by='.lastTimestamp' \
+            | tail -200
+
+      - name: Upload runtime evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: hsaai-kubernetes-runtime-evidence
+          path: .artifacts/kubernetes-runtime/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Runtime acceptance summary
+        if: success()
+        shell: bash
+        run: |
+          {
+            echo "## HSAAI Kubernetes Runtime Acceptance"
+            echo
+            echo "✅ Immutable GHCR production images loaded"
+            echo "✅ CI data plane became Ready"
+            echo "✅ Helm runtime deployment succeeded"
+            echo "✅ 12 application deployments became Available"
+            echo "✅ Application Pods became Ready"
+            echo "✅ Zero application container restarts"
+            echo "✅ In-cluster DNS/service health probes passed"
+            echo
+            echo "Image tag: \`${HSAAI_IMAGE_TAG}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Delete Kind cluster
+        if: always()
+        shell: bash
+        run: |
+          kind delete cluster \
+            --name hsaai-runtime || true
