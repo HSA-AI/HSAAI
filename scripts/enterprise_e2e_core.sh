@@ -264,6 +264,17 @@ print("PASS Keycloak JWKS")
 PYKEYCLOAK
 
 echo
+echo "===== RUN DATABASE MIGRATIONS ====="
+
+if "${DC[@]}" config --services | grep -qx 'db-migrate'; then
+  "${DC[@]}" run --rm db-migrate
+  echo "PASS Database migrations"
+else
+  echo "ERROR: db-migrate service not found"
+  exit 1
+fi
+
+echo
 echo "===== START BACKEND ====="
 
 "${DC[@]}" up -d --no-deps backend-core
