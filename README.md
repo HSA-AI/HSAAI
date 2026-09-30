@@ -59,6 +59,60 @@ The final v4.0.0 release branch completed **32 automated checks successfully wit
 
 ---
 
+
+## Current Validation Status
+
+**Current release:** `HSAAI v4.0.0 — Production Release`
+**Source version:** `v4.0.0`
+**Release commit:** `80b78065d9a6623e98f4ef6e1411866776fdae0c`
+**Last verified:** 30 September 2026
+**Release status:** ✅ Published
+
+| Quality / Release Gate | Verified Status |
+|---|---|
+| Final release PR validation | ✅ 32/32 successful · 0 failing · 0 pending |
+| Full Backend Coverage | ✅ Passing |
+| Required backend coverage | ✅ ≥80% enforced |
+| Verified backend coverage snapshot | ✅ 80.43% |
+| Docker Build Validation | ✅ Passing |
+| Continuous Integration | ✅ Passing |
+| Python Dependency Audit | ✅ Passing |
+| Frontend Dependency Audit | ✅ Passing |
+| Security Validation | ✅ Passing |
+| Enterprise Runtime Acceptance | ✅ Passing |
+| Enterprise E2E | ✅ Passing |
+| Production Enterprise Wiring | ✅ Passing |
+| Production Runtime Parity | ✅ Passing |
+| Kubernetes CI Acceptance | ✅ Passing |
+| Production Image Supply Chain | ✅ Passing |
+| Final Release Gate | ✅ Passing |
+| Release Source Integrity | ✅ Passing |
+| Release Package Hygiene | ✅ Passing |
+| GitHub Production Release | ✅ `v4.0.0` published |
+| Release Artifact Integrity | ✅ SHA-256 published |
+| Real External Kubernetes Acceptance | 🚧 Separate operator deployment gate |
+
+### Release Artifact
+
+**Artifact:** `HSAAI_v4.0.0.zip`
+
+**SHA-256:**
+`4e8e69695537adccbc969c4f7a3047ffd844cc46439d3cc86d055da9b6e9c2d2`
+
+HSAAI v4.0.0 has completed its automated repository-level engineering, security, dependency, coverage, enterprise runtime, authenticated E2E, production enterprise wiring, production runtime parity, image supply-chain, package-integrity and final release validation.
+
+The **HSAAI v4.0.0 Production Release is published**.
+
+### Deployment Acceptance Boundary
+
+Repository-level and software-release validation is complete for `v4.0.0`.
+
+A real external Kubernetes cluster remains a separate environment-specific operator acceptance step. Production secrets, TLS, networking, persistent storage, backup, restore and disaster-recovery controls must be validated against the actual target infrastructure.
+
+These deployment-specific activities are not represented as completed by GitHub CI alone.
+
+---
+
 ## What is HSAAI?
 
 HSAAI provides an enterprise AI control plane for connecting:
