@@ -1,6 +1,22 @@
 # دليل استلام وتشغيل HSAAI_v1
 
-هذه حزمة مرشحة 4.0.0-rc.2. اسم الأرشيف الذي طلبه المالك HSAAI_v1.zip لا يعني الرجوع إلى شيفرة الإصدار الأول. يبدأ القرار من `START_HERE_AR.md` و`FINAL_PRODUCTION_READINESS_REPORT.md`. التقارير السابقة محفوظة كسجل تاريخي.
+
+> **تنبيه حالة الإصدار الحالية**
+>
+> هذا المستند نشأ خلال مرحلة `v4.0.0-rc.2`، ولذلك قد تحتوي بعض الأمثلة
+> والأدلة القديمة داخله على أسماء أو وسوم خاصة بمرحلة Release Candidate.
+>
+> الإصدار البرمجي الحالي المعتمد في المستودع هو:
+> **HSAAI v4.0.0 — Production Release**
+>
+> الحالة الرسمية الحالية موثقة في:
+> `README.md` و `docs/reports/CURRENT_RELEASE_STATUS.md`.
+>
+> أي إشارة إلى `4.0.0-rc.2` أو `HSAAI_v1.zip` داخل السجل التاريخي
+> لا تمثل حالة الإصدار الحالية.
+
+
+الإصدار البرمجي الحالي هو **HSAAI v4.0.0 — Production Release**. تبدأ الحالة الحالية من `README.md` و`docs/reports/CURRENT_RELEASE_STATUS.md`. أما إشارات `HSAAI_v1.zip` و`4.0.0-rc.2` في التقارير القديمة فهي محفوظة كسجل هندسي تاريخي فقط.
 
 ## 1. الاستلام والحفاظ على البيانات
 
@@ -90,7 +106,7 @@ cd ../..
 
 ## 7. Kubernetes
 
-المسار الأساسي `infrastructure/kubernetes/overlays/production`، ومسار Helm بديل. لا تطبّق الاثنين على نفس الموارد. جهّز namespaces، external secrets، registry/images بـtag 4.0.0-rc.2 أو digests مثبتة، StorageClass/PVC، Ingress/TLS وموارد الهوية/النماذج/قواعد البيانات حسب البيئة. قيم الأمثلة ليست إعداد شركة صالحًا للتطبيق المباشر.
+المسار الأساسي `infrastructure/kubernetes/overlays/production`، ومسار Helm بديل. لا تطبّق الاثنين على نفس الموارد. جهّز namespaces، external secrets، registry/images بـtag v4.0.0 أو، ويفضل في الإنتاج، digests مثبتة، StorageClass/PVC، Ingress/TLS وموارد الهوية/النماذج/قواعد البيانات حسب البيئة. قيم الأمثلة ليست إعداد شركة صالحًا للتطبيق المباشر.
 
 ```bash
 helm lint infrastructure/helm

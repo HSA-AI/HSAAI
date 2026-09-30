@@ -1,5 +1,17 @@
 # FINAL_PRODUCTION_READINESS_REPORT
 
+
+> **Historical Release Snapshot**
+>
+> This document records the HSAAI `v4.0.0-rc.2` readiness state as of
+> 27 September 2026 and is retained as historical engineering evidence.
+> It does not represent the current release status.
+>
+> The current published software release is **HSAAI v4.0.0 — Production Release**.
+> Refer to the repository README and the official GitHub Release for the
+> authoritative current release and validation status.
+
+
 ## Executive Summary
 
 **B – PRODUCTION CANDIDATE – BLOCKERS REMAIN**

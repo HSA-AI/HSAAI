@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "HSAAI Arabic Enterprise Evaluation Dataset",
+  "type": "array",
+  "minItems": 30,
+  "items": {
+    "type": "object",
+    "required": [
+      "id",
+      "language",
+      "category",
+      "question",
+      "expected_behavior",
+      "requires_rag_source",
+      "sensitive"
+    ],
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "language": {
+        "const": "ar"
+      },
+      "category": {
+        "type": "string"
+      },
+      "question": {
+        "type": "string",
+        "minLength": 5
+      },
+      "expected_behavior": {
+        "type": "string"
+      },
+      "requires_rag_source": {
+        "type": "boolean"
+      },
+      "sensitive": {
+        "type": "boolean"
+      },
+      "required_facts": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "gold_source_filenames": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "live_enabled": {
+        "type": "boolean"
+      },
+      "legacy_case": {
+        "type": "boolean"
+      },
+      "top_k": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 30
+      },
+      "search_mode": {
+        "enum": [
+          "hybrid",
+          "semantic",
+          "lexical"
+        ]
+      }
+    }
+  }
+}

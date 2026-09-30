@@ -1,0 +1,78 @@
+name: HSAAI AI Quality Benchmark
+
+on:
+  pull_request:
+    paths:
+      - "evals/**"
+      - "tests/model_quality_tests/**"
+      - ".github/workflows/ai-quality-benchmark.yml"
+
+  push:
+    branches:
+      - main
+    paths:
+      - "evals/**"
+      - "tests/model_quality_tests/**"
+      - ".github/workflows/ai-quality-benchmark.yml"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark-contract:
+    name: Arabic Enterprise Benchmark Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate benchmark runner syntax
+        run: |
+          python -m py_compile \
+            tests/model_quality_tests/run_rag_quality_benchmark.py
+
+      - name: Validate benchmark dataset JSON
+        run: |
+          python -m json.tool \
+            evals/arabic_enterprise_eval.json \
+            >/dev/null
+
+      - name: Validate benchmark schema JSON
+        run: |
+          python -m json.tool \
+            evals/schema/enterprise_eval.schema.json \
+            >/dev/null
+
+      - name: Run benchmark contract validation
+        run: |
+          python \
+            tests/model_quality_tests/run_rag_quality_benchmark.py \
+            --mode validate \
+            --min-cases 30
+
+      - name: Verify non-publishable validation mode
+        run: |
+          grep -F 'Live RAG executed: **NO**' \
+            artifacts/ai-quality/model_quality_report.md
+
+          grep -F 'Publishable answer-quality metrics: **NO**' \
+            artifacts/ai-quality/model_quality_report.md
+
+      - name: Upload benchmark validation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hsaai-ai-quality-benchmark-validation
+          path: |
+            artifacts/ai-quality/model_quality_report.md
+            artifacts/ai-quality/model_quality_report.json
+          if-no-files-found: error

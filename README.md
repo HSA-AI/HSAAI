@@ -67,6 +67,8 @@ The `v4.0.0` software release has completed its repository-level engineering, se
 Real external Kubernetes deployment, production secrets, TLS, networking, persistent storage, backup/restore and disaster-recovery acceptance remain environment-specific operational responsibilities.
 
 [View HSAAI v4.0.0 Release](https://github.com/HSA-AI/HSAAI/releases/tag/v4.0.0)
+**Detailed release evidence:** [`docs/reports/CURRENT_RELEASE_STATUS.md`](docs/reports/CURRENT_RELEASE_STATUS.md)
+
 
 ---
 

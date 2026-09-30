@@ -1,5 +1,21 @@
 # HSAAI — Current Validation Status
 
+
+> **Historical Validation Snapshot**
+>
+> This document records an earlier HSAAI validation state associated with
+> the `v4.0.0-rc.2` release-candidate period.
+>
+> It is retained for engineering traceability and historical evidence only.
+> It is **not** the authoritative current release status.
+>
+> Current authoritative software release:
+> **HSAAI v4.0.0 — Production Release**
+>
+> Refer to `README.md` and `docs/reports/CURRENT_RELEASE_STATUS.md`
+> for the current validated release state.
+
+
 **Date:** 2026-09-27  
 **Source version:** `4.0.0-rc.2`  
 **Classification:** **Production Candidate**
