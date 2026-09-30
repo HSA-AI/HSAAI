@@ -21,3 +21,6 @@ tests/coverage_sprint4/
 tests/coverage_sprint5/
 pytest-of-root/
 tests/coverage.xml
+
+# AI quality benchmark runtime reports
+artifacts/ai-quality/

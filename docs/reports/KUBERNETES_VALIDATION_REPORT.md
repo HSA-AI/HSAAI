@@ -1,5 +1,21 @@
 # KUBERNETES_VALIDATION_REPORT
 
+
+> **Historical Validation Snapshot**
+>
+> This document records an earlier HSAAI validation state associated with
+> the `v4.0.0-rc.2` release-candidate period.
+>
+> It is retained for engineering traceability and historical evidence only.
+> It is **not** the authoritative current release status.
+>
+> Current authoritative software release:
+> **HSAAI v4.0.0 — Production Release**
+>
+> Refer to `README.md` and `docs/reports/CURRENT_RELEASE_STATUS.md`
+> for the current validated release state.
+
+
 **Static/Helm: PASS within tested scope. Server validation: BLOCKED. Real deployment: NOT AVAILABLE.** No cluster/kubeconfig/kubectl was available. Server-side dry-run and get pods/services/deployments/events were attempted and recorded in `evidence/runtime-attempts.json`. A real apply was not performed; no rollout success is claimed.
 
 `helm lint infrastructure/helm` passed (1 chart, 0 failed); `helm template` rendered successfully. Canonical source/static validation covers the release manifest's 53 resources and service/deployment port alignment. Evidence: `helm-lint-final.log`, `helm-rendered.yaml`, `static-release-final.log`. Templates/images are aligned with candidate 4.0.0-rc.2; the images still must be built and supplied to a registry.
