@@ -180,7 +180,7 @@ jobs:
       run: 'set -euo pipefail
 
 
-        docker compose up -d --no-deps rag-service
+        USE_OBJECT_STORAGE=false docker compose up -d --no-deps rag-service
 
         docker compose ps --all rag-service
 
