@@ -32,59 +32,19 @@ Designed around the enterprise AI requirements of **Hayel Saeed Anam & Co. (HSA 
 
 ---
 
-## Release Status
+## Release & Validation Status
 
-| Area | Status |
+| Area | Verified Status |
 |---|---|
-| Current Release | ✅ `v4.0.0` |
-| Release Type | ✅ Production Release |
+| Latest Published Release | ✅ `HSAAI v4.0.0 — Production Release` |
+| Release Commit | ✅ `80b7806` |
 | GitHub Release | ✅ Published |
-| Enterprise E2E | ✅ Passed |
-| Enterprise Runtime Acceptance | ✅ Passed |
-| Production Runtime Parity | ✅ Passed |
-| Final Release Gate | ✅ Passed |
-| Backend Coverage Gate | ✅ Passed |
-| Coverage Threshold | ✅ ≥ 80% |
-| Docker Build Validation | ✅ Passed |
-| Python Dependency Audit | ✅ Passed |
-| Frontend Dependency Audit | ✅ Passed |
-| Security Validation | ✅ Passed |
-| Production Image Supply Chain | ✅ Passed |
-| Kubernetes CI Acceptance | ✅ Passed |
-| Clean Delivery Package | ✅ Passed |
-| SHA-256 Artifact Integrity | ✅ Published |
-| Real External Kubernetes Acceptance | 🚧 Deployment-specific operator gate |
-
-The final v4.0.0 release branch completed **32 automated checks successfully with zero failures and zero pending checks** before merge.
-
----
-
-
-## Current Validation Status
-
-**Current release:** `HSAAI v4.0.0 — Production Release`
-
-**Source version:** `v4.0.0`
-
-**Release commit:** `80b78065d9a6623e98f4ef6e1411866776fdae0c`
-
-**Last verified:** 30 September 2026
-
-**Release status:** ✅ Published
-
-| Quality / Release Gate | Verified Status |
-|---|---|
-| Final Release PR Validation | ✅ 32/32 successful · 0 failing · 0 pending |
-| Full Backend Coverage | ✅ Passing |
-| Required Backend Coverage | ✅ ≥80% enforced |
-| Verified Backend Coverage Snapshot | ✅ 80.43% |
-| Python Statements | 17,302 |
-| Covered Statements | 13,916 |
-| Missing Statements | 3,386 |
+| Final Release Validation | ✅ 32/32 successful · 0 failing · 0 pending |
+| Backend Coverage | ✅ 80.43% |
+| Required Coverage Threshold | ✅ ≥80% |
 | Docker Build Validation | ✅ Passing |
 | Continuous Integration | ✅ Passing |
-| Python Dependency Audit | ✅ Passing |
-| Frontend Dependency Audit | ✅ Passing |
+| Dependency Audits | ✅ Passing |
 | Security Validation | ✅ Passing |
 | Enterprise Runtime Acceptance | ✅ Passing |
 | Authenticated Enterprise E2E | ✅ Passing |
@@ -93,44 +53,20 @@ The final v4.0.0 release branch completed **32 automated checks successfully wit
 | Kubernetes CI Acceptance | ✅ Passing |
 | Production Image Supply Chain | ✅ Passing |
 | Final Release Gate | ✅ Passing |
-| Release Source Integrity | ✅ Passing |
 | Release Package Hygiene | ✅ Passing |
-| GitHub Production Release | ✅ `v4.0.0` published |
-| Release Artifact Integrity | ✅ SHA-256 published |
-| Real External Kubernetes Acceptance | 🚧 Separate operator deployment gate |
+| Artifact Integrity | ✅ SHA-256 published |
+| Real External Kubernetes | 🚧 Deployment-specific operator gate |
 
-### Release Artifact
+**Release artifact:** `HSAAI_v4.0.0.zip`
 
-**Artifact:** `HSAAI_v4.0.0.zip`
-
-**SHA-256**
-
+**SHA-256:**
 `4e8e69695537adccbc969c4f7a3047ffd844cc46439d3cc86d055da9b6e9c2d2`
 
-The backend quality gate maintains a minimum **80% coverage requirement**. The verified v4.0.0 release snapshot reports **80.43% backend coverage**.
+The `v4.0.0` software release has completed its repository-level engineering, security, dependency, coverage, enterprise runtime, authenticated E2E, production wiring, runtime-parity, image-supply-chain, package-integrity and final release validation.
 
-HSAAI v4.0.0 has completed its automated repository-level engineering, security, dependency, coverage, enterprise runtime, authenticated E2E, production enterprise wiring, production runtime parity, image supply-chain, package-integrity and final release validation.
+Real external Kubernetes deployment, production secrets, TLS, networking, persistent storage, backup/restore and disaster-recovery acceptance remain environment-specific operational responsibilities.
 
-The **HSAAI v4.0.0 Production Release is published through GitHub Releases**.
-
-### Deployment Acceptance Boundary
-
-Repository-level software release validation is complete for `v4.0.0`.
-
-Real external Kubernetes deployment remains a separate environment-specific operator acceptance step.
-
-The actual target environment must independently validate:
-
-- production secrets and credential rotation
-- TLS certificates
-- ingress and network policies
-- persistent storage
-- production identity-provider configuration
-- backup and restore
-- disaster recovery
-- infrastructure-specific operational controls
-
-These environment-specific activities are not represented as completed by GitHub CI alone.
+[View HSAAI v4.0.0 Release](https://github.com/HSA-AI/HSAAI/releases/tag/v4.0.0)
 
 ---
 
@@ -482,7 +418,6 @@ HSAAI uses GitHub Actions for automated engineering and release controls includi
 - Final Release Gate
 - Delivery Package Integrity
 
-The final `v4.0.0` release branch completed **32 automated checks successfully with zero failures and zero pending checks** before merge.
 
 ### Coverage Policy
 
@@ -545,10 +480,6 @@ The final delivery package excludes private and runtime-only artifacts such as:
 - temporary application state
 - generated test/runtime artifacts
 
-### Latest Release
-
-https://github.com/HSA-AI/HSAAI/releases/tag/v4.0.0
-
 ---
 
 ## Documentation
@@ -568,68 +499,6 @@ https://github.com/HSA-AI/HSAAI/releases/tag/v4.0.0
 Historical reports should be interpreted according to the release or commit for which they were generated.
 
 Current CI and release evidence takes precedence over older validation snapshots.
-
----
-
-## Project Status
-
-HSAAI is currently published as **v4.0.0 — Production Release**.
-
-The software release has completed its repository-level engineering, security, dependency, coverage, enterprise runtime, authenticated E2E, production wiring, runtime parity, image supply-chain, package-integrity and final release gates.
-
-| Area | Current Status |
-|---|---|
-| Source Version | ✅ `v4.0.0` |
-| Software Release | ✅ Production Release |
-| GitHub Release | ✅ Published |
-| Release Commit | ✅ `80b7806` |
-| Architecture | ✅ Implemented |
-| Enterprise AI Services | ✅ Implemented |
-| Enterprise RAG | ✅ Implemented |
-| AI Agents | ✅ Implemented |
-| Multi-Agent Orchestration | ✅ Implemented |
-| Knowledge Graph | ✅ Implemented |
-| Workflow Automation | ✅ Implemented |
-| AI Governance | ✅ Implemented |
-| LLM Gateway / Model Routing | ✅ Implemented |
-| LLMOps | ✅ Implemented |
-| MLOps | ✅ Implemented |
-| Docker Build Validation | ✅ Passing |
-| Continuous Integration | ✅ Passing |
-| Dependency Audits | ✅ Passing |
-| Security Validation | ✅ Passing |
-| Full Backend Coverage | ✅ Passing |
-| Backend Coverage Snapshot | ✅ 80.43% |
-| Required Coverage Threshold | ✅ ≥80% |
-| Final Release Validation | ✅ 32/32 successful |
-| Enterprise Runtime Acceptance | ✅ Passing |
-| Authenticated Enterprise E2E | ✅ Passing |
-| Production Enterprise Wiring | ✅ Passing |
-| Production Runtime Parity | ✅ Passing |
-| Kubernetes CI Acceptance | ✅ Passing |
-| Production Image Supply Chain | ✅ Passing |
-| Final Release Gate | ✅ Passing |
-| Release Source Integrity | ✅ Passing |
-| Release Package Hygiene | ✅ Passing |
-| SHA-256 Artifact Integrity | ✅ Published |
-| Real External Kubernetes Acceptance | 🚧 Deployment-specific operator gate |
-| Production Secrets / Rotation | 🚧 Target-environment validation |
-| TLS / Network Controls | 🚧 Target-environment validation |
-| Persistent Storage Acceptance | 🚧 Target-environment validation |
-| Backup / Restore Acceptance | 🚧 Target-environment validation |
-| Disaster Recovery Acceptance | 🚧 Target-environment validation |
-
-### Software Release State
-
-**HSAAI v4.0.0 is a published Production Release.**
-
-Final v4.0.0 release validation:
-
-**32 successful · 0 failing · 0 pending**
-
-The remaining deployment-specific items are not software-release failures. They require validation against the actual target production infrastructure.
-
-A real external Kubernetes cluster has not been represented as accepted by repository CI alone.
 
 ---
 
