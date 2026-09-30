@@ -8,7 +8,7 @@ v2.0 fixes:
   - Adds agent_logs table (powers real agent metrics in executive dashboards).
   - Adds workflow_executions table (powers real workflow metrics).
   - Adds missing indexes on audit_logs.actor, llm_usage_logs.model/created_at,
-    knowledge_documents.checksum, knowledge_relationships.source_key/target_key.
+    knowledge_versions.checksum, knowledge_relationships.source_key/target_key.
 
 FIX D-01: Corrected table name from kg_relationships → knowledge_relationships
 (matching 0001_initial_schema). Was preventing all migrations from running.
@@ -42,7 +42,7 @@ def upgrade() -> None:
     """)
     op.execute("CREATE INDEX IF NOT EXISTS ix_agent_logs_created_at ON agent_logs (created_at)")
     op.execute("CREATE INDEX IF NOT EXISTS ix_agent_logs_tenant_workspace ON agent_logs (tenant_id, workspace_id)")
-    op.execute("CREATE INDEX IF NOT EXISTS ix_agent_logs_agent_name ON agent_logs (agent_name)")
+    op.execute("CREATE INDEX IF NOT EXISTS ix_agent_logs_agent_key ON agent_logs (agent_key)")
     op.execute("CREATE INDEX IF NOT EXISTS ix_agent_logs_success ON agent_logs (success)")
 
     # workflow_executions — runtime log for workflow runs
@@ -76,7 +76,7 @@ def upgrade() -> None:
     op.execute("CREATE INDEX IF NOT EXISTS ix_llm_usage_logs_model ON llm_usage_logs (model)")
     op.execute("CREATE INDEX IF NOT EXISTS ix_llm_usage_logs_created_at ON llm_usage_logs (created_at)")
     op.execute("CREATE INDEX IF NOT EXISTS ix_llm_usage_logs_tenant_workspace ON llm_usage_logs (tenant_id, workspace_id)")
-    op.execute("CREATE INDEX IF NOT EXISTS ix_knowledge_documents_checksum ON knowledge_documents (checksum)")
+    op.execute("CREATE INDEX IF NOT EXISTS ix_knowledge_versions_checksum ON knowledge_versions (checksum)")
     # FIX D-01: was 'kg_relationships' — actual table name in 0001 is 'knowledge_relationships'.
     op.execute("CREATE INDEX IF NOT EXISTS ix_knowledge_relationships_source_key ON knowledge_relationships (source_key)")
     op.execute("CREATE INDEX IF NOT EXISTS ix_knowledge_relationships_target_key ON knowledge_relationships (target_key)")
@@ -89,7 +89,7 @@ def downgrade() -> None:
     op.execute("DROP INDEX IF EXISTS ix_human_approval_requests_approver")
     op.execute("DROP INDEX IF EXISTS ix_knowledge_relationships_target_key")
     op.execute("DROP INDEX IF EXISTS ix_knowledge_relationships_source_key")
-    op.execute("DROP INDEX IF EXISTS ix_knowledge_documents_checksum")
+    op.execute("DROP INDEX IF EXISTS ix_knowledge_versions_checksum")
     op.execute("DROP INDEX IF EXISTS ix_llm_usage_logs_tenant_workspace")
     op.execute("DROP INDEX IF EXISTS ix_llm_usage_logs_created_at")
     op.execute("DROP INDEX IF EXISTS ix_llm_usage_logs_model")
