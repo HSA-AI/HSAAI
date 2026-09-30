@@ -266,11 +266,10 @@ PYKEYCLOAK
 echo
 echo "===== RUN DATABASE MIGRATIONS ====="
 
-if "${DC[@]}" config --services | grep -qx 'db-migrate'; then
-  "${DC[@]}" run --rm db-migrate
+if "${DC[@]}" run --rm db-migrate; then
   echo "PASS Database migrations"
 else
-  echo "ERROR: db-migrate service not found"
+  echo "ERROR: database migrations failed"
   exit 1
 fi
 
