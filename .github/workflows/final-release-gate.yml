@@ -43,6 +43,24 @@ jobs:
           set -euo pipefail
           python scripts/final_release_integrity.py
 
+      - name: Smoke test clean delivery package
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git archive             --format=zip             --prefix=HSAAI/             --output=/tmp/hsaai-baseline.zip             HEAD
+
+          python scripts/package_delivery.py             --original /tmp/hsaai-baseline.zip             --output /tmp/HSAAI.zip
+
+          unzip -t /tmp/HSAAI.zip >/dev/null
+
+          if unzip -Z1 /tmp/HSAAI.zip | grep -E             '(^|/)\.git/|(^|/)\.env$|(^|/)\.env\.production$|(^|/)tmp/|\.db$|\.sqlite3?$|__pycache__|\.pyc$|node_modules/'; then
+            echo "ERROR: forbidden runtime/private files found"
+            exit 1
+          fi
+
+          echo "PASS: clean delivery package"
+
 
   static-release-validation:
     name: Static Release Validation
