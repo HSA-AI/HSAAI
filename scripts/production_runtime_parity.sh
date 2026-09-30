@@ -72,8 +72,8 @@ contract_check() {
   echo "PASS: MinIO production source ref"
   echo "PASS: MinIO MC production source ref"
 
-  local env_file="infrastructure/docker/.env.production"
-  local created_env=0
+  env_file="infrastructure/docker/.env.production"
+  created_env=0
 
   if [[ ! -e "${env_file}" ]]; then
     : > "${env_file}"
@@ -125,7 +125,7 @@ contract_check() {
 }
 
 kafka_runtime() {
-  local name="hsaai-parity-kafka"
+  name="hsaai-parity-kafka"
 
   cleanup() {
     local rc=$?
@@ -214,7 +214,7 @@ kafka_runtime() {
 }
 
 mlflow_runtime() {
-  local name="hsaai-parity-mlflow"
+  name="hsaai-parity-mlflow"
 
   cleanup() {
     local rc=$?
@@ -249,8 +249,7 @@ mlflow_runtime() {
 }
 
 loki_runtime() {
-  local name="hsaai-parity-loki"
-  local config
+  name="hsaai-parity-loki"
   config="$(mktemp)"
 
   cleanup() {
@@ -320,8 +319,7 @@ EOF
 }
 
 tempo_runtime() {
-  local name="hsaai-parity-tempo"
-  local config
+  name="hsaai-parity-tempo"
   config="$(mktemp)"
 
   cleanup() {
@@ -387,7 +385,7 @@ EOF
 }
 
 thanos_runtime() {
-  local name="hsaai-parity-thanos"
+  name="hsaai-parity-thanos"
 
   cleanup() {
     local rc=$?
