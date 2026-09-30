@@ -42,6 +42,8 @@ jobs:
           free -h
 
       - name: Validate Compose
+        env:
+          JWT_SECRET: hsaai-ci-live-llm-smoke-only-not-production
         run: docker compose config >/dev/null
 
       - name: Start Redis
