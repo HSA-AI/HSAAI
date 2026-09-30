@@ -118,12 +118,32 @@ if package_script.is_file():
                 "Packaging exclusions missing: " + ", ".join(missing)
             )
 
-        source = package_script.read_text()
+        excluded_name = getattr(module, "excluded_name", None)
 
-        if "path.name.startswith('.env')" not in source:
+        if excluded_name is None:
             ERRORS.append(
-                "Packaging policy does not explicitly exclude private .env files"
+                "Packaging policy does not expose excluded_name()"
             )
+        else:
+            if not excluded_name(".env"):
+                ERRORS.append(
+                    "Packaging policy does not exclude private .env files"
+                )
+
+            if not excluded_name(".env.production"):
+                ERRORS.append(
+                    "Packaging policy does not exclude production .env files"
+                )
+
+            if excluded_name(".env.example"):
+                ERRORS.append(
+                    "Packaging policy incorrectly excludes safe .env example files"
+                )
+
+            if not excluded_name("tmp/hsaai_test.db"):
+                ERRORS.append(
+                    "Packaging policy does not exclude runtime databases"
+                )
 
 
 status = git("status", "--porcelain")
