@@ -10,7 +10,7 @@ groups:
           team: platform
         annotations:
           summary: "HSAAI service {{ $labels.job }} is down"
-          description: "Service {{ $labels.job }} (instance {{ $instance }}) has been down for more than 2 minutes."
+          description: "Service {{ $labels.job }} (instance {{ $labels.instance }}) has been down for more than 2 minutes."
 
       - alert: HSAAIHighErrorRate
         expr: |

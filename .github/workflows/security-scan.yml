@@ -8,3 +8,79 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Scan tracked files for credential indicators
+        run: |
+          set -euo pipefail
+          python3 - <<'SECURITY_PY'
+          import pathlib
+          import re
+          import subprocess
+          import sys
+          
+          paths = subprocess.check_output(
+              ["git", "ls-files", "-z"]
+          ).split(bytes([0]))
+          
+          patterns = [
+              re.compile(rb"-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----"),
+              re.compile(rb"gh[pousr]_[A-Za-z0-9_]{30,}"),
+              re.compile(rb"github_pat_[A-Za-z0-9_]{30,}"),
+              re.compile(rb"AKIA[0-9A-Z]{16}"),
+          ]
+          
+          scanned = 0
+          skipped = 0
+          findings = []
+          
+          for raw_path in paths:
+              if not raw_path:
+                  continue
+          
+              path = pathlib.Path(
+                  raw_path.decode("utf-8", "surrogateescape")
+              )
+              name = path.name.lower()
+          
+              if name == ".env" or (
+                  name.startswith(".env.")
+                  and not name.endswith(
+                      (".example", ".sample", ".template", ".dist")
+                  )
+              ):
+                  findings.append((str(path), "tracked environment file"))
+          
+              try:
+                  if not path.is_file():
+                      skipped += 1
+                      continue
+          
+                  if path.stat().st_size > 1024 * 1024:
+                      skipped += 1
+                      continue
+          
+                  data = path.read_bytes()
+              except OSError:
+                  skipped += 1
+                  continue
+          
+              if bytes([0]) in data:
+                  skipped += 1
+                  continue
+          
+              scanned += 1
+          
+              if any(pattern.search(data) for pattern in patterns):
+                  findings.append((str(path), "credential indicator"))
+          
+          print("Text files scanned:", scanned)
+          print("Files skipped:", skipped)
+          print("Findings:", len(findings))
+          
+          for filename, reason in sorted(set(findings)):
+              print("SECURITY REVIEW REQUIRED:", filename, reason)
+          
+          if scanned == 0 or findings:
+              sys.exit(1)
+          
+          print("PASS: Focused credential scan")
+          SECURITY_PY

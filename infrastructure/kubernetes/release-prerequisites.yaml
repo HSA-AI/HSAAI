@@ -34,7 +34,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: migrate
-        image: ghcr.io/REPLACE_ORGANIZATION/hsaai-backend-core:4.0.0-rc.2
+        image: ghcr.io/hsa-ai/hsaai-backend-core:4.0.0-rc.2
         command:
         - python
         - -m

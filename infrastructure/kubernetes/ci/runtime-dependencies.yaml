@@ -1,0 +1,465 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hsaai-data
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: hsaai-data
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          env:
+            - name: POSTGRES_USER
+              value: hsaai
+            - name: POSTGRES_PASSWORD
+              value: hsaai-ci-password
+            - name: POSTGRES_DB
+              value: hsaai
+          ports:
+            - containerPort: 5432
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - pg_isready -U hsaai -d hsaai
+            periodSeconds: 5
+            failureThreshold: 30
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: hsaai-data
+spec:
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: hsaai-data
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          ports:
+            - containerPort: 6379
+          readinessProbe:
+            exec:
+              command:
+                - redis-cli
+                - ping
+            periodSeconds: 5
+            failureThreshold: 30
+          resources:
+            requests:
+              cpu: 20m
+              memory: 32Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: hsaai-data
+spec:
+  selector:
+    app: redis
+  ports:
+    - port: 6379
+      targetPort: 6379
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qdrant
+  namespace: hsaai-data
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: qdrant
+  template:
+    metadata:
+      labels:
+        app: qdrant
+    spec:
+      containers:
+        - name: qdrant
+          image: qdrant/qdrant:v1.11.5
+          ports:
+            - containerPort: 6333
+          readinessProbe:
+            tcpSocket:
+              port: 6333
+            periodSeconds: 5
+            failureThreshold: 30
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: qdrant
+  namespace: hsaai-data
+spec:
+  selector:
+    app: qdrant
+  ports:
+    - port: 6333
+      targetPort: 6333
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keycloak-realm
+  namespace: hsaai-data
+data:
+  hsaai-realm.json: |
+    {
+      "realm": "hsaai",
+      "enabled": true,
+      "sslRequired": "none",
+      "clients": [
+        {
+          "clientId": "hsaai-frontend",
+          "enabled": true,
+          "publicClient": true,
+          "redirectUris": ["*"],
+          "webOrigins": ["*"]
+        },
+        {
+          "clientId": "hsaai-api",
+          "enabled": true,
+          "publicClient": true
+        }
+      ]
+    }
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+  namespace: hsaai-data
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak
+  template:
+    metadata:
+      labels:
+        app: keycloak
+    spec:
+      containers:
+        - name: keycloak
+          image: quay.io/keycloak/keycloak:25.0.6
+          args:
+            - start-dev
+            - --import-realm
+          env:
+            - name: KC_BOOTSTRAP_ADMIN_USERNAME
+              value: admin
+            - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+              value: hsaai-ci-keycloak-password
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: realm
+              mountPath: /opt/keycloak/data/import
+              readOnly: true
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 60
+          resources:
+            requests:
+              cpu: 50m
+              memory: 256Mi
+            limits:
+              cpu: 1
+              memory: 1Gi
+      volumes:
+        - name: realm
+          configMap:
+            name: keycloak-realm
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak
+  namespace: hsaai-data
+spec:
+  selector:
+    app: keycloak
+  ports:
+    - port: 8080
+      targetPort: 8080
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ollama-mock
+  namespace: hsaai-data
+data:
+  server.py: |
+    import json
+    from http.server import BaseHTTPRequestHandler, HTTPServer
+
+    class Handler(BaseHTTPRequestHandler):
+
+        def send_json(self, payload):
+            body = json.dumps(payload).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def do_GET(self):
+            if self.path == "/api/tags":
+                self.send_json({
+                    "models": [{
+                        "name": "ci-stub",
+                        "model": "ci-stub"
+                    }]
+                })
+            elif self.path == "/api/version":
+                self.send_json({"version": "ci-runtime"})
+            else:
+                self.send_json({"status": "ok"})
+
+        def do_POST(self):
+            length = int(self.headers.get("Content-Length", "0"))
+            if length:
+                self.rfile.read(length)
+
+            if self.path in ("/api/embed", "/api/embeddings"):
+                self.send_json({
+                    "embedding": [0.0] * 384,
+                    "embeddings": [[0.0] * 384]
+                })
+            elif self.path == "/api/chat":
+                self.send_json({
+                    "model": "ci-stub",
+                    "message": {
+                        "role": "assistant",
+                        "content": "HSAAI CI runtime response"
+                    },
+                    "done": True
+                })
+            else:
+                self.send_json({
+                    "model": "ci-stub",
+                    "response": "HSAAI CI runtime response",
+                    "done": True
+                })
+
+        def log_message(self, *_):
+            pass
+
+    HTTPServer(("0.0.0.0", 11434), Handler).serve_forever()
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ollama
+  namespace: hsaai-data
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ollama
+  template:
+    metadata:
+      labels:
+        app: ollama
+    spec:
+      containers:
+        - name: ollama
+          image: python:3.12-alpine
+          command:
+            - python
+            - /app/server.py
+          ports:
+            - containerPort: 11434
+          volumeMounts:
+            - name: app
+              mountPath: /app
+          readinessProbe:
+            httpGet:
+              path: /api/version
+              port: 11434
+            periodSeconds: 5
+            failureThreshold: 30
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi
+      volumes:
+        - name: app
+          configMap:
+            name: ollama-mock
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ollama
+  namespace: hsaai-data
+spec:
+  selector:
+    app: ollama
+  ports:
+    - port: 11434
+      targetPort: 11434
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-config
+  namespace: hsaai-data
+data:
+  config.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+
+    exporters:
+      debug:
+        verbosity: basic
+
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          exporters: [debug]
+        metrics:
+          receivers: [otlp]
+          exporters: [debug]
+        logs:
+          receivers: [otlp]
+          exporters: [debug]
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otel-collector
+  namespace: hsaai-data
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: otel-collector
+  template:
+    metadata:
+      labels:
+        app: otel-collector
+    spec:
+      containers:
+        - name: otel-collector
+          image: otel/opentelemetry-collector-contrib:0.110.0
+          args:
+            - --config=/etc/otel/config.yaml
+          ports:
+            - containerPort: 4317
+            - containerPort: 4318
+          volumeMounts:
+            - name: config
+              mountPath: /etc/otel
+          readinessProbe:
+            tcpSocket:
+              port: 4317
+            periodSeconds: 5
+            failureThreshold: 30
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+      volumes:
+        - name: config
+          configMap:
+            name: otel-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-collector
+  namespace: hsaai-data
+spec:
+  selector:
+    app: otel-collector
+  ports:
+    - name: grpc
+      port: 4317
+      targetPort: 4317
+    - name: http
+      port: 4318
+      targetPort: 4318

@@ -181,7 +181,7 @@ class WorkflowExecutor:
             },
         ]
 
-    def metrics(self) -> dict[str, Any]:
+    async def metrics(self) -> dict[str, Any]:
         """
         Return real execution metrics.
 
@@ -197,7 +197,7 @@ class WorkflowExecutor:
             "success_rate": success_rate,
             "avg_runtime_sec": avg_runtime,
             "retries": WorkflowExecutor._total_retries,
-            "waiting_approvals": len(self.approvals.pending()),
+            "waiting_approvals": len(await self.approvals.pending()),
         }
 
 

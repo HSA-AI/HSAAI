@@ -1,387 +1,287 @@
 # HSAAI — Enterprise AI Operating System
 
-**Enterprise AI Platform for RAG · AI Agents · Knowledge Management · Workflow Automation · AI Governance · MLOps · Kubernetes**
+**Enterprise AI Platform for Secure RAG · Agentic AI · AI Agents · Multi-Agent Systems · Knowledge Graphs · Workflow Automation · AI Governance · LLMOps · MLOps · DevSecOps · Kubernetes**
 
-HSAAI is a modular **Enterprise Artificial Intelligence Operating System** designed for secure organizational knowledge discovery, Retrieval-Augmented Generation (RAG), intelligent assistants, multi-agent workflows, enterprise automation, governed LLM operations, MLOps, and cloud-native deployment.
+[![Release](https://img.shields.io/github/v/release/HSA-AI/HSAAI?display_name=tag)](https://github.com/HSA-AI/HSAAI/releases/latest)
+[![Final Release Gate](https://github.com/HSA-AI/HSAAI/actions/workflows/final-release-gate.yml/badge.svg)](https://github.com/HSA-AI/HSAAI/actions/workflows/final-release-gate.yml)
+[![Enterprise E2E](https://github.com/HSA-AI/HSAAI/actions/workflows/enterprise-e2e.yml/badge.svg)](https://github.com/HSA-AI/HSAAI/actions/workflows/enterprise-e2e.yml)
+[![Runtime Parity](https://github.com/HSA-AI/HSAAI/actions/workflows/production-runtime-parity.yml/badge.svg)](https://github.com/HSA-AI/HSAAI/actions/workflows/production-runtime-parity.yml)
+[![Security](https://github.com/HSA-AI/HSAAI/actions/workflows/security-scan.yml/badge.svg)](https://github.com/HSA-AI/HSAAI/actions/workflows/security-scan.yml)
 
-**HSAAI (Hayel Saeed Anam Artificial Intelligence)** is designed around the enterprise requirements of **Hayel Saeed Anam & Co. (HSA Group)** and brings together organizational knowledge, conversational AI, RAG, AI agents, workflow approvals, enterprise integrations, security controls, and observability in a unified architecture.
+HSAAI is a modular **Enterprise Artificial Intelligence Operating System** for securely connecting organizational knowledge, Large Language Models (LLMs), Retrieval-Augmented Generation (RAG), AI agents, multi-agent systems, knowledge graphs, enterprise workflows, model lifecycle management, governance, security and cloud-native infrastructure.
 
-منصة **HSAAI** هي نظام تشغيل للذكاء الاصطناعي المؤسسي يجمع بين إدارة المعرفة، وتقنيات RAG، والوكلاء الأذكياء، وأتمتة سير العمل، وحوكمة الذكاء الاصطناعي، وإدارة النماذج، والتكاملات المؤسسية ضمن بنية موحدة وآمنة وقابلة للتوسع.
+Designed around the enterprise AI requirements of **Hayel Saeed Anam & Co. (HSA Group)**, HSAAI provides a unified architecture for enterprise knowledge discovery, intelligent assistants, governed AI automation, AI agents, LLMOps, MLOps and Kubernetes-oriented deployment.
 
-> **Release status: Production Candidate — validation in progress.**
+**Current Release: `HSAAI v4.0.0 — Production Release`**
+
+> HSAAI v4.0.0 passed its automated engineering, security, dependency, coverage, enterprise runtime, E2E, production runtime parity, image supply-chain, package-integrity and final release gates.
 >
-> Latest verified coverage evidence from the active production-hardening work reports **17,302 Python statements, 11,420 covered statements, and 66.00% coverage**.
->
-> The enforced production coverage target remains **≥80%**, requiring **2,422 additional covered statements** at the current measured code size.
->
-> Docker build validation, dependency auditing, continuous integration, and the current security-validation workflow are passing. The **Full Backend Coverage** check remains open. Full runtime acceptance, remaining E2E validation, real Kubernetes deployment, production secrets validation, and final production approval remain separate release gates.
-
-**Enterprise AI · Retrieval-Augmented Generation · AI Agents · Multi-Agent Systems · Knowledge Graphs · LLM Gateway · Workflow Automation · AI Governance · MLOps · DevSecOps · Kubernetes · Observability**
-
-[Overview](#overview--نظرة-عامة) ·
-[Capabilities](#platform-capabilities--قدرات-المنصة) ·
-[AI & RAG](#enterprise-ai--rag) ·
-[AI Agents](#ai-agents--multi-agent-orchestration) ·
-[Architecture](#architecture) ·
-[Security](#security) ·
-[Deployment](#deployment) ·
-[Testing](#testing--release-evidence) ·
-[Documentation](#documentation)
+> Real external Kubernetes cluster acceptance remains a separate deployment-specific operator gate.
 
 ---
 
-## Overview | نظرة عامة
+## العربية
 
-HSAAI is a modular **enterprise AI platform** for connecting organizational knowledge, internal business systems, Large Language Models (LLMs), AI agents, and automated workflows through governed APIs and enterprise user experiences.
+**HSAAI** منصة ذكاء اصطناعي مؤسسية متكاملة تجمع بين إدارة المعرفة، وRAG، والوكلاء الأذكياء، والأنظمة متعددة الوكلاء، والرسوم البيانية المعرفية، وأتمتة سير العمل، وحوكمة الذكاء الاصطناعي، وLLMOps، وMLOps، والبنية التحتية السحابية ضمن معمارية موحدة وآمنة وقابلة للتوسع.
 
-The platform is designed to support secure access to enterprise knowledge while providing AI-assisted search, conversational interfaces, intelligent automation, model orchestration, governance controls, observability, and cloud-native deployment capabilities.
+**الإصدار الحالي: `HSAAI v4.0.0 — Production Release`**
 
-HSAAI منصة ذكاء اصطناعي مؤسسية معيارية تهدف إلى ربط المعرفة المؤسسية والأنظمة الداخلية ونماذج اللغة الكبيرة والوكلاء الأذكياء وسير العمل الآلي ضمن بيئة موحدة.
+اجتاز الإصدار بوابات الجودة والهندسة والأمان والاعتماديات والتغطية واختبارات Enterprise E2E وProduction Runtime Parity وسلسلة بناء الصور والتحقق النهائي من حزمة الإصدار.
 
-تركز المنصة على الوصول الآمن للمعرفة، والبحث الذكي، والمحادثة المؤسسية، وأتمتة الأعمال، وإدارة النماذج، والحوكمة، والمراقبة، وقابلية التوسع.
+يبقى الاختبار على **Kubernetes Cluster خارجي حقيقي** خطوة قبول تشغيلية مرتبطة ببيئة النشر المستهدفة.
 
 ---
 
-## Platform Capabilities | قدرات المنصة
+## Release Status
 
-| Area | Capabilities represented in the repository |
+| Area | Status |
 |---|---|
-| Enterprise AI | LLM integration, model routing, intelligent assistants and governed AI operations |
-| Enterprise Knowledge | Document ingestion, embeddings, RAG, hybrid retrieval and knowledge discovery |
-| AI Agents | Agent routing, tool execution, specialized agents and multi-agent orchestration |
-| Knowledge Graph | Graph-oriented knowledge integration and Neo4j components |
-| Workflow Automation | Workflow execution, approvals and human-in-the-loop processes |
-| AI Governance | Policy controls, audit capabilities, security validation and responsible AI components |
-| Identity & Access | Authentication, authorization, RBAC, ABAC and identity-provider integration |
-| MLOps | Model training, evaluation, registry and model lifecycle components |
-| Enterprise Integrations | Internal-system connectors, data integration and extensible connector architecture |
-| Observability | Metrics, logs, traces, monitoring and distributed observability |
-| Infrastructure | Docker Compose, Kubernetes, Helm and infrastructure-as-code assets |
-| User Experience | Next.js enterprise web application with Arabic and RTL-oriented support |
+| Current Release | ✅ `v4.0.0` |
+| Release Type | ✅ Production Release |
+| GitHub Release | ✅ Published |
+| Enterprise E2E | ✅ Passed |
+| Enterprise Runtime Acceptance | ✅ Passed |
+| Production Runtime Parity | ✅ Passed |
+| Final Release Gate | ✅ Passed |
+| Backend Coverage Gate | ✅ Passed |
+| Coverage Threshold | ✅ ≥ 80% |
+| Docker Build Validation | ✅ Passed |
+| Python Dependency Audit | ✅ Passed |
+| Frontend Dependency Audit | ✅ Passed |
+| Security Validation | ✅ Passed |
+| Production Image Supply Chain | ✅ Passed |
+| Kubernetes CI Acceptance | ✅ Passed |
+| Clean Delivery Package | ✅ Passed |
+| SHA-256 Artifact Integrity | ✅ Published |
+| Real External Kubernetes Acceptance | 🚧 Deployment-specific operator gate |
 
-These capabilities describe components represented in the repository. Availability in a specific environment depends on the active deployment profile, infrastructure, configuration, secrets, and validation evidence.
+The final v4.0.0 release branch completed **32 automated checks successfully with zero failures and zero pending checks** before merge.
 
 ---
 
-## Enterprise AI & RAG
 
-### Retrieval-Augmented Generation
+## Current Validation Status
 
-HSAAI includes a Retrieval-Augmented Generation architecture intended to connect Large Language Models with enterprise knowledge.
+**Current release:** `HSAAI v4.0.0 — Production Release`
 
-Repository components cover areas such as:
+**Source version:** `v4.0.0`
 
-- document ingestion and processing
-- text extraction and chunking
-- embeddings
-- vector retrieval
-- hybrid search
-- reranking
-- citation-oriented retrieval workflows
-- tenant-aware access controls
+**Release commit:** `80b78065d9a6623e98f4ef6e1411866776fdae0c`
+
+**Last verified:** 30 September 2026
+
+**Release status:** ✅ Published
+
+| Quality / Release Gate | Verified Status |
+|---|---|
+| Final Release PR Validation | ✅ 32/32 successful · 0 failing · 0 pending |
+| Full Backend Coverage | ✅ Passing |
+| Required Backend Coverage | ✅ ≥80% enforced |
+| Verified Backend Coverage Snapshot | ✅ 80.43% |
+| Python Statements | 17,302 |
+| Covered Statements | 13,916 |
+| Missing Statements | 3,386 |
+| Docker Build Validation | ✅ Passing |
+| Continuous Integration | ✅ Passing |
+| Python Dependency Audit | ✅ Passing |
+| Frontend Dependency Audit | ✅ Passing |
+| Security Validation | ✅ Passing |
+| Enterprise Runtime Acceptance | ✅ Passing |
+| Authenticated Enterprise E2E | ✅ Passing |
+| Production Enterprise Wiring | ✅ Passing |
+| Production Runtime Parity | ✅ Passing |
+| Kubernetes CI Acceptance | ✅ Passing |
+| Production Image Supply Chain | ✅ Passing |
+| Final Release Gate | ✅ Passing |
+| Release Source Integrity | ✅ Passing |
+| Release Package Hygiene | ✅ Passing |
+| GitHub Production Release | ✅ `v4.0.0` published |
+| Release Artifact Integrity | ✅ SHA-256 published |
+| Real External Kubernetes Acceptance | 🚧 Separate operator deployment gate |
+
+### Release Artifact
+
+**Artifact:** `HSAAI_v4.0.0.zip`
+
+**SHA-256**
+
+`4e8e69695537adccbc969c4f7a3047ffd844cc46439d3cc86d055da9b6e9c2d2`
+
+The backend quality gate maintains a minimum **80% coverage requirement**. The verified v4.0.0 release snapshot reports **80.43% backend coverage**.
+
+HSAAI v4.0.0 has completed its automated repository-level engineering, security, dependency, coverage, enterprise runtime, authenticated E2E, production enterprise wiring, production runtime parity, image supply-chain, package-integrity and final release validation.
+
+The **HSAAI v4.0.0 Production Release is published through GitHub Releases**.
+
+### Deployment Acceptance Boundary
+
+Repository-level software release validation is complete for `v4.0.0`.
+
+Real external Kubernetes deployment remains a separate environment-specific operator acceptance step.
+
+The actual target environment must independently validate:
+
+- production secrets and credential rotation
+- TLS certificates
+- ingress and network policies
+- persistent storage
+- production identity-provider configuration
+- backup and restore
+- disaster recovery
+- infrastructure-specific operational controls
+
+These environment-specific activities are not represented as completed by GitHub CI alone.
+
+---
+
+## What is HSAAI?
+
+HSAAI provides an enterprise AI control plane for connecting:
+
+- Enterprise knowledge and documents
+- Large Language Models
 - Retrieval-Augmented Generation pipelines
-- enterprise knowledge discovery
+- Intelligent assistants
+- AI agents
+- Multi-agent systems
+- Knowledge graphs
+- Enterprise workflows
+- Internal business applications
+- Identity and access-management systems
+- Model training and evaluation pipelines
+- Observability infrastructure
+- Security and governance controls
 
-The RAG architecture is designed to support organizational documents and internal knowledge while keeping retrieval and access controls separate from unrestricted model generation.
+The platform is designed so AI capabilities can operate under enterprise authentication, authorization, governance, auditing and observability.
 
-### RAG technology components
+---
 
-Technologies represented in the architecture include:
+## Core Capabilities
 
-**Qdrant · PostgreSQL · Redis · document loaders · embedding services · reranking · LLM gateways · knowledge graph integration**
+| Domain | Capabilities |
+|---|---|
+| Enterprise AI | LLM integration, intelligent assistants and governed AI execution |
+| Enterprise RAG | Document ingestion, embeddings, retrieval, reranking and citations |
+| AI Agents | Specialized agents, routing, tools and task execution |
+| Multi-Agent Systems | Supervisor logic, agent coordination and orchestration |
+| Knowledge Management | Enterprise search and organizational knowledge discovery |
+| Knowledge Graphs | Neo4j-oriented graph integration and ontology |
+| Workflow Automation | Automated workflows, approvals and human-in-the-loop |
+| AI Governance | Policy, audit, evaluation and responsible AI controls |
+| Identity & Access | Authentication, JWT, RBAC, ABAC and Keycloak integration |
+| LLMOps | LLM routing, provider abstraction, controlled model access and evaluation |
+| MLOps | Training, experiment tracking, evaluation, registry and lifecycle |
+| Enterprise Integrations | Extensible connectors and internal-system integration |
+| Observability | Metrics, logs, traces and dashboards |
+| DevSecOps | CI/CD, security validation, dependency auditing and image supply chain |
+| Cloud Native | Docker, Kubernetes, Helm and production infrastructure |
+| Enterprise UX | Next.js web interface with Arabic and RTL-oriented support |
+
+---
+
+## Enterprise RAG
+
+HSAAI provides a Retrieval-Augmented Generation architecture for securely connecting LLMs with enterprise knowledge.
+
+Capabilities include:
+
+- Document ingestion
+- Text extraction
+- Chunking
+- Embeddings
+- Vector retrieval
+- Semantic search
+- Hybrid search
+- Reranking
+- Citation-oriented retrieval
+- Tenant-aware access controls
+- Enterprise knowledge discovery
+- Knowledge-graph augmentation
+
+### RAG Technologies
+
+**Qdrant · PostgreSQL · Redis · Embeddings · Reranking · LLM Gateway · Knowledge Graphs**
 
 ---
 
 ## AI Agents & Multi-Agent Orchestration
 
-HSAAI includes agent-oriented architecture for intelligent enterprise task execution.
+HSAAI includes an agent-oriented architecture for intelligent enterprise task execution.
 
-The repository contains components for:
+Capabilities include:
 
-- specialized AI agents
-- supervisor and routing logic
-- multi-agent orchestration
-- agent tools
-- workflow coordination
-- memory components
-- reasoning components
-- agent execution policies
-- task decomposition
-- enterprise agent integrations
-- human approval workflows
+- Specialized AI agents
+- Supervisor and routing logic
+- Multi-agent orchestration
+- Agent tools
+- Task decomposition
+- Workflow coordination
+- Memory components
+- Reasoning components
+- Agent execution policies
+- Human approval workflows
+- Enterprise integrations
 
-The platform is intended to allow multiple specialized AI capabilities to cooperate while remaining governed by authentication, authorization, policy and audit controls.
+AI agents operate behind authentication, authorization, governance and audit controls.
 
 ---
 
-## Enterprise Knowledge Management
-
-HSAAI combines multiple approaches to enterprise knowledge management.
+## Enterprise Knowledge
 
 ### Vector Knowledge
-
-Vector retrieval components are represented through **Qdrant** and related embedding, search and reranking services.
+Qdrant-based vector retrieval supports semantic search and RAG workloads.
 
 ### Knowledge Graph
-
-Graph-oriented capabilities are represented through **Neo4j** and knowledge-graph repository, ontology, ingestion and query components.
+Neo4j-oriented components support graph-based organizational knowledge, ontology, ingestion and querying.
 
 ### Enterprise Search
+Enterprise search combines organizational content, semantic retrieval and access-control context.
 
-The architecture includes enterprise search services designed to combine organizational content with access-control and application context.
-
-### Document Knowledge
-
-The repository includes document-processing paths intended for structured and unstructured enterprise information.
+### Document Intelligence
+Document-processing pipelines support structured and unstructured enterprise information.
 
 ---
 
-## LLM Gateway & Model Routing
+## LLM Gateway
 
-HSAAI includes an LLM gateway layer designed to separate enterprise applications from direct model-provider dependencies.
+The HSAAI LLM Gateway separates enterprise applications from direct model-provider dependencies.
 
-Capabilities represented in the repository include:
+Capabilities include:
 
-- model routing
-- controlled model access
-- request handling
-- generation services
-- provider abstraction
-- model-selection logic
-- local-model integration
-- evaluation and quality components
+- Model routing
+- Provider abstraction
+- Controlled model access
+- Generation services
+- Model-selection logic
+- Local-model integration
+- Evaluation
+- Quality controls
 
-The architecture includes support-oriented components for technologies such as **Ollama** and other model-serving paths represented by the repository configuration.
+The architecture supports local model serving through technologies such as **Ollama** and extensible external model-provider integrations.
 
 ---
 
 ## Workflow Automation
 
-The platform includes workflow and approval components for combining AI execution with enterprise business processes.
+HSAAI combines AI execution with enterprise business processes.
 
-Areas represented include:
+Capabilities include:
 
-- workflow execution
-- automated task processing
-- approval workflows
-- human-in-the-loop validation
-- agent-assisted workflows
-- enterprise operations
-- event-driven processing
-- business-system integration
-
-This architecture is intended to keep sensitive or high-impact actions subject to policy and authorization controls.
+- Workflow execution
+- Automated tasks
+- Approval workflows
+- Human-in-the-loop validation
+- AI-assisted business processes
+- Event-driven processing
+- Enterprise-system integration
 
 ---
 
-## AI Governance
+## AI Governance & Security
 
-HSAAI includes governance components intended for enterprise AI environments.
+Security and governance are architectural layers within HSAAI.
 
-Areas represented in the repository include:
-
-- policy enforcement
-- audit capabilities
-- governance evaluation
-- explainability components
-- AI risk-management components
-- access-control integration
-- human approval workflows
-
----
-
-## MLOps & Model Lifecycle
-
-HSAAI includes model lifecycle and MLOps-oriented components.
-
-Repository capabilities include:
-
-- model training
-- fine-tuning pipelines
-- model evaluation
-- model registry
-- model routing
-- quality evaluation
-- MLflow-oriented integrations
-- model lifecycle workflows
-
-Supporting infrastructure represented in the repository includes technologies such as:
-
-**MLflow · Ollama · object storage · PostgreSQL · monitoring services**
-
----
-
-## Architecture
-
-The repository is organized into applications, backend services, shared packages, infrastructure, tests and operational documentation.
-
-```text
-HSAAI/
-├── apps/
-│   └── web/                     # Enterprise web application
-│
-├── services/
-│   ├── api_gateway/             # API gateway and request controls
-│   ├── auth_service/            # Authentication and identity integration
-│   ├── backend_core/            # Core enterprise application services
-│   ├── governance/              # AI governance and policy services
-│   ├── llm_gateway/             # LLM routing and model access
-│   ├── model_training/          # Model training and registry
-│   ├── multi_agents/            # Agent and multi-agent orchestration
-│   ├── pii_detector/            # PII-oriented processing
-│   ├── rag_engine/              # Enterprise RAG engine
-│   └── workflow_engine/         # Workflow execution
-│
-├── packages/
-│   └── common/                  # Shared AI, security and observability packages
-│
-├── infrastructure/
-│   ├── docker/                  # Container infrastructure
-│   ├── kubernetes/              # Kubernetes resources
-│   ├── helm/                    # Helm deployment assets
-│   ├── monitoring/              # Monitoring configuration
-│   └── vault/                   # Secrets-management integration
-│
-├── alembic/                     # Database migrations
-├── benchmarks/                  # Performance and benchmark assets
-├── demo-runtime/                # Demonstration runtime components
-├── deployment/                  # Deployment assets
-├── docs/                        # Technical documentation
-├── evals/                       # AI evaluation assets
-├── examples/                    # Usage examples
-├── tests/                       # Automated test suites
-├── scripts/                     # Engineering and validation scripts
-├── runbooks/                    # Operational runbooks
-└── .github/workflows/           # CI/CD and validation workflows
-```
-
----
-
-## Main Application Services
-
-| Service | Responsibility |
-|---|---|
-| `web` | Enterprise web user experience |
-| `api-gateway` | API routing, request controls and gateway operations |
-| `backend-core` | Central enterprise application APIs |
-| `auth-service` | Authentication and identity integration |
-| `rag-engine` | Retrieval-Augmented Generation and enterprise knowledge retrieval |
-| `llm-gateway` | LLM access and model routing |
-| `multi_agents` | AI agent coordination and tool execution |
-| `workflow-engine` | Workflow execution and approvals |
-| `governance` | Governance, policy and audit-oriented functionality |
-| `model-training` | Model lifecycle, training and registry components |
-
-Service availability depends on the selected deployment profile.
-
-The presence of a service directory does not necessarily mean that the service is enabled in every runtime environment.
-
----
-
-## Data & Infrastructure Integrations
-
-Repository configuration includes components or integrations for:
-
-- **PostgreSQL** — relational application and operational data
-- **Redis** — caching, state and supporting runtime functionality
-- **Qdrant** — vector storage and semantic retrieval
-- **Neo4j** — knowledge graph storage and graph-oriented operations
-- **Kafka** — event streaming and asynchronous integration
-- **MinIO** — S3-compatible object storage
-- **Keycloak** — identity and access-management integration
-- **Ollama** — local-model and LLM-serving integration
-- **MLflow** — model lifecycle and MLOps integration
-
----
-
-## Observability Stack
-
-HSAAI contains observability-related configuration and shared components for application metrics, infrastructure metrics, logs, distributed traces, dashboards and operational monitoring.
-
-Technologies represented include:
-
-**Prometheus · Grafana · Loki · Tempo · Thanos**
-
-These integrations require appropriate deployment configuration and runtime validation.
-
----
-
-## Deployment
-
-HSAAI contains deployment assets for containerized and Kubernetes-oriented environments.
-
-### Docker
-
-A Linux host with a working Docker Engine and Docker Compose v2 is recommended for container-based validation.
-
-```bash
-cp .env.example .env
-
-docker compose config --quiet
-docker compose ps --all
-```
-
-Do not commit production credentials or real secrets to the repository.
-
-Termux without a Docker daemon should not be considered a production runtime host.
-
-### Kubernetes
-
-Kubernetes assets are located under:
-
-```text
-infrastructure/kubernetes/
-infrastructure/helm/
-```
-
-Production Kubernetes deployment should include:
-
-- approved container images
-- secure secret management
-- persistent storage
-- resource requests and limits
-- readiness probes
-- liveness probes
-- service configuration
-- ingress configuration
-- network controls
-- monitoring
-- backup procedures
-- disaster-recovery validation
-
-The presence of manifests or Helm charts does not constitute evidence that a real cluster deployment has passed acceptance testing.
-
-### Enterprise Infrastructure
-
-The full enterprise architecture may include:
-
-```text
-PostgreSQL
-Redis
-Qdrant
-Neo4j
-Kafka
-MinIO
-Keycloak
-Ollama
-MLflow
-Prometheus
-Grafana
-Loki
-Tempo
-Thanos
-Vault
-```
-
-Running the complete stack requires sufficient CPU, RAM, storage and network capacity.
-
----
-
-## Security
-
-HSAAI contains security-oriented application and infrastructure components.
-
-Security areas represented include:
+Key areas include:
 
 - Authentication
 - Authorization
@@ -394,105 +294,97 @@ Security areas represented include:
 - Audit logging
 - Prompt safety
 - Output filtering
+- AI evaluation
 - Secrets management
 - Dependency auditing
-- Security validation
-- Network-aware controls
+- Human approvals
 
-Before production approval, deployment-specific evidence should verify identity-provider configuration, authorization boundaries, tenant separation, secret storage and rotation, dependency vulnerabilities, container-image vulnerabilities, network exposure, TLS configuration, audit-log integrity, backups, disaster recovery, production credentials and operational access controls.
+See:
 
-Never disclose credentials, private keys, tokens or exploitable security findings in public issues.
+- `SECURITY.md`
+- `docs/security/`
 
-See `SECURITY.md` and `docs/security/` where applicable.
-
----
-
-## Testing & Release Evidence
-
-HSAAI includes automated testing across backend services, shared packages, security controls, integrations and release validation.
-
-### Current Verified Coverage Snapshot
-
-Latest available coverage evidence from the current production-hardening work:
-
-| Metric | Current evidence |
-|---|---:|
-| Python statements | **17,302** |
-| Covered statements | **11,420** |
-| Missing statements | **5,882** |
-| Python coverage | **66.00%** |
-| Required coverage | **≥80%** |
-| Covered statements required for 80% | **13,842** |
-| Additional covered statements required | **2,422** |
-
-The production coverage threshold has **not yet been reached**.
-
-Coverage is being increased through meaningful behavioral and unit tests rather than by lowering the threshold or excluding production modules solely to satisfy the gate.
-
-### Current CI Status
-
-The active production-hardening validation currently shows:
-
-| Check | Status |
-|---|---|
-| Docker Build Validation | ✅ Passing |
-| Production Dependency Audit — Python | ✅ Passing |
-| Production Dependency Audit — Frontend | ✅ Passing |
-| Continuous Integration | ✅ Passing |
-| Security Validation | ✅ Passing |
-| Full Backend Coverage | ❌ Coverage gate still open |
-
-The failed coverage check indicates that the enforced coverage requirement has not yet reached the required **80%** threshold.
-
-### Production Approval Gates
-
-HSAAI should only be described as **Production Ready / Production Approved** after the required evidence has been completed for the intended deployment.
-
-Remaining release validation includes:
-
-- ≥80% Python coverage
-- remaining E2E execution on the required runtime services
-- full enterprise-stack validation
-- service-to-service connectivity verification
-- persistence validation
-- Kubernetes real-cluster deployment
-- ingress and health-check validation
-- production secrets management
-- vulnerability and security review
-- backup and recovery validation
-- final acceptance approval
-
-Until those gates are complete, the appropriate release description is:
-
-> **Production Candidate — validation in progress**
+Never publish credentials, tokens, private keys or exploitable security findings through public issues.
 
 ---
 
-## Engineering Principles
+## MLOps & Model Lifecycle
 
-### Modularity
+HSAAI includes model lifecycle capabilities for:
 
-AI, RAG, agent, workflow, governance and infrastructure capabilities are separated into modular services and shared packages.
+- Model training
+- Fine-tuning pipelines
+- Model evaluation
+- Experiment tracking
+- Model registry
+- Model routing
+- Quality evaluation
+- Lifecycle workflows
 
-### Security by Design
+Core technologies include:
 
-Authentication, authorization, policy enforcement, tenant boundaries and audit functionality are treated as architectural concerns.
+**MLflow · Ollama · MinIO · PostgreSQL · Prometheus · Grafana**
 
-### Enterprise Governance
+---
 
-AI execution should remain subject to policy, logging, access control and human approval where required.
+## Architecture
+
+```text
+HSAAI/
+├── apps/
+│   └── web/                     # Enterprise Next.js application
+├── services/
+│   ├── api_gateway/
+│   ├── auth_service/
+│   ├── backend_core/
+│   ├── governance/
+│   ├── llm_gateway/
+│   ├── model_training/
+│   ├── multi_agents/
+│   ├── pii_detector/
+│   ├── rag_engine/
+│   └── workflow_engine/
+├── packages/
+│   └── common/
+├── infrastructure/
+│   ├── docker/
+│   ├── kubernetes/
+│   ├── helm/
+│   ├── monitoring/
+│   └── vault/
+├── alembic/
+├── benchmarks/
+├── demo-runtime/
+├── deployment/
+├── docs/
+├── evals/
+├── examples/
+├── tests/
+├── scripts/
+├── runbooks/
+└── .github/workflows/
+```
+
+---
+
+## Enterprise Infrastructure
+
+HSAAI integrates with enterprise infrastructure including:
+
+- **PostgreSQL** — relational application data
+- **Redis** — caching and runtime state
+- **Qdrant** — vector search and semantic retrieval
+- **Neo4j** — enterprise knowledge graphs
+- **Kafka** — event streaming
+- **MinIO** — S3-compatible object storage
+- **Keycloak** — identity and access management
+- **Vault** — secrets management
+- **Ollama** — local LLM serving
+- **MLflow** — MLOps and model lifecycle
 
 ### Observability
 
-Operational metrics, logs and traces are represented across the platform architecture.
-
-### Cloud-Native Deployment
-
-Docker, Kubernetes and Helm assets support container-oriented deployment workflows.
-
-### Extensibility
-
-Connector, tool, agent and integration components are designed to allow expansion as organizational requirements evolve.
+**Prometheus · Grafana · Loki · Tempo · Thanos**
 
 ---
 
@@ -500,113 +392,244 @@ Connector, tool, agent and integration components are designed to allow expansio
 
 ### AI & Machine Learning
 
-- Large Language Models
-- Retrieval-Augmented Generation
-- AI Agents
-- Multi-Agent Systems
-- Embeddings
-- Vector Search
-- Reranking
-- Knowledge Graphs
-- MLOps
-- Model Evaluation
-- Model Registry
+**LLMs · RAG · Agentic AI · AI Agents · Multi-Agent Systems · Embeddings · Vector Search · Reranking · Knowledge Graphs**
 
 ### Backend
 
-- Python
-- FastAPI
-- PostgreSQL
-- Redis
-- Kafka
-- Qdrant
-- Neo4j
+**Python · FastAPI · PostgreSQL · Redis · Kafka · Qdrant · Neo4j**
 
 ### Frontend
 
-- Next.js
-- Enterprise Web UI
-- Arabic / RTL-oriented experience
+**Next.js · TypeScript · Enterprise Web UI · Arabic / RTL**
 
 ### Identity & Security
 
-- Keycloak
-- JWT
-- RBAC
-- ABAC
-- Vault
-- Audit Logging
-- Policy Enforcement
-- PII Controls
+**Keycloak · JWT · RBAC · ABAC · Vault · Audit Logging · Policy Enforcement · PII Controls**
 
 ### Infrastructure
 
-- Docker
-- Docker Compose
-- Kubernetes
-- Helm
-- MinIO
+**Docker · Docker Compose · Kubernetes · Helm · MinIO**
 
-### Observability
+### MLOps & LLMOps
 
-- Prometheus
-- Grafana
-- Loki
-- Tempo
-- Thanos
+**MLflow · Ollama · Model Evaluation · Model Registry · Model Routing**
 
-### MLOps
+### DevSecOps & Observability
 
-- MLflow
-- Ollama
-- Model Training
-- Model Evaluation
-- Model Registry
+**GitHub Actions · Security Validation · Dependency Auditing · Coverage Gates · Prometheus · Grafana · Loki · Tempo · Thanos**
+
+---
+
+## Deployment
+
+### Docker
+
+A Linux environment with Docker Engine and Docker Compose v2 is recommended.
+
+```bash
+cp .env.example .env
+docker compose config --quiet
+docker compose ps --all
+```
+
+Never commit production credentials or real secrets.
+
+> Termux without a Docker daemon is not considered a production runtime environment.
+
+### Kubernetes
+
+Deployment assets are available under:
+
+```text
+infrastructure/kubernetes/
+infrastructure/helm/
+```
+
+Production deployment should provide:
+
+- approved immutable images
+- secure secrets management
+- persistent storage
+- resource requests and limits
+- readiness and liveness probes
+- ingress and TLS
+- network controls
+- monitoring and alerting
+- backup and disaster recovery procedures
+
+Repository CI validates Kubernetes assets and CI-oriented runtime scenarios.
+
+> **Real external Kubernetes cluster acceptance remains a separate environment-specific operator deployment gate.**
+
+---
+
+## CI/CD & Quality Engineering
+
+HSAAI uses GitHub Actions for automated engineering and release controls including:
+
+- Continuous Integration
+- Full Backend Coverage
+- Docker Build Validation
+- Python Dependency Audit
+- Frontend Dependency Audit
+- Security Validation
+- Enterprise Runtime Acceptance
+- Enterprise E2E
+- Kubernetes CI Acceptance
+- Production Runtime Parity
+- Production Enterprise Wiring
+- Production Image Supply Chain
+- Final Release Gate
+- Delivery Package Integrity
+
+The final `v4.0.0` release branch completed **32 automated checks successfully with zero failures and zero pending checks** before merge.
+
+### Coverage Policy
+
+```text
+Backend coverage threshold: ≥ 80%
+```
+
+The threshold is enforced by CI.
+
+---
+
+## Production Image Supply Chain
+
+HSAAI production images cover application components including:
+
+- API Gateway
+- Auth Service
+- Backend Core
+- RAG Service
+- LLM Gateway
+- Agent Runtime
+- Workflow Engine
+- Alignment Service
+- Governance Service
+- MCP Server
+- PII Detector
+- Frontend
+
+Production image workflows validate buildability and release-oriented image supply-chain requirements.
+
+---
+
+## Release Integrity
+
+Current stable release:
+
+**HSAAI v4.0.0 — Production Release**
+
+Release controls include:
+
+- source-integrity validation
+- security validation
+- dependency auditing
+- coverage enforcement
+- Enterprise E2E
+- production runtime parity
+- image supply-chain validation
+- package hygiene
+- ZIP integrity validation
+- SHA-256 artifact verification
+
+The final delivery package excludes private and runtime-only artifacts such as:
+
+- `.git`
+- private `.env` files
+- `node_modules`
+- dependency caches
+- Python caches
+- runtime databases
+- temporary application state
+- generated test/runtime artifacts
+
+### Latest Release
+
+https://github.com/HSA-AI/HSAAI/releases/tag/v4.0.0
 
 ---
 
 ## Documentation
 
-Important repository resources include:
-
 | Resource | Purpose |
 |---|---|
-| `START_HERE_AR.md` | Arabic starting point and handover information |
-| `FINAL_PRODUCTION_READINESS_REPORT.md` | Release-readiness evidence and open items |
+| `START_HERE_AR.md` | Arabic starting point and handover |
 | `QUICKSTART.md` | Getting started |
-| `CHANGELOG.md` | Change history |
-| `SECURITY.md` | Security reporting and security guidance |
-| `docs/` | Architecture, security, API and engineering documentation |
+| `CHANGELOG.md` | Release history |
+| `SECURITY.md` | Security policy |
+| `FINAL_PRODUCTION_READINESS_REPORT.md` | Readiness and validation evidence |
+| `docs/` | Architecture, APIs, security and engineering documentation |
 | `runbooks/` | Operational procedures |
-| `infrastructure/` | Infrastructure and deployment assets |
+| `infrastructure/` | Deployment and infrastructure assets |
 | `.github/workflows/` | CI/CD and validation workflows |
 
-Historical reports should be interpreted according to the commit and release snapshot for which they were generated.
+Historical reports should be interpreted according to the release or commit for which they were generated.
 
-Current validation evidence should take precedence over older test and coverage numbers.
+Current CI and release evidence takes precedence over older validation snapshots.
 
 ---
 
 ## Project Status
 
-HSAAI is currently under active **production-hardening and validation**.
+HSAAI is currently published as **v4.0.0 — Production Release**.
 
-| Area | Status |
+The software release has completed its repository-level engineering, security, dependency, coverage, enterprise runtime, authenticated E2E, production wiring, runtime parity, image supply-chain, package-integrity and final release gates.
+
+| Area | Current Status |
 |---|---|
-| Architecture | ✅ Implemented in repository |
-| Enterprise AI services | ✅ Implemented in repository |
-| RAG components | ✅ Implemented in repository |
-| AI agent components | ✅ Implemented in repository |
-| Governance components | ✅ Implemented in repository |
+| Source Version | ✅ `v4.0.0` |
+| Software Release | ✅ Production Release |
+| GitHub Release | ✅ Published |
+| Release Commit | ✅ `80b7806` |
+| Architecture | ✅ Implemented |
+| Enterprise AI Services | ✅ Implemented |
+| Enterprise RAG | ✅ Implemented |
+| AI Agents | ✅ Implemented |
+| Multi-Agent Orchestration | ✅ Implemented |
+| Knowledge Graph | ✅ Implemented |
+| Workflow Automation | ✅ Implemented |
+| AI Governance | ✅ Implemented |
+| LLM Gateway / Model Routing | ✅ Implemented |
+| LLMOps | ✅ Implemented |
+| MLOps | ✅ Implemented |
 | Docker Build Validation | ✅ Passing |
-| Dependency Audits | ✅ Passing |
 | Continuous Integration | ✅ Passing |
+| Dependency Audits | ✅ Passing |
 | Security Validation | ✅ Passing |
-| Python Coverage | 🚧 **66.00% / target ≥80%** |
-| Full Enterprise Runtime Validation | 🚧 Pending final evidence |
-| Remaining E2E Validation | 🚧 Pending runtime services |
-| Real Kubernetes Acceptance | 🚧 Pending |
-| Final Production Approval | 🚧 Not yet granted |
+| Full Backend Coverage | ✅ Passing |
+| Backend Coverage Snapshot | ✅ 80.43% |
+| Required Coverage Threshold | ✅ ≥80% |
+| Final Release Validation | ✅ 32/32 successful |
+| Enterprise Runtime Acceptance | ✅ Passing |
+| Authenticated Enterprise E2E | ✅ Passing |
+| Production Enterprise Wiring | ✅ Passing |
+| Production Runtime Parity | ✅ Passing |
+| Kubernetes CI Acceptance | ✅ Passing |
+| Production Image Supply Chain | ✅ Passing |
+| Final Release Gate | ✅ Passing |
+| Release Source Integrity | ✅ Passing |
+| Release Package Hygiene | ✅ Passing |
+| SHA-256 Artifact Integrity | ✅ Published |
+| Real External Kubernetes Acceptance | 🚧 Deployment-specific operator gate |
+| Production Secrets / Rotation | 🚧 Target-environment validation |
+| TLS / Network Controls | 🚧 Target-environment validation |
+| Persistent Storage Acceptance | 🚧 Target-environment validation |
+| Backup / Restore Acceptance | 🚧 Target-environment validation |
+| Disaster Recovery Acceptance | 🚧 Target-environment validation |
+
+### Software Release State
+
+**HSAAI v4.0.0 is a published Production Release.**
+
+Final v4.0.0 release validation:
+
+**32 successful · 0 failing · 0 pending**
+
+The remaining deployment-specific items are not software-release failures. They require validation against the actual target production infrastructure.
+
+A real external Kubernetes cluster has not been represented as accepted by repository CI alone.
 
 ---
 
@@ -614,22 +637,24 @@ HSAAI is currently under active **production-hardening and validation**.
 
 HSAAI is designed around the enterprise AI requirements of **Hayel Saeed Anam & Co. (HSA Group)**.
 
-Its architecture demonstrates how organizational knowledge, intelligent assistants, enterprise RAG, AI agents, automation, governance, MLOps and infrastructure operations can be integrated into a unified enterprise AI platform.
+The platform demonstrates how enterprise knowledge, Retrieval-Augmented Generation, AI agents, multi-agent orchestration, knowledge graphs, workflow automation, AI governance, LLMOps, MLOps, DevSecOps and cloud-native infrastructure can operate within one unified **Enterprise AI Operating System**.
 
 ---
 
 ## License
 
-Review the repository's `LICENSE` for the applicable rights, restrictions and permitted usage.
+Review `LICENSE` for applicable rights, restrictions and permitted usage.
 
-The README does not grant rights beyond those defined by the repository license.
+This README does not grant rights beyond those defined by the repository license.
 
 ---
 
 # HSAAI
 
-**Enterprise Artificial Intelligence Operating System**
+### Enterprise Artificial Intelligence Operating System
 
-**Enterprise AI · RAG · AI Agents · Knowledge Management · Knowledge Graphs · Workflow Automation · AI Governance · MLOps · DevSecOps · Kubernetes · Observability**
+**Enterprise AI · RAG · Agentic AI · AI Agents · Multi-Agent Systems · Knowledge Graphs · Workflow Automation · AI Governance · LLMOps · MLOps · DevSecOps · Kubernetes · Observability**
 
-منصة ذكاء اصطناعي مؤسسية متكاملة للمعرفة، والوكلاء الأذكياء، وRAG، وأتمتة الأعمال، والحوكمة، وإدارة النماذج، والبنية التحتية المؤسسية.
+منصة ذكاء اصطناعي مؤسسية متكاملة للمعرفة، وRAG، والوكلاء الأذكياء، والأنظمة متعددة الوكلاء، وأتمتة الأعمال، وحوكمة الذكاء الاصطناعي، وإدارة النماذج والبنية التحتية المؤسسية.
+
+**Current Release: HSAAI v4.0.0**

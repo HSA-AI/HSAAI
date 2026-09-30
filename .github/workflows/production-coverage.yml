@@ -1,0 +1,437 @@
+name: HSAAI Full Backend Coverage
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  full-backend-coverage:
+    name: Full Python test suite and coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Configure Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Install validation dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --no-cache-dir             -r requirements-validation.txt             -r tests/requirements.txt
+          python -m pip install --no-cache-dir             pytest==8.4.2 pytest-cov
+          python -m pytest --version
+
+      - name: Install cryptography test dependency
+        run: |
+          python -m pip install --no-cache-dir cryptography
+          python -c 'from cryptography.fernet import Fernet; from cryptography.hazmat.primitives.asymmetric import rsa'
+      - name: Install ripgrep
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ripgrep
+          rg --version
+      - name: Run full suite with 80 percent coverage gate
+        run: |
+          python -m pytest -q -ra             --cov-report=json:coverage.json
+
+      - name: Print coverage hotspot report
+        if: always()
+        run: |
+          python - <<'COVPY'
+          import ast
+          import json
+          import math
+          from pathlib import Path
+
+          report = Path("coverage.json")
+
+          print("===== HSAAI COVERAGE HOTSPOTS =====")
+
+          if not report.exists():
+              print("coverage.json was not generated")
+              print("===== END COVERAGE HOTSPOTS =====")
+              raise SystemExit(0)
+
+          data = json.loads(
+              report.read_text(encoding="utf-8")
+          )
+
+          totals = data.get("totals", {})
+
+          statements = int(
+              totals.get("num_statements", 0)
+          )
+
+          covered = int(
+              totals.get("covered_lines", 0)
+          )
+
+          missing = int(
+              totals.get("missing_lines", 0)
+          )
+
+          percent = float(
+              totals.get("percent_covered", 0.0)
+          )
+
+          target_covered = math.ceil(
+              statements * 0.80
+          )
+
+          additional = max(
+              0,
+              target_covered - covered
+          )
+
+          print(f"STATEMENTS={statements}")
+          print(f"COVERED={covered}")
+          print(f"MISSING={missing}")
+          print(f"COVERAGE={percent:.2f}%")
+          print("TARGET=80.00%")
+          print(
+              "ADDITIONAL_COVERED_LINES_NEEDED="
+              f"{additional}"
+          )
+
+          files = []
+
+          for path, info in data.get(
+              "files", {}
+          ).items():
+
+              summary = info.get(
+                  "summary", {}
+              )
+
+              file_statements = int(
+                  summary.get(
+                      "num_statements", 0
+                  )
+              )
+
+              file_missing = int(
+                  summary.get(
+                      "missing_lines", 0
+                  )
+              )
+
+              file_covered = int(
+                  summary.get(
+                      "covered_lines", 0
+                  )
+              )
+
+              file_percent = float(
+                  summary.get(
+                      "percent_covered", 0.0
+                  )
+              )
+
+              if file_missing <= 0:
+                  continue
+
+              files.append(
+                  (
+                      file_missing,
+                      file_statements,
+                      file_covered,
+                      file_percent,
+                      path,
+                  )
+              )
+
+          files.sort(
+              key=lambda row: (
+                  row[0],
+                  row[1]
+              ),
+              reverse=True,
+          )
+
+          print()
+          print(
+              "===== TOP 40 FILES BY "
+              "UNCOVERED LINES ====="
+          )
+
+          for (
+              file_missing,
+              file_statements,
+              file_covered,
+              file_percent,
+              path,
+          ) in files[:40]:
+
+              print(
+                  f"{file_missing:5d} missing | "
+                  f"{file_covered:5d} covered | "
+                  f"{file_statements:5d} total | "
+                  f"{file_percent:6.2f}% | "
+                  f"{path}"
+              )
+
+          hotspots = []
+
+          def walk_functions(
+              node,
+              path,
+              missing_lines,
+              class_name=""
+          ):
+              for child in ast.iter_child_nodes(
+                  node
+              ):
+                  if isinstance(
+                      child,
+                      ast.ClassDef
+                  ):
+                      next_class = (
+                          f"{class_name}."
+                          f"{child.name}"
+                          if class_name
+                          else child.name
+                      )
+
+                      walk_functions(
+                          child,
+                          path,
+                          missing_lines,
+                          next_class,
+                      )
+
+                  elif isinstance(
+                      child,
+                      (
+                          ast.FunctionDef,
+                          ast.AsyncFunctionDef,
+                      )
+                  ):
+                      end = getattr(
+                          child,
+                          "end_lineno",
+                          child.lineno,
+                      )
+
+                      uncovered = sum(
+                          1
+                          for line
+                          in missing_lines
+                          if child.lineno
+                          <= line
+                          <= end
+                      )
+
+                      if uncovered >= 5:
+                          name = (
+                              f"{class_name}."
+                              f"{child.name}"
+                              if class_name
+                              else child.name
+                          )
+
+                          hotspots.append(
+                              (
+                                  uncovered,
+                                  path,
+                                  name,
+                                  child.lineno,
+                                  end,
+                              )
+                          )
+
+                      # Include nested functions too.
+                      walk_functions(
+                          child,
+                          path,
+                          missing_lines,
+                          class_name,
+                      )
+
+                  else:
+                      walk_functions(
+                          child,
+                          path,
+                          missing_lines,
+                          class_name,
+                      )
+
+          for path, info in data.get(
+              "files", {}
+          ).items():
+
+              missing_lines = set(
+                  info.get(
+                      "missing_lines", []
+                  )
+              )
+
+              if not missing_lines:
+                  continue
+
+              source = Path(path)
+
+              if not source.is_file():
+                  continue
+
+              try:
+                  code = source.read_text(
+                      encoding="utf-8"
+                  )
+
+                  tree = ast.parse(
+                      code,
+                      filename=path,
+                  )
+
+              except (
+                  SyntaxError,
+                  UnicodeDecodeError,
+                  OSError,
+              ):
+                  continue
+
+              walk_functions(
+                  tree,
+                  path,
+                  missing_lines,
+              )
+
+          hotspots.sort(
+              key=lambda row: row[0],
+              reverse=True,
+          )
+
+          print()
+          print(
+              "===== TOP 60 FUNCTIONS BY "
+              "UNCOVERED LINES ====="
+          )
+
+          for index, (
+              uncovered,
+              path,
+              name,
+              start,
+              end,
+          ) in enumerate(
+              hotspots[:60],
+              start=1,
+          ):
+              print(
+                  f"{index:02d}. "
+                  f"{uncovered:4d} missing | "
+                  f"{path} | "
+                  f"{name} "
+                  f"[{start}-{end}]"
+              )
+
+          # Write a compact GitHub Actions summary.
+          summary_path = Path(
+              __import__("os").environ.get(
+                  "GITHUB_STEP_SUMMARY",
+                  ""
+              )
+          )
+
+          if str(summary_path):
+              try:
+                  with summary_path.open(
+                      "a",
+                      encoding="utf-8",
+                  ) as out:
+
+                      out.write(
+                          "## HSAAI Coverage Report\n\n"
+                      )
+
+                      out.write(
+                          f"- Coverage: "
+                          f"**{percent:.2f}%**\n"
+                      )
+
+                      out.write(
+                          "- Required: **80%**\n"
+                      )
+
+                      out.write(
+                          f"- Statements: "
+                          f"**{statements}**\n"
+                      )
+
+                      out.write(
+                          f"- Covered lines: "
+                          f"**{covered}**\n"
+                      )
+
+                      out.write(
+                          f"- Missing lines: "
+                          f"**{missing}**\n"
+                      )
+
+                      out.write(
+                          "- Additional covered "
+                          "lines needed: "
+                          f"**{additional}**\n\n"
+                      )
+
+                      out.write(
+                          "### Largest coverage "
+                          "hotspots\n\n"
+                      )
+
+                      out.write(
+                          "| Missing | Coverage | "
+                          "File |\n"
+                      )
+
+                      out.write(
+                          "|---:|---:|---|\n"
+                      )
+
+                      for (
+                          file_missing,
+                          _,
+                          _,
+                          file_percent,
+                          path,
+                      ) in files[:15]:
+
+                          out.write(
+                              f"| {file_missing} | "
+                              f"{file_percent:.2f}% | "
+                              f"`{path}` |\n"
+                          )
+
+              except OSError as exc:
+                  print(
+                      "Could not write "
+                      "GITHUB_STEP_SUMMARY:",
+                      type(exc).__name__,
+                  )
+
+          print()
+          print(
+              "===== END COVERAGE HOTSPOTS ====="
+          )
+          COVPY
+
+      - name: Upload coverage evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hsaai-backend-coverage
+          path: |
+            coverage.json
+            tests/coverage.xml
+          if-no-files-found: warn
+          retention-days: 7

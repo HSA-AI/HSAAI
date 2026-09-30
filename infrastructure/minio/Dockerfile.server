@@ -1,0 +1,40 @@
+FROM golang:1.24-alpine AS builder
+
+ARG MINIO_REF=RELEASE.2025-10-15T17-29-55Z
+
+RUN apk add --no-cache \
+    git \
+    ca-certificates
+
+RUN git clone \
+    --depth 1 \
+    --branch "${MINIO_REF}" \
+    https://github.com/minio/minio.git \
+    /src/minio
+
+WORKDIR /src/minio
+
+ENV CGO_ENABLED=0
+
+RUN go build \
+    -trimpath \
+    -ldflags="-s -w" \
+    -o /out/minio \
+    .
+
+FROM alpine:3.22
+
+RUN apk add --no-cache \
+    ca-certificates \
+    curl
+
+COPY --from=builder /out/minio /usr/local/bin/minio
+
+RUN chmod 0755 /usr/local/bin/minio \
+    && mkdir -p /data
+
+EXPOSE 9000 9001
+
+VOLUME ["/data"]
+
+ENTRYPOINT ["/usr/local/bin/minio"]

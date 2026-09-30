@@ -1,32 +1,61 @@
-# ابدأ هنا — HSAAI_v1
+# ابدأ هنا — HSAAI v4
 
-**نسخة المشروع حتى آخر تعديل:2026-09-19. الحالة: B – PRODUCTION CANDIDATE – BLOCKERS REMAIN.**
+**إصدار المصدر الحالي:** `4.0.0-rc.2`  
+**آخر تحديث موثق:** 27 سبتمبر 2026  
+**الحالة:** **Production Candidate**
 
-تحتوي الحزمة جميع ملفات المصدر السابقة مع الإصلاحات الجديدة والتقارير. اسمv1 هو اسم التنزيل المطلوب؛ إصدار الشيفرة4.0.0-rc.2، ولم يُرجع المشروع لنسخة أقدم.
+HSAAI هو نظام تشغيل للذكاء الاصطناعي المؤسسي يجمع بين إدارة المعرفة، وRAG، والوكلاء الأذكياء، والأنظمة متعددة الوكلاء، والرسوم المعرفية، وسير العمل، والحوكمة، وLLMOps/MLOps، والأمن والمراقبة، والبنية السحابية الأصلية.
 
-| Check | Result |
-|---|---|
-| Backend (2026-09-19) | 690 PASS / 0 FAIL / 0 SKIPPED |
-| Frontend (2026-09-14; unchanged source) | 38 PASS / 0 FAIL / 0 SKIPPED; production build PASS |
-| E2E (2026-09-14; not rerun) | 2 PASS / 0 FAIL / 11 SKIPPED; public UI only |
-| Python coverage (2026-09-19) | 41.92% → 54.78% → 56.56%; target80% FAIL |
-| Focused security regression | 209 PASS; subset of backend total |
-| PDF clauses | 5/1482 PASS;864 PARTIAL;510 FAIL;103 BLOCKED;58 context rows |
-| Docker build/runtime | BLOCKED / BLOCKED |
-| Containers healthy | 0/33 observed;22 optional;2 jobs |
-| Database / AI full chain | PARTIAL / NOT VALIDATED in production |
-| Frontend ↔ Backend / Monitoring | NOT TESTED as a complete runtime |
-| Security | NOT APPROVED; observed C0/H3/M53/L57 |
-| Kubernetes | Static previous PASS; real deployment NOT AVAILABLE |
-| Production health check | NOT TESTED |
-| Release | B – PRODUCTION CANDIDATE – BLOCKERS REMAIN |
+## الحالة الحالية الموثقة
 
-أهم التغييرات: عزل بيانات CoE/FinOps والتكاملات حسب المؤسسة ومساحة العمل؛ إصلاح حفظ حقولJSON وحساب التكلفة؛ محدد طلبات يرفض المرور عند تعطل Redis في الإنتاج مع حدود ذاكرة؛ حجب التفاصيل الحساسة في أخطاء الموصلات. أُضيف92اختبارًا حقيقيًا.
+| البند | النتيجة |
+| --- | --- |
+| Source Version | `4.0.0-rc.2` |
+| GitHub Quality Gates | ✅ 6/6 ناجحة |
+| Full Backend Coverage | ✅ ناجح |
+| Python Coverage | ✅ **80.43%** |
+| Required Coverage | ✅ ≥80% |
+| Python Statements | 17,302 |
+| Covered Statements | 13,916 |
+| Missing Statements | 3,386 |
+| Docker Build Validation | ✅ ناجح |
+| Dependency Audits | ✅ ناجحة |
+| Continuous Integration | ✅ ناجح |
+| Security Validation | ✅ ناجح |
+| Kubernetes Acceptance | 🚧 قيد الاستكمال |
+| Full Runtime Acceptance | 🚧 قيد الاستكمال |
+| Final Production Approval | 🚧 لم يُمنح بعد |
 
-قبل أي ترحيل احتفظ بنسخة قاعدة البيانات ومفتاح التشفير والملح. الترحيل0009 إضافي؛ تبقى السجلات القديمة ضمنdefault/default إلى أن تُراجع ملكيتها وتُسند صراحة، ولا يجوز نسبتها تلقائيًا إلى مؤسسة. يجب اختبار الترحيل وسياساتRLS على PostgreSQL قبل النشر.
+تم الوصول إلى بوابة التغطية المطلوبة دون خفض حد 80% أو استبعاد وحدات الإنتاج فقط لغرض رفع النسبة.
 
-اقرأ FINAL_PRODUCTION_READINESS_REPORT.md وRELEASE_MANIFEST.md ثم docs/reports/FINAL_TEST_SUMMARY.md وSECURITY_VALIDATION_REPORT.md وCONTINUATION_20260919.md. دليل التشغيل: docs/operations/PRODUCTION_HANDOVER_RUNBOOK_AR.md.
+## ما الذي تم إثباته؟
 
-المتبقي: التغطية80%، ثغراتPII/ACL فيRAG، اعتماد بيانات الترحيل، متطلباتPDF الناقصة، التشغيل الفعليDocker/Kubernetes والهوية والنماذج والمراقبة والتعافي. لا توجد موافقة إنتاج. نتائج الواجهة والمتصفح بتاريخ2026-09-14 محفوظة ولم تُعد في هذه الجولة.
+نجحت بوابات GitHub الآلية الحالية الخاصة بالاختبارات الخلفية والتغطية والبناء وCI والأمان وتدقيق الاعتماديات.
 
-بعد فك الضغط في مجلد جديد نفّذ `sha256sum -c SHA256SUMS.txt`. لا تستبدل ملفات أسرار أو قواعد بيانات موجودة. التقارير السابقة محفوظة في history؛ التقارير الجذرية الحالية لها الأولوية.
+## ما الذي ما زال مطلوبًا قبل الاعتماد النهائي؟
+
+- تشغيل كامل للـEnterprise Stack على البنية المستهدفة.
+- نشر وقبول Kubernetes على Cluster حقيقي.
+- authenticated E2E.
+- التحقق من هوية المستخدمين والصلاحيات.
+- service-to-service connectivity.
+- persistent storage وPVC والاستعادة.
+- production secrets وrotation.
+- TLS وnetwork controls.
+- backup / restore / disaster recovery.
+- القبول التشغيلي النهائي.
+
+## ترتيب القراءة المقترح
+
+1. `README.md`
+2. `START_HERE_AR.md`
+3. `QUICKSTART.md`
+4. `FINAL_PRODUCTION_READINESS_REPORT.md`
+5. `RELEASE_MANIFEST.md`
+6. `docs/reports/CURRENT_VALIDATION_STATUS_20260927.md`
+7. `docs/operations/PRODUCTION_HANDOVER_RUNBOOK_AR.md`
+8. `SECURITY.md`
+
+التقارير المؤرخة القديمة تمثل حالة المشروع في وقت إعدادها، ولا ينبغي تفسير أرقامها على أنها الحالة الحالية.
+
+**التصنيف الحالي الصحيح: Production Candidate.**

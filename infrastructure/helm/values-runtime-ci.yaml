@@ -1,0 +1,161 @@
+global:
+  imagePullPolicy: IfNotPresent
+
+  defaultResources:
+    requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
+      cpu: 500m
+      memory: 768Mi
+
+ingress:
+  enabled: false
+
+networkPolicies:
+  enabled: false
+
+existingSecret: hsaai-runtime-secrets
+
+documentsClaim: documents-data
+embeddingModelsClaim: embedding-models
+
+secrets:
+  JWT_SECRET: "ci-runtime-jwt-secret-0123456789abcdef0123456789abcdef"
+  SESSION_SECRET: "ci-runtime-session-secret-0123456789abcdef0123456789abcdef"
+  DATA_ENCRYPTION_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+
+  DATABASE_URL: "postgresql://hsaai:hsaai-ci-password@postgres.hsaai-data.svc.cluster.local:5432/hsaai"
+  POSTGRES_PASSWORD: "hsaai-ci-password"
+
+  REDIS_URL: "redis://redis.hsaai-data.svc.cluster.local:6379/0"
+  REDIS_HOST: "redis.hsaai-data.svc.cluster.local"
+  REDIS_PORT: "6379"
+  SAFETY_REDIS_URL: "redis://redis.hsaai-data.svc.cluster.local:6379/3"
+  AUDIT_REDIS_URL: "redis://redis.hsaai-data.svc.cluster.local:6379/4"
+  GOVERNANCE_REDIS_URL: "redis://redis.hsaai-data.svc.cluster.local:6379/5"
+  RISK_REDIS_URL: "redis://redis.hsaai-data.svc.cluster.local:6379/6"
+  POLICY_REDIS_URL: "redis://redis.hsaai-data.svc.cluster.local:6379/7"
+  EXPLAIN_REDIS_URL: "redis://redis.hsaai-data.svc.cluster.local:6379/8"
+  REDIS_PASSWORD: ""
+
+  QDRANT_API_KEY: ""
+
+  KEYCLOAK_ADMIN_PASSWORD: "hsaai-ci-keycloak-password"
+
+commonEnv:
+  APP_ENV: ci
+
+  AUTH_REQUIRED: "false"
+
+  INTERNAL_ONLY_MODE: "true"
+  ALLOW_EXTERNAL_AI: "false"
+  ALLOW_EXTERNAL_APIS: "false"
+
+  APP_PUBLIC_URL: "http://frontend.hsaai.svc.cluster.local:3000"
+  CORS_ALLOW_ORIGINS: "http://frontend.hsaai.svc.cluster.local:3000"
+
+  KEYCLOAK_URL: "http://keycloak.hsaai-data.svc.cluster.local:8080"
+  KEYCLOAK_INTERNAL_URL: "http://keycloak.hsaai-data.svc.cluster.local:8080"
+  KEYCLOAK_ISSUER: "http://keycloak.hsaai-data.svc.cluster.local:8080/realms/hsaai"
+  KEYCLOAK_JWKS_URL: "http://keycloak.hsaai-data.svc.cluster.local:8080/realms/hsaai/protocol/openid-connect/certs"
+
+  KEYCLOAK_AUDIENCE: "hsaai-api"
+  KEYCLOAK_CLIENT_ID: "hsaai-frontend"
+  KEYCLOAK_REALM: "hsaai"
+
+  QDRANT_URL: "http://qdrant.hsaai-data.svc.cluster.local:6333"
+
+  OLLAMA_BASE_URL: "http://ollama.hsaai-data.svc.cluster.local:11434"
+  LOCAL_LLM_MODEL: "ci-stub"
+
+  EMBEDDING_PROVIDER: "sentence-transformers"
+  EMBEDDING_MODEL: "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+
+  HF_HOME: "/models"
+  HF_HUB_OFFLINE: "1"
+  TRANSFORMERS_OFFLINE: "1"
+
+  RAG_ANSWER_MODEL: "ci-stub"
+
+  LOCAL_FILE_STORAGE: "/data/local_uploads"
+  RAG_EVENT_DB: "/data/rag_events.db"
+
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.hsaai-data.svc.cluster.local:4317"
+
+  USE_ALEMBIC: "true"
+  RUN_MIGRATIONS_ON_STARTUP: "false"
+
+services:
+
+  api-gateway:
+    replicas: 1
+    hpa: null
+
+  auth-service:
+    replicas: 1
+    hpa: null
+
+  backend-core:
+    replicas: 1
+    hpa: null
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 1
+        memory: 1Gi
+
+  rag-service:
+    replicas: 1
+    hpa: null
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 1
+        memory: 1Gi
+
+  llm-gateway:
+    replicas: 1
+    hpa: null
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 1
+        memory: 1Gi
+
+  agent-runtime:
+    replicas: 1
+    hpa: null
+
+  workflow-engine:
+    replicas: 1
+    hpa: null
+
+  alignment-service:
+    replicas: 1
+    hpa: null
+
+  governance-service:
+    replicas: 1
+    hpa: null
+
+  mcp-server:
+    replicas: 1
+    hpa: null
+
+  pii-detector:
+    replicas: 1
+    hpa: null
+
+  frontend:
+    replicas: 1
+    hpa: null
+
+  model-training:
+    enabled: false
