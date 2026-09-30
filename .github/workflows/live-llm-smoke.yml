@@ -17,6 +17,12 @@ jobs:
     name: Live Ollama Model Smoke
     runs-on: ubuntu-latest
     timeout-minutes: 35
+    env:
+      JWT_SECRET: hsaai-ci-live-llm-jwt-secret-not-production
+      KEYCLOAK_ADMIN_PASSWORD: hsaai-ci-live-llm-keycloak-not-production
+      MINIO_ROOT_PASSWORD: hsaai-ci-live-llm-minio-not-production
+      POSTGRES_PASSWORD: hsaai-ci-live-llm-postgres-not-production
+      SESSION_SECRET: hsaai-ci-live-llm-session-secret-not-production
 
     steps:
       - name: Checkout repository
@@ -42,8 +48,6 @@ jobs:
           free -h
 
       - name: Validate Compose
-        env:
-          JWT_SECRET: hsaai-ci-live-llm-smoke-only-not-production
         run: docker compose config >/dev/null
 
       - name: Start Redis
