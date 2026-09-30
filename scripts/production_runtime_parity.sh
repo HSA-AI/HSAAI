@@ -305,6 +305,8 @@ schema_config:
         period: 24h
 EOF
 
+  chmod 0644 "${config}"
+
   docker run -d \
     --name "${name}" \
     -p 3100:3100 \
@@ -370,6 +372,8 @@ EOF
   docker run --rm \
     grafana/tempo:2.6.0 \
     -version
+
+  chmod 0644 "${config}"
 
   docker run -d \
     --name "${name}" \
