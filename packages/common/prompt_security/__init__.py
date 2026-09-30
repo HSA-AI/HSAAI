@@ -107,9 +107,30 @@ INJECTION_PATTERNS: list[re.Pattern] = [
 # ─────────────────────────────────────────────────────────────────────
 
 ARABIC_INJECTION_PATTERNS: list[re.Pattern] = [
-    # Direct override: "تجاهل التعليمات" (ignore instructions)
-    re.compile(r"تجاهل\s+(?:التعليمات|التعليمات\s+السابقة|جميع\s+التعليمات|الأوامر\s+السابقة)"),
+    # Direct override: ignore/replace prior instructions.
+    re.compile(
+        r"تجاهل\s+(?:(?:كل|كافة|جميع)\s+)?"
+        r"(?:التعليمات|الأوامر|الاوامر)"
+        r"(?:\s+(?:السابقة|الماضية))?"
+    ),
     re.compile(r"تناسى\s+(?:التعليمات|الأوامر)"),
+
+    # Security-policy bypass attempts.
+    re.compile(
+        r"(?:تجاوز|تخطى|تخط)\s+"
+        r"(?:سياسات|قواعد|قيود|ضوابط)\s+"
+        r"(?:النظام|الأمان|الامن|السلامة)"
+    ),
+
+    # Secret / credential exfiltration requests.
+    # Require an imperative disclosure verb so ordinary questions about
+    # password or key policies are not classified as injection.
+    re.compile(
+        r"(?:اعرض|أعرض|اظهر|أظهر|اكشف|إكشف|اطبع)\s+"
+        r"(?:لي\s+)?(?:(?:أي|كل)\s+)?"
+        r"(?:الأسرار|الاسرار|كلمات\s+المرور|"
+        r"المفاتيح|مفاتيح|الرموز\s+السرية|رموز\s+سرية)"
+    ),
     re.compile(r"أهمل\s+(?:التعليمات|الأوامر)"),
     re.compile(r"لا\s+تلتزم\s+ب(?:التعليمات|الأوامر)"),
     # Role-play / persona hijack: "كنيته" (be like/such), "تخيل", "افترض"

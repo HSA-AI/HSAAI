@@ -1,6 +1,28 @@
 name: HSAAI RAG Document End-to-End
 'on':
-  workflow_dispatch: null
+  workflow_dispatch:
+
+  pull_request:
+    paths:
+      - ".github/workflows/rag-document-e2e.yml"
+      - "docker-compose.yml"
+      - "services/rag_engine/**"
+      - "services/pii_detector/**"
+      - "packages/common/**"
+      - "evals/**"
+      - "tests/model_quality_tests/**"
+
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/rag-document-e2e.yml"
+      - "docker-compose.yml"
+      - "services/rag_engine/**"
+      - "services/pii_detector/**"
+      - "packages/common/**"
+      - "evals/**"
+      - "tests/model_quality_tests/**"
 permissions:
   contents: read
 jobs:
@@ -158,7 +180,7 @@ jobs:
       run: 'set -euo pipefail
 
 
-        docker compose up -d --no-deps rag-service
+        USE_OBJECT_STORAGE=false docker compose up -d --no-deps rag-service
 
         docker compose ps --all rag-service
 
@@ -499,6 +521,83 @@ jobs:
         \        + verification.stderr[-200:]\n    ).replace(token, \"[REDACTED]\"\
         )\n\nelse:\n    raise SystemExit(\n        \"STOP: Persistence verification\
         \ failed\\n\"\n        + last_error\n    )\n\n\nPYCODE"
+    - name: Run authenticated live retrieval and security benchmark
+      timeout-minutes: 20
+      run: |
+        set -euo pipefail
+
+        TOKEN_FILE="${RUNNER_TEMP}/hsaai-rag-benchmark.token"
+
+        python \
+          tests/model_quality_tests/get_ci_benchmark_token.py \
+          --output "$TOKEN_FILE"
+
+        TOKEN="$(cat "$TOKEN_FILE")"
+        echo "::add-mask::$TOKEN"
+
+        docker compose exec -T rag-service sh -ec '
+          rm -rf /tmp/hsaai-benchmark
+          mkdir -p \
+            /tmp/hsaai-benchmark/tests/model_quality_tests \
+            /tmp/hsaai-benchmark/evals
+        '
+
+        docker compose cp \
+          evals/. \
+          rag-service:/tmp/hsaai-benchmark/evals/
+
+        docker compose cp \
+          tests/model_quality_tests/run_rag_quality_benchmark.py \
+          rag-service:/tmp/hsaai-benchmark/tests/model_quality_tests/run_rag_quality_benchmark.py
+
+        docker compose cp \
+          tests/model_quality_tests/prepare_rag_benchmark_corpus.py \
+          rag-service:/tmp/hsaai-benchmark/tests/model_quality_tests/prepare_rag_benchmark_corpus.py
+
+        docker compose exec -T \
+          -e RAG_BENCHMARK_TOKEN="$TOKEN" \
+          rag-service \
+          python \
+            /tmp/hsaai-benchmark/tests/model_quality_tests/prepare_rag_benchmark_corpus.py \
+            --base-url http://127.0.0.1:8030
+
+        set +e
+
+        docker compose exec -T \
+          -e RAG_BENCHMARK_TOKEN="$TOKEN" \
+          rag-service \
+          python \
+            /tmp/hsaai-benchmark/tests/model_quality_tests/run_rag_quality_benchmark.py \
+            --mode live \
+            --base-url http://127.0.0.1:8030 \
+            --min-cases 30 \
+            --retrieval-security-only \
+            --require-retrieval-security
+
+        BENCHMARK_RC=$?
+
+        set -e
+
+        rm -rf artifacts/ai-quality/live
+        mkdir -p artifacts/ai-quality/live
+
+        docker compose cp \
+          rag-service:/tmp/hsaai-benchmark/artifacts/ai-quality/. \
+          artifacts/ai-quality/live/ \
+          || true
+
+        rm -f "$TOKEN_FILE"
+
+        exit "$BENCHMARK_RC"
+
+    - name: Upload live RAG benchmark evidence
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: hsaai-live-rag-retrieval-security
+        path: artifacts/ai-quality/live/
+        if-no-files-found: warn
+
     - name: Collect failure status
       if: failure()
       run: docker compose ps --all

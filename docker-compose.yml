@@ -567,6 +567,7 @@ services:
       APP_ENV: ${HSAAI_APP_ENV:-development}
       LOCAL_FILE_STORAGE: /data/local_uploads
       RAG_EVENT_DB: /data/rag_events.db
+      USE_OBJECT_STORAGE: ${USE_OBJECT_STORAGE:-true}
       EMBEDDING_PROVIDER: sentence-transformers
       OLLAMA_BASE_URL: http://ollama:11434
       EMBEDDING_MODEL: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
