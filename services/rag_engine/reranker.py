@@ -98,6 +98,89 @@ def normalize_scores(values: list[float]) -> list[float]:
     return [(v - lo) / (hi - lo) for v in values]
 
 
+def _apply_cross_encoder_relevance_gate(
+    items: list[dict],
+    *,
+    ce_used: bool,
+    enabled: Optional[bool] = None,
+    min_score: Optional[float] = None,
+) -> list[dict]:
+    """Filter hybrid-search candidates using cross-encoder relevance.
+
+    The gate is applied only when the real cross-encoder was available.
+    If the model was unavailable, disabled, misconfigured, or the gate
+    would remove every candidate, the original candidate list is
+    preserved as a production-safe fallback.
+
+    ``cross_encoder_score`` is normalized within the current candidate
+    set, so this threshold is a relative relevance gate rather than a
+    globally calibrated probability.
+    """
+    if not items or not ce_used:
+        return items
+
+    if enabled is None:
+        enabled = (
+            os.getenv(
+                "RAG_CROSS_ENCODER_RELEVANCE_GATE",
+                "true",
+            ).strip().lower()
+            in {"1", "true", "yes", "on"}
+        )
+
+    if not enabled:
+        return items
+
+    if min_score is None:
+        raw_threshold = os.getenv(
+            "RAG_CROSS_ENCODER_MIN_SCORE",
+            "0.50",
+        ).strip()
+
+        try:
+            min_score = float(raw_threshold)
+        except ValueError:
+            logger.warning(
+                "Invalid RAG_CROSS_ENCODER_MIN_SCORE=%r; "
+                "preserving unfiltered candidates",
+                raw_threshold,
+            )
+            return items
+
+    if not 0.0 <= min_score <= 1.0:
+        logger.warning(
+            "Cross-encoder relevance threshold %.4f is outside [0,1]; "
+            "preserving unfiltered candidates",
+            min_score,
+        )
+        return items
+
+    filtered = [
+        item
+        for item in items
+        if float(item.get("cross_encoder_score", 0.0) or 0.0)
+        >= min_score
+    ]
+
+    if not filtered:
+        logger.warning(
+            "Cross-encoder relevance gate removed all %d candidates "
+            "at threshold %.4f; preserving unfiltered candidates",
+            len(items),
+            min_score,
+        )
+        return items
+
+    logger.info(
+        "Cross-encoder relevance gate threshold=%.4f kept=%d dropped=%d",
+        min_score,
+        len(filtered),
+        len(items) - len(filtered),
+    )
+
+    return filtered
+
+
 # ─────────────────────────────────────────────────────────────────────
 # v4.0 — Department inference (for business-context boosting)
 # ─────────────────────────────────────────────────────────────────────
@@ -571,6 +654,14 @@ def rerank(
                 reason=", ".join(reason_parts),
             ).to_dict()
         output.append(item)
+
+    # Filter clearly irrelevant candidates only when the real
+    # cross-encoder was successfully used. This happens before MMR so
+    # diversity cannot promote a semantically unrelated candidate.
+    output = _apply_cross_encoder_relevance_gate(
+        output,
+        ce_used=ce_used,
+    )
 
     # Initial sort by rerank_score (MMR will reorder for diversity).
     output.sort(key=lambda x: x.get("rerank_score", x.get("score", 0.0)), reverse=True)
