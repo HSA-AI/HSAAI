@@ -1,0 +1,168 @@
+name: HSAAI Final Release Gate
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/final-release-gate.yml"
+      - "scripts/final_release_integrity.py"
+      - "scripts/package_delivery.py"
+      - "scripts/validate_release.py"
+      - "scripts/production_release_gate.sh"
+      - "scripts/production_runtime_parity.sh"
+      - "docker-compose.production.yml"
+      - "infrastructure/**"
+      - "docs/release/**"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: final-release-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  release-source-integrity:
+    name: Release Source Integrity
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Validate release package policy
+        run: |
+          set -euo pipefail
+          python scripts/final_release_integrity.py
+
+
+  static-release-validation:
+    name: Static Release Validation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install validator dependency
+        run: |
+          python -m pip install --disable-pip-version-check PyYAML
+
+      - name: Validate release source and manifests
+        run: |
+          set -euo pipefail
+          python scripts/validate_release.py
+
+
+  production-contract:
+    name: Production Release Contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Validate production runtime contract
+        run: |
+          set -euo pipefail
+          bash scripts/production_runtime_parity.sh contract
+
+
+  script-integrity:
+    name: Production Script Integrity
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Validate shell syntax
+        run: |
+          set -euo pipefail
+
+          bash -n scripts/deploy-production.sh
+          bash -n scripts/production_release_gate.sh
+          bash -n scripts/production_runtime_parity.sh
+
+          echo "PASS: production shell scripts"
+
+
+  final-release-gate:
+    name: Final Release Gate
+    runs-on: ubuntu-24.04
+    if: always()
+
+    needs:
+      - release-source-integrity
+      - static-release-validation
+      - production-contract
+      - script-integrity
+
+    steps:
+      - name: Enforce release readiness
+        shell: bash
+        env:
+          SOURCE: ${{ needs.release-source-integrity.result }}
+          STATIC: ${{ needs.static-release-validation.result }}
+          CONTRACT: ${{ needs.production-contract.result }}
+          SCRIPTS: ${{ needs.script-integrity.result }}
+        run: |
+          set -euo pipefail
+
+          printf '%-25s %s\n' \
+            "Source integrity" "${SOURCE}" \
+            "Static validation" "${STATIC}" \
+            "Production contract" "${CONTRACT}" \
+            "Script integrity" "${SCRIPTS}"
+
+          for result in \
+            "${SOURCE}" \
+            "${STATIC}" \
+            "${CONTRACT}" \
+            "${SCRIPTS}"; do
+
+            if [[ "${result}" != "success" ]]; then
+              echo "ERROR: HSAAI final release gate failed"
+              exit 1
+            fi
+          done
+
+          {
+            echo "## HSAAI Final Release Gate"
+            echo
+            echo "✅ Release source integrity"
+            echo "✅ Packaging exclusion policy"
+            echo "✅ Static release validation"
+            echo "✅ Production runtime version contract"
+            echo "✅ Production script syntax"
+            echo
+            echo "Previously merged acceptance:"
+            echo "- Enterprise E2E"
+            echo "- Production Runtime Parity"
+            echo "- Backend Coverage"
+            echo "- Dependency Audit"
+            echo "- Security Validation"
+            echo "- Docker Build"
+            echo "- Kubernetes structural/runtime CI acceptance"
+            echo "- Production image supply chain"
+            echo
+            echo "ℹ️ External real-cluster Kubernetes acceptance remains a separate operator gate."
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+          echo "PASS: HSAAI final release gate"

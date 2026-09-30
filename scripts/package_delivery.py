@@ -6,7 +6,7 @@ from pathlib import Path
 import argparse,hashlib,json,zipfile,sys
 
 ROOT=Path(__file__).resolve().parents[1]
-EXCLUDE_PARTS={'node_modules','.next','.venv','venv','__pycache__','.pytest_cache','.ruff_cache','.mypy_cache','coverage_html','site-packages'}
+EXCLUDE_PARTS={'.git','node_modules','.next','.venv','venv','__pycache__','.pytest_cache','.ruff_cache','.mypy_cache','coverage_html','site-packages'}
 
 def sha(data):return hashlib.sha256(data).hexdigest()
 def archive_files(path):
