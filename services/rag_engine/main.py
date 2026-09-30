@@ -1059,6 +1059,42 @@ async def answer(req: AnswerRequest, claims: dict = Depends(_auth_dep)):
     req = _scope_request(req, claims)
     """Generate a grounded answer using RAG + LLM."""
     started = time.time()
+
+    # Security: reject prompt-injection attempts before any vector retrieval.
+    # This prevents malicious queries from unnecessarily reaching Qdrant and
+    # keeps blocked requests outside the retrieval pipeline.
+    early_query_result = None
+    try:
+        import sys as _sys
+        _sys.path.insert(0, "/app/packages")
+        from common.prompt_security import sanitize_user_query, should_block_request
+
+        early_query_result = sanitize_user_query(req.query)
+        if should_block_request(early_query_result.risk_score):
+            _event(
+                "answer",
+                req.tenant_id,
+                req.workspace_id,
+                query=req.query,
+                answer_type="blocked_injection",
+                risk_score=early_query_result.risk_score,
+                patterns=early_query_result.detected_patterns[:3],
+            )
+            return {
+                "query": req.query,
+                "answer": "تم رفض الطلب لاحتوائه على أنماط مشبوهة قد تكون محاولة حقن. يرجى إعادة صياغة السؤال بشكل مباشر.",
+                "answer_type": "blocked_injection",
+                "injection_detected": True,
+                "risk_score": early_query_result.risk_score,
+                "context": None,
+                "sources": [],
+                "elapsed_ms": int((time.time() - started) * 1000),
+            }
+    except ImportError:
+        logger.warning(
+            "prompt_security module not available for pre-retrieval injection check"
+        )
+
     hits = (await run_in_threadpool(search, req, claims))["results"]
     context = "\n\n".join([f"[{i+1}] {h.get('filename')} p.{h.get('page') or '-'} chunk {h.get('chunk_index')}: {h.get('text', '')}" for i, h in enumerate(hits[:5])])
     citations = []
@@ -1098,24 +1134,11 @@ async def answer(req: AnswerRequest, claims: dict = Depends(_auth_dep)):
         import sys as _sys
         _sys.path.insert(0, "/app/packages")
         from common.prompt_security import (
-            sanitize_user_query, sanitize_rag_context, build_safe_prompt, should_block_request
+            sanitize_user_query, sanitize_rag_context, build_safe_prompt
         )
-        query_result = sanitize_user_query(req.query)
-        if should_block_request(query_result.risk_score):
-            _event("answer", req.tenant_id, req.workspace_id,
-                   query=req.query, answer_type="blocked_injection",
-                   risk_score=query_result.risk_score,
-                   patterns=query_result.detected_patterns[:3])
-            return {
-                "query": req.query,
-                "answer": "تم رفض الطلب لاحتوائه على أنماط مشبوهة قد تكون محاولة حقن. يرجى إعادة صياغة السؤال بشكل مباشر.",
-                "answer_type": "blocked_injection",
-                "injection_detected": True,
-                "risk_score": query_result.risk_score,
-                "context": None,
-                "sources": [],
-                "elapsed_ms": int((time.time() - started) * 1000),
-            }
+        # The blocking decision already happened before retrieval.
+        # Reuse that sanitized result instead of evaluating the query twice.
+        query_result = early_query_result or sanitize_user_query(req.query)
         # Sanitize RAG context chunks
         chunk_dicts = [{"text": h.get("text", ""), "doc_id": h.get("doc_id"), "filename": h.get("filename")} for h in hits[:5]]
         sanitized_chunks, rag_warnings = sanitize_rag_context(chunk_dicts)

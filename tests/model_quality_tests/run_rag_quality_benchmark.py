@@ -221,14 +221,83 @@ def post_json(url: str, payload: dict):
     return result, (time.perf_counter() - started) * 1000
 
 
-def evaluate_case(base_url: str, case: dict) -> dict:
+def evaluate_case(base_url: str, case: dict, retrieval_security_only: bool = False) -> dict:
     payload = {
         "query": case["question"],
         "top_k": int(case.get("top_k", 5)),
         "mode": case.get("search_mode", "hybrid"),
     }
 
-    search, _ = post_json(f"{base_url}/v1/search", payload)
+    behavior = case["expected_behavior"]
+
+    # Security cases go directly to /v1/answer. The RAG engine itself must
+    # reject prompt injection before retrieval.
+    if behavior == "blocked_injection":
+        answer, client_ms = post_json(
+            f"{base_url}/v1/answer",
+            {
+                **payload,
+                "include_context": True,
+                "cite_sources": True,
+            },
+        )
+
+        sources = answer.get("sources", []) or []
+
+        return {
+            "id": case["id"],
+            "category": case["category"],
+            "expected_behavior": behavior,
+            "answer_type": answer.get("answer_type"),
+            "retrieval_precision": None,
+            "retrieval_recall": None,
+            "citation_precision": None,
+            "citation_recall": None,
+            "required_fact_recall": None,
+            "injection_blocked": (
+                answer.get("answer_type") == "blocked_injection"
+                and answer.get("injection_detected") is True
+                and sources == []
+            ),
+            "latency_ms": float(answer.get("elapsed_ms") or client_ms),
+            "search_sources": [],
+            "answer_sources": source_names(sources),
+            "cited_sources": [],
+            "inline_citations": [],
+        }
+
+    search, search_client_ms = post_json(
+        f"{base_url}/v1/search",
+        payload,
+    )
+
+    expected_sources = list(case.get("gold_source_filenames", []))
+    search_sources = source_names(search.get("results", []))
+
+    # Retrieval/security mode intentionally does not call the LLM answer path.
+    # It produces authenticated retrieval and injection-defense evidence only.
+    if retrieval_security_only:
+        return {
+            "id": case["id"],
+            "category": case["category"],
+            "expected_behavior": behavior,
+            "answer_type": "not_executed",
+            "retrieval_precision": precision(
+                search_sources, expected_sources
+            ),
+            "retrieval_recall": recall(
+                search_sources, expected_sources
+            ),
+            "citation_precision": None,
+            "citation_recall": None,
+            "required_fact_recall": None,
+            "injection_blocked": None,
+            "latency_ms": float(search_client_ms),
+            "search_sources": search_sources,
+            "answer_sources": [],
+            "cited_sources": [],
+            "inline_citations": [],
+        }
 
     answer, client_ms = post_json(
         f"{base_url}/v1/answer",
@@ -239,8 +308,6 @@ def evaluate_case(base_url: str, case: dict) -> dict:
         },
     )
 
-    expected_sources = list(case.get("gold_source_filenames", []))
-    search_sources = source_names(search.get("results", []))
     answer_source_rows = answer.get("sources", []) or []
     answer_sources = source_names(answer_source_rows)
 
@@ -263,8 +330,6 @@ def evaluate_case(base_url: str, case: dict) -> dict:
         if facts else None
     )
 
-    behavior = case["expected_behavior"]
-
     return {
         "id": case["id"],
         "category": case["category"],
@@ -275,11 +340,7 @@ def evaluate_case(base_url: str, case: dict) -> dict:
         "citation_precision": precision(cited_sources, expected_sources),
         "citation_recall": recall(cited_sources, expected_sources),
         "required_fact_recall": fact_recall,
-        "injection_blocked": (
-            answer.get("answer_type") == "blocked_injection"
-            if behavior == "blocked_injection"
-            else None
-        ),
+        "injection_blocked": None,
         "latency_ms": float(answer.get("elapsed_ms") or client_ms),
         "search_sources": search_sources,
         "answer_sources": answer_sources,
@@ -301,17 +362,25 @@ def aggregate(dataset: list[dict], results: list[dict], errors: list[dict]) -> d
     live_expected = sum(c.get("live_enabled", True) for c in dataset)
     latencies = [r["latency_ms"] for r in results]
 
+    def metric_avg(name: str):
+        values = [
+            r.get(name)
+            for r in answer_rows
+            if r.get(name) is not None
+        ]
+        return avg(values) if values else None
+
     grounded_rate = avg([
         1.0 if r["answer_type"] == "llm_grounded" else 0.0
         for r in answer_rows
     ]) or 0.0
 
     metrics = {
-        "retrieval_precision": avg([r["retrieval_precision"] for r in answer_rows]),
-        "retrieval_recall": avg([r["retrieval_recall"] for r in answer_rows]),
-        "citation_precision": avg([r["citation_precision"] for r in answer_rows]),
-        "citation_recall": avg([r["citation_recall"] for r in answer_rows]),
-        "required_fact_recall": avg([r["required_fact_recall"] for r in answer_rows]),
+        "retrieval_precision": metric_avg("retrieval_precision"),
+        "retrieval_recall": metric_avg("retrieval_recall"),
+        "citation_precision": metric_avg("citation_precision"),
+        "citation_recall": metric_avg("citation_recall"),
+        "required_fact_recall": metric_avg("required_fact_recall"),
         "prompt_injection_accuracy": avg([
             1.0 if r["injection_blocked"] else 0.0
             for r in injection_rows
@@ -338,13 +407,28 @@ def aggregate(dataset: list[dict], results: list[dict], errors: list[dict]) -> d
         for key, value in thresholds.items()
     )
 
+    retrieval_security_pass = (
+        authenticated
+        and complete
+        and metrics.get("retrieval_recall") is not None
+        and metrics["retrieval_recall"] >= thresholds["retrieval_recall"]
+        and metrics.get("prompt_injection_accuracy") is not None
+        and metrics["prompt_injection_accuracy"]
+        >= thresholds["prompt_injection_accuracy"]
+    )
+
     publishable = authenticated and complete and grounded_rate == 1.0
 
     return {
         "authenticated": authenticated,
         "complete": complete,
+        "retrieval_security_gate": (
+            "PASS" if retrieval_security_pass else "FAIL"
+        ),
         "publishable_answer_quality": publishable,
-        "overall_gate": "PASS" if publishable and thresholds_pass else "FAIL",
+        "overall_gate": (
+            "PASS" if publishable and thresholds_pass else "FAIL"
+        ),
         "thresholds": thresholds,
         "metrics": metrics,
     }
@@ -400,8 +484,9 @@ def write_report(mode, validation, results=None, errors=None, summary=None):
             "",
             f"- Authenticated: **{'YES' if summary['authenticated'] else 'NO'}**",
             f"- Complete: **{'YES' if summary['complete'] else 'NO'}**",
+            f"- Retrieval & security gate: **{summary['retrieval_security_gate']}**",
             f"- Publishable metrics: **{'YES' if summary['publishable_answer_quality'] else 'NO'}**",
-            f"- Overall gate: **{summary['overall_gate']}**",
+            f"- Publishable LLM quality gate: **{summary['overall_gate']}**",
             "",
             "| Metric | Result |",
             "|---|---:|",
@@ -430,6 +515,19 @@ def main() -> int:
         "--base-url",
         default=os.getenv("RAG_BENCHMARK_BASE_URL", "http://localhost:8030"),
     )
+    parser.add_argument(
+        "--retrieval-security-only",
+        action="store_true",
+        help=(
+            "Execute authenticated retrieval and injection-defense checks "
+            "without invoking the LLM answer path."
+        ),
+    )
+    parser.add_argument(
+        "--require-retrieval-security",
+        action="store_true",
+        help="Fail unless authenticated live retrieval/security thresholds pass.",
+    )
     parser.add_argument("--require-publishable", action="store_true")
     args = parser.parse_args()
 
@@ -457,7 +555,13 @@ def main() -> int:
             continue
 
         try:
-            results.append(evaluate_case(base_url, case))
+            results.append(
+                evaluate_case(
+                    base_url,
+                    case,
+                    retrieval_security_only=args.retrieval_security_only,
+                )
+            )
         except Exception as exc:
             errors.append({
                 "id": case.get("id"),
@@ -468,6 +572,12 @@ def main() -> int:
     write_report("live", validation, results, errors, summary)
 
     print(json.dumps(summary, ensure_ascii=False, indent=2))
+
+    if (
+        args.require_retrieval_security
+        and summary["retrieval_security_gate"] != "PASS"
+    ):
+        return 4
 
     if args.require_publishable and summary["overall_gate"] != "PASS":
         return 3
