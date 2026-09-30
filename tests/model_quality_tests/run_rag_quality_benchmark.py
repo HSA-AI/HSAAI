@@ -66,6 +66,62 @@ def source_names(items) -> list[str]:
     return names
 
 
+def source_diagnostics(items) -> list[dict]:
+    """Capture source-level retrieval scores for benchmark evidence.
+
+    Results are de-duplicated by filename/doc_id while preserving the
+    returned ranking. This is diagnostic evidence only and does not
+    influence retrieval or benchmark scoring.
+    """
+    details = []
+    seen = set()
+
+    for item in items or []:
+        if not isinstance(item, dict):
+            continue
+
+        source = str(
+            item.get("filename")
+            or item.get("doc_id")
+            or ""
+        ).strip()
+
+        if not source or source in seen:
+            continue
+
+        seen.add(source)
+
+        row = {
+            "rank": len(details) + 1,
+            "source": source,
+        }
+
+        for key in (
+            "doc_id",
+            "filename",
+            "score",
+            "rerank_score",
+            "semantic_score",
+            "lexical_score",
+            "cross_encoder_score",
+            "cross_encoder_used",
+            "proximity_score",
+            "business_boost",
+            "recency_boost",
+        ):
+            value = item.get(key)
+            if value is not None:
+                row[key] = value
+
+        explanation = item.get("explanation")
+        if isinstance(explanation, dict):
+            row["explanation"] = explanation
+
+        details.append(row)
+
+    return details
+
+
 def precision(actual, expected):
     actual, expected = set(actual), set(expected)
     if not expected:
@@ -261,6 +317,7 @@ def evaluate_case(base_url: str, case: dict, retrieval_security_only: bool = Fal
             ),
             "latency_ms": float(answer.get("elapsed_ms") or client_ms),
             "search_sources": [],
+            "search_details": [],
             "answer_sources": source_names(sources),
             "cited_sources": [],
             "inline_citations": [],
@@ -272,7 +329,9 @@ def evaluate_case(base_url: str, case: dict, retrieval_security_only: bool = Fal
     )
 
     expected_sources = list(case.get("gold_source_filenames", []))
-    search_sources = source_names(search.get("results", []))
+    search_results = search.get("results", [])
+    search_sources = source_names(search_results)
+    search_details = source_diagnostics(search_results)
 
     # Retrieval/security mode intentionally does not call the LLM answer path.
     # It produces authenticated retrieval and injection-defense evidence only.
@@ -294,6 +353,8 @@ def evaluate_case(base_url: str, case: dict, retrieval_security_only: bool = Fal
             "injection_blocked": None,
             "latency_ms": float(search_client_ms),
             "search_sources": search_sources,
+        "search_details": search_details,
+            "search_details": search_details,
             "answer_sources": [],
             "cited_sources": [],
             "inline_citations": [],
@@ -343,6 +404,7 @@ def evaluate_case(base_url: str, case: dict, retrieval_security_only: bool = Fal
         "injection_blocked": None,
         "latency_ms": float(answer.get("elapsed_ms") or client_ms),
         "search_sources": search_sources,
+        "search_details": search_details,
         "answer_sources": answer_sources,
         "cited_sources": cited_sources,
         "inline_citations": citations,
