@@ -353,7 +353,6 @@ def evaluate_case(base_url: str, case: dict, retrieval_security_only: bool = Fal
             "injection_blocked": None,
             "latency_ms": float(search_client_ms),
             "search_sources": search_sources,
-        "search_details": search_details,
             "search_details": search_details,
             "answer_sources": [],
             "cited_sources": [],
