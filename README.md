@@ -63,24 +63,31 @@ The final v4.0.0 release branch completed **32 automated checks successfully wit
 ## Current Validation Status
 
 **Current release:** `HSAAI v4.0.0 — Production Release`
+
 **Source version:** `v4.0.0`
+
 **Release commit:** `80b78065d9a6623e98f4ef6e1411866776fdae0c`
+
 **Last verified:** 30 September 2026
+
 **Release status:** ✅ Published
 
 | Quality / Release Gate | Verified Status |
 |---|---|
-| Final release PR validation | ✅ 32/32 successful · 0 failing · 0 pending |
+| Final Release PR Validation | ✅ 32/32 successful · 0 failing · 0 pending |
 | Full Backend Coverage | ✅ Passing |
-| Required backend coverage | ✅ ≥80% enforced |
-| Verified backend coverage snapshot | ✅ 80.43% |
+| Required Backend Coverage | ✅ ≥80% enforced |
+| Verified Backend Coverage Snapshot | ✅ 80.43% |
+| Python Statements | 17,302 |
+| Covered Statements | 13,916 |
+| Missing Statements | 3,386 |
 | Docker Build Validation | ✅ Passing |
 | Continuous Integration | ✅ Passing |
 | Python Dependency Audit | ✅ Passing |
 | Frontend Dependency Audit | ✅ Passing |
 | Security Validation | ✅ Passing |
 | Enterprise Runtime Acceptance | ✅ Passing |
-| Enterprise E2E | ✅ Passing |
+| Authenticated Enterprise E2E | ✅ Passing |
 | Production Enterprise Wiring | ✅ Passing |
 | Production Runtime Parity | ✅ Passing |
 | Kubernetes CI Acceptance | ✅ Passing |
@@ -96,20 +103,34 @@ The final v4.0.0 release branch completed **32 automated checks successfully wit
 
 **Artifact:** `HSAAI_v4.0.0.zip`
 
-**SHA-256:**
+**SHA-256**
+
 `4e8e69695537adccbc969c4f7a3047ffd844cc46439d3cc86d055da9b6e9c2d2`
+
+The backend quality gate maintains a minimum **80% coverage requirement**. The verified v4.0.0 release snapshot reports **80.43% backend coverage**.
 
 HSAAI v4.0.0 has completed its automated repository-level engineering, security, dependency, coverage, enterprise runtime, authenticated E2E, production enterprise wiring, production runtime parity, image supply-chain, package-integrity and final release validation.
 
-The **HSAAI v4.0.0 Production Release is published**.
+The **HSAAI v4.0.0 Production Release is published through GitHub Releases**.
 
 ### Deployment Acceptance Boundary
 
-Repository-level and software-release validation is complete for `v4.0.0`.
+Repository-level software release validation is complete for `v4.0.0`.
 
-A real external Kubernetes cluster remains a separate environment-specific operator acceptance step. Production secrets, TLS, networking, persistent storage, backup, restore and disaster-recovery controls must be validated against the actual target infrastructure.
+Real external Kubernetes deployment remains a separate environment-specific operator acceptance step.
 
-These deployment-specific activities are not represented as completed by GitHub CI alone.
+The actual target environment must independently validate:
+
+- production secrets and credential rotation
+- TLS certificates
+- ingress and network policies
+- persistent storage
+- production identity-provider configuration
+- backup and restore
+- disaster recovery
+- infrastructure-specific operational controls
+
+These environment-specific activities are not represented as completed by GitHub CI alone.
 
 ---
 
@@ -554,12 +575,12 @@ Current CI and release evidence takes precedence over older validation snapshots
 
 HSAAI is currently published as **v4.0.0 — Production Release**.
 
-Repository-level engineering, security, coverage, enterprise runtime, authenticated E2E, production runtime parity, image supply-chain, package-integrity and final release validation have been completed successfully.
+The software release has completed its repository-level engineering, security, dependency, coverage, enterprise runtime, authenticated E2E, production wiring, runtime parity, image supply-chain, package-integrity and final release gates.
 
-| Area | Status |
+| Area | Current Status |
 |---|---|
 | Source Version | ✅ `v4.0.0` |
-| Release Status | ✅ Production Release |
+| Software Release | ✅ Production Release |
 | GitHub Release | ✅ Published |
 | Release Commit | ✅ `80b7806` |
 | Architecture | ✅ Implemented |
@@ -570,16 +591,17 @@ Repository-level engineering, security, coverage, enterprise runtime, authentica
 | Knowledge Graph | ✅ Implemented |
 | Workflow Automation | ✅ Implemented |
 | AI Governance | ✅ Implemented |
-| LLMOps / Model Routing | ✅ Implemented |
+| LLM Gateway / Model Routing | ✅ Implemented |
+| LLMOps | ✅ Implemented |
 | MLOps | ✅ Implemented |
 | Docker Build Validation | ✅ Passing |
-| Dependency Audits | ✅ Passing |
 | Continuous Integration | ✅ Passing |
+| Dependency Audits | ✅ Passing |
 | Security Validation | ✅ Passing |
 | Full Backend Coverage | ✅ Passing |
-| Python Coverage Snapshot | ✅ 80.43% |
-| Required Coverage Threshold | ✅ ≥80% enforced |
-| Final Release PR Validation | ✅ 32/32 successful |
+| Backend Coverage Snapshot | ✅ 80.43% |
+| Required Coverage Threshold | ✅ ≥80% |
+| Final Release Validation | ✅ 32/32 successful |
 | Enterprise Runtime Acceptance | ✅ Passing |
 | Authenticated Enterprise E2E | ✅ Passing |
 | Production Enterprise Wiring | ✅ Passing |
@@ -589,7 +611,7 @@ Repository-level engineering, security, coverage, enterprise runtime, authentica
 | Final Release Gate | ✅ Passing |
 | Release Source Integrity | ✅ Passing |
 | Release Package Hygiene | ✅ Passing |
-| Release SHA-256 | ✅ Published |
+| SHA-256 Artifact Integrity | ✅ Published |
 | Real External Kubernetes Acceptance | 🚧 Deployment-specific operator gate |
 | Production Secrets / Rotation | 🚧 Target-environment validation |
 | TLS / Network Controls | 🚧 Target-environment validation |
@@ -597,17 +619,17 @@ Repository-level engineering, security, coverage, enterprise runtime, authentica
 | Backup / Restore Acceptance | 🚧 Target-environment validation |
 | Disaster Recovery Acceptance | 🚧 Target-environment validation |
 
-### Current Release State
+### Software Release State
 
-The **HSAAI v4.0.0 Production Release is published** and has completed its automated repository and release-validation gates.
+**HSAAI v4.0.0 is a published Production Release.**
 
-The final v4.0.0 release validation completed:
+Final v4.0.0 release validation:
 
 **32 successful · 0 failing · 0 pending**
 
-The remaining items above are not software-release failures. They are **deployment-specific operational acceptance activities** that must be validated against the actual target infrastructure.
+The remaining deployment-specific items are not software-release failures. They require validation against the actual target production infrastructure.
 
-A real external Kubernetes cluster has not yet been represented as accepted by GitHub CI.
+A real external Kubernetes cluster has not been represented as accepted by repository CI alone.
 
 ---
 
