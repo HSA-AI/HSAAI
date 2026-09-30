@@ -1,0 +1,186 @@
+name: HSAAI Production Runtime Parity
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/production-runtime-parity.yml"
+      - "scripts/production_runtime_parity.sh"
+      - "docker-compose.production.yml"
+      - "infrastructure/**"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-runtime-parity-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  production-contract:
+    name: Production Runtime Version Contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Docker information
+        run: |
+          set -euo pipefail
+          docker version
+          docker compose version
+
+      - name: Validate production runtime contract
+        run: |
+          set -euo pipefail
+          bash scripts/production_runtime_parity.sh contract
+
+
+  kafka-production-runtime:
+    name: Kafka 7.7.1 Production Runtime
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Kafka production parity
+        run: |
+          set -euo pipefail
+          bash scripts/production_runtime_parity.sh kafka
+
+
+  mlflow-production-runtime:
+    name: MLflow 2.18.0 Production Runtime
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: MLflow production parity
+        run: |
+          set -euo pipefail
+          bash scripts/production_runtime_parity.sh mlflow
+
+
+  loki-production-runtime:
+    name: Loki 3.3.2 Production Runtime
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Loki production parity
+        run: |
+          set -euo pipefail
+          bash scripts/production_runtime_parity.sh loki
+
+
+  tempo-production-runtime:
+    name: Tempo 2.6.0 Production Runtime
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Tempo production parity
+        run: |
+          set -euo pipefail
+          bash scripts/production_runtime_parity.sh tempo
+
+
+  thanos-production-runtime:
+    name: Thanos 0.37.0 Production Runtime
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Thanos production parity
+        run: |
+          set -euo pipefail
+          bash scripts/production_runtime_parity.sh thanos
+
+
+  production-runtime-parity:
+    name: Production Runtime Parity
+    runs-on: ubuntu-24.04
+    if: always()
+
+    needs:
+      - production-contract
+      - kafka-production-runtime
+      - mlflow-production-runtime
+      - loki-production-runtime
+      - tempo-production-runtime
+      - thanos-production-runtime
+
+    steps:
+      - name: Enforce runtime parity
+        shell: bash
+        env:
+          CONTRACT: ${{ needs.production-contract.result }}
+          KAFKA: ${{ needs.kafka-production-runtime.result }}
+          MLFLOW: ${{ needs.mlflow-production-runtime.result }}
+          LOKI: ${{ needs.loki-production-runtime.result }}
+          TEMPO: ${{ needs.tempo-production-runtime.result }}
+          THANOS: ${{ needs.thanos-production-runtime.result }}
+        run: |
+          set -euo pipefail
+
+          printf '%-20s %s\n' \
+            "Contract" "${CONTRACT}" \
+            "Kafka" "${KAFKA}" \
+            "MLflow" "${MLFLOW}" \
+            "Loki" "${LOKI}" \
+            "Tempo" "${TEMPO}" \
+            "Thanos" "${THANOS}"
+
+          for result in \
+            "${CONTRACT}" \
+            "${KAFKA}" \
+            "${MLFLOW}" \
+            "${LOKI}" \
+            "${TEMPO}" \
+            "${THANOS}"; do
+
+            if [[ "${result}" != "success" ]]; then
+              echo "ERROR: Production runtime parity failed"
+              exit 1
+            fi
+          done
+
+          {
+            echo "## HSAAI Production Runtime Parity"
+            echo
+            echo "✅ Production version contract"
+            echo "✅ Kafka 7.7.1 functional runtime"
+            echo "✅ MLflow 2.18.0 runtime"
+            echo "✅ Loki 3.3.2 production config + runtime"
+            echo "✅ Tempo 2.6.0 runtime"
+            echo "✅ Thanos 0.37.0 runtime"
+            echo
+            echo "Existing Enterprise E2E separately validates:"
+            echo "- Keycloak 25.0.6"
+            echo "- Neo4j 5"
+            echo "- Ollama 0.4.7"
+            echo "- PostgreSQL 16"
+            echo "- Redis 7"
+            echo "- Qdrant 1.12.1"
+            echo "- MinIO pinned source build"
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+          echo "PASS: HSAAI production runtime parity"
