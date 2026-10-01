@@ -301,40 +301,93 @@ Core technologies include:
 ```text
 HSAAI/
 ├── apps/
-│   └── web/                     # Enterprise Next.js application
+│   └── web/                         # Enterprise Next.js web application
+│
 ├── services/
-│   ├── api_gateway/
-│   ├── auth_service/
-│   ├── backend_core/
-│   ├── governance/
-│   ├── llm_gateway/
-│   ├── model_training/
-│   ├── multi_agents/
-│   ├── pii_detector/
-│   ├── rag_engine/
-│   └── workflow_engine/
+│   ├── api_gateway/                 # Unified enterprise API gateway
+│   ├── auth_service/                # Authentication and authorization
+│   ├── backend_core/                # Core enterprise backend services
+│   ├── governance/                  # AI governance and policy controls
+│   ├── llm_gateway/                 # LLM routing and provider gateway
+│   ├── model_training/              # Model training and lifecycle
+│   ├── multi_agents/                # Multi-agent orchestration
+│   ├── pii_detector/                # PII detection and security screening
+│   ├── rag_engine/                  # Enterprise RAG and grounded answers
+│   └── workflow_engine/             # Enterprise workflow automation
+│
 ├── packages/
-│   └── common/
+│   └── common/                      # Shared libraries and schemas
+│
 ├── infrastructure/
-│   ├── docker/
-│   ├── kubernetes/
-│   ├── helm/
-│   ├── monitoring/
-│   └── vault/
-├── alembic/
-├── benchmarks/
-├── demo-runtime/
-├── deployment/
-├── docs/
+│   ├── docker/                      # Docker and Compose infrastructure
+│   ├── kubernetes/                  # Kubernetes deployment assets
+│   ├── helm/                        # Helm charts
+│   ├── monitoring/                  # Observability infrastructure
+│   └── vault/                       # Secrets-management infrastructure
+│
+├── alembic/                         # Database migrations
+├── benchmarks/                      # Performance and engineering benchmarks
+│
 ├── evals/
-├── examples/
+│   ├── arabic_enterprise_eval.json  # Arabic enterprise AI benchmark
+│   ├── fixtures/                    # Controlled enterprise evaluation documents
+│   ├── schema/                      # Evaluation schemas
+│   └── README.md                    # Evaluation methodology
+│
 ├── tests/
-├── scripts/
-├── runbooks/
-└── .github/workflows/
+│   ├── backend/                     # Backend validation
+│   ├── docker/                      # Container/runtime validation
+│   ├── e2e/                         # Enterprise end-to-end tests
+│   ├── load/                        # Load and performance tests
+│   ├── security/                    # Security validation
+│   ├── unit/                        # Unit tests
+│   └── model_quality_tests/         # Live RAG and LLM quality benchmarks
+│
+├── deployment/                      # Deployment assets
+├── demo-runtime/                    # Lightweight demonstration runtime
+├── examples/                        # Integration and usage examples
+│
+├── docs/
+│   ├── operations/                  # Operations documentation
+│   ├── reports/                     # Engineering and validation reports
+│   ├── security/                    # Security documentation
+│   └── ENTERPRISE_AI_FAQ.md         # Enterprise AI FAQ
+│
+├── runbooks/                        # Operational runbooks
+├── scripts/                         # Automation and validation scripts
+├── tools/                           # Engineering utilities
+│
+├── site/
+│   ├── index.html                   # English GitHub Pages landing page
+│   ├── ar/
+│   │   └── index.html               # Arabic landing page
+│   ├── faq/
+│   │   └── index.html               # Enterprise AI FAQ page
+│   ├── assets/                      # Static site assets
+│   ├── sitemap.xml                  # Search-engine sitemap
+│   └── robots.txt                   # Search crawler directives
+│
+├── .github/
+│   └── workflows/
+│       ├── ci.yml
+│       ├── enterprise-e2e.yml
+│       ├── production-coverage.yml
+│       ├── production-dependency-audit.yml
+│       ├── rag-document-e2e.yml
+│       ├── live-llm-smoke.yml
+│       ├── live-llm-quality.yml
+│       ├── kubernetes-runtime-acceptance.yml
+│       ├── real-kubernetes-preflight.yml
+│       ├── production-images.yml
+│       ├── final-release-gate.yml
+│       ├── pages.yml
+│       └── ...                      # Additional CI/runtime validation workflows
+│
+├── docker-compose.yml               # Enterprise runtime stack
+├── README.md                        # Primary project documentation
+├── SECURITY.md                      # Security policy
+└── LICENSE                          # Repository license
 ```
-
----
 
 ### Architecture Overview
 
@@ -347,6 +400,13 @@ workflow automation, governance, observability, and Kubernetes-oriented deployme
 **Keycloak / JWT → Security Controls → Enterprise RAG → Qdrant →
 Cross-Encoder Relevance Gate → LLM Gateway → Ollama →
 qwen2.5:7b-instruct → Grounded Answer → Citation Validation**
+
+Core platform infrastructure integrates PostgreSQL, Redis, Qdrant, Neo4j,
+Kafka, MinIO, Keycloak, Ollama, MLflow, Vault, Prometheus, Grafana,
+Loki, Tempo, Thanos, Docker, Helm, and Kubernetes.
+
+> Service availability depends on the selected deployment profile.
+> Directory presence does not imply that every component runs in every environment.
 
 ## Enterprise Infrastructure
 HSAAI integrates with enterprise infrastructure including:
