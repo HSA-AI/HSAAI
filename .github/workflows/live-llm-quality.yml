@@ -32,7 +32,7 @@ jobs:
     timeout-minutes: 65
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
     - name: Docker information
       run: 'docker --version
 
@@ -749,7 +749,7 @@ jobs:
 
     - name: Upload live LLM quality evidence
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: hsaai-live-llm-answer-quality
         path: artifacts/ai-quality/live/
