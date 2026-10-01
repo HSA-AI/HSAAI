@@ -33,26 +33,6 @@ in one enterprise AI architecture.
 > Benchmark percentages describe the current controlled HSAAI evaluation suite
 > and are not claims of universal AI accuracy.
 
-**Enterprise AI Platform for Secure RAG · Agentic AI · AI Agents · Multi-Agent Systems · Knowledge Graphs · Workflow Automation · AI Governance · LLMOps · MLOps · DevSecOps · Kubernetes**
-
-[![Release](https://img.shields.io/github/v/release/HSA-AI/HSAAI?display_name=tag)](https://github.com/HSA-AI/HSAAI/releases/latest)
-[![Final Release Gate](https://github.com/HSA-AI/HSAAI/actions/workflows/final-release-gate.yml/badge.svg)](https://github.com/HSA-AI/HSAAI/actions/workflows/final-release-gate.yml)
-[![Enterprise E2E](https://github.com/HSA-AI/HSAAI/actions/workflows/enterprise-e2e.yml/badge.svg)](https://github.com/HSA-AI/HSAAI/actions/workflows/enterprise-e2e.yml)
-[![Runtime Parity](https://github.com/HSA-AI/HSAAI/actions/workflows/production-runtime-parity.yml/badge.svg)](https://github.com/HSA-AI/HSAAI/actions/workflows/production-runtime-parity.yml)
-[![Security](https://github.com/HSA-AI/HSAAI/actions/workflows/security-scan.yml/badge.svg)](https://github.com/HSA-AI/HSAAI/actions/workflows/security-scan.yml)
-
-HSAAI is a modular **Enterprise Artificial Intelligence Operating System** for securely connecting organizational knowledge, Large Language Models (LLMs), Retrieval-Augmented Generation (RAG), AI agents, multi-agent systems, knowledge graphs, enterprise workflows, model lifecycle management, governance, security and cloud-native infrastructure.
-
-Designed around the enterprise AI requirements of **Hayel Saeed Anam & Co. (HSA Group)**, HSAAI provides a unified architecture for enterprise knowledge discovery, intelligent assistants, governed AI automation, AI agents, LLMOps, MLOps and Kubernetes-oriented deployment.
-
-**Current Release: `HSAAI v4.0.0 — Production Release`**
-
-> HSAAI v4.0.0 passed its automated engineering, security, dependency, coverage, enterprise runtime, E2E, production runtime parity, image supply-chain, package-integrity and final release gates.
->
-> Real external Kubernetes cluster acceptance remains a separate deployment-specific operator gate.
-
----
-
 ## العربية
 
 **HSAAI** منصة ذكاء اصطناعي مؤسسية متكاملة تجمع بين إدارة المعرفة، وRAG، والوكلاء الأذكياء، والأنظمة متعددة الوكلاء، والرسوم البيانية المعرفية، وأتمتة سير العمل، وحوكمة الذكاء الاصطناعي، وLLMOps، وMLOps، والبنية التحتية السحابية ضمن معمارية موحدة وآمنة وقابلة للتوسع.
@@ -89,6 +69,25 @@ Designed around the enterprise AI requirements of **Hayel Saeed Anam & Co. (HSA 
 | Release Package Hygiene | ✅ Passing |
 | Artifact Integrity | ✅ SHA-256 published |
 | Real External Kubernetes | 🚧 Deployment-specific operator gate |
+
+Release artifact: `HSAAI_v4.0.0.zip`
+
+SHA-256:
+
+`4e8e69695537adccbc969c4f7a3047ffd844cc46439d3cc86d055da9b6e9c2d2`
+
+The v4.0.0 software release has completed its repository-level engineering,
+security, dependency, coverage, enterprise runtime, authenticated E2E,
+production wiring, runtime-parity, image-supply-chain, package-integrity,
+and final release validation.
+
+Real external Kubernetes deployment, production secrets, TLS, networking,
+persistent storage, backup/restore, and disaster-recovery acceptance remain
+environment-specific operational responsibilities.
+
+View HSAAI v4.0.0 Release.
+
+Detailed release evidence: `docs/reports/CURRENT_RELEASE_STATUS.md`
 
 ## What is HSAAI?
 
@@ -285,93 +284,91 @@ Core technologies include:
 
 ```text
 HSAAI/
-├── apps/
-│   └── web/                         # Enterprise Next.js web application
-│
-├── services/
-│   ├── api_gateway/                 # Unified enterprise API gateway
-│   ├── auth_service/                # Authentication and authorization
-│   ├── backend_core/                # Core enterprise backend services
-│   ├── governance/                  # AI governance and policy controls
-│   ├── llm_gateway/                 # LLM routing and provider gateway
-│   ├── model_training/              # Model training and lifecycle
-│   ├── multi_agents/                # Multi-agent orchestration
-│   ├── pii_detector/                # PII detection and security screening
-│   ├── rag_engine/                  # Enterprise RAG and grounded answers
-│   └── workflow_engine/             # Enterprise workflow automation
-│
-├── packages/
-│   └── common/                      # Shared libraries and schemas
-│
-├── infrastructure/
-│   ├── docker/                      # Docker and Compose infrastructure
-│   ├── kubernetes/                  # Kubernetes deployment assets
-│   ├── helm/                        # Helm charts
-│   ├── monitoring/                  # Observability infrastructure
-│   └── vault/                       # Secrets-management infrastructure
-│
-├── alembic/                         # Database migrations
-├── benchmarks/                      # Performance and engineering benchmarks
-│
-├── evals/
-│   ├── arabic_enterprise_eval.json  # Arabic enterprise AI benchmark
-│   ├── fixtures/                    # Controlled enterprise evaluation documents
-│   ├── schema/                      # Evaluation schemas
-│   └── README.md                    # Evaluation methodology
-│
-├── tests/
-│   ├── backend/                     # Backend validation
-│   ├── docker/                      # Container/runtime validation
-│   ├── e2e/                         # Enterprise end-to-end tests
-│   ├── load/                        # Load and performance tests
-│   ├── security/                    # Security validation
-│   ├── unit/                        # Unit tests
-│   └── model_quality_tests/         # Live RAG and LLM quality benchmarks
-│
-├── deployment/                      # Deployment assets
-├── demo-runtime/                    # Lightweight demonstration runtime
-├── examples/                        # Integration and usage examples
-│
-├── docs/
-│   ├── operations/                  # Operations documentation
-│   ├── reports/                     # Engineering and validation reports
-│   ├── security/                    # Security documentation
-│   └── ENTERPRISE_AI_FAQ.md         # Enterprise AI FAQ
-│
-├── runbooks/                        # Operational runbooks
-├── scripts/                         # Automation and validation scripts
-├── tools/                           # Engineering utilities
-│
-├── site/
-│   ├── index.html                   # English GitHub Pages landing page
-│   ├── ar/
-│   │   └── index.html               # Arabic landing page
-│   ├── faq/
-│   │   └── index.html               # Enterprise AI FAQ page
-│   ├── assets/                      # Static site assets
-│   ├── sitemap.xml                  # Search-engine sitemap
-│   └── robots.txt                   # Search crawler directives
-│
-├── .github/
-│   └── workflows/
-│       ├── ci.yml
-│       ├── enterprise-e2e.yml
-│       ├── production-coverage.yml
-│       ├── production-dependency-audit.yml
-│       ├── rag-document-e2e.yml
-│       ├── live-llm-smoke.yml
-│       ├── live-llm-quality.yml
-│       ├── kubernetes-runtime-acceptance.yml
-│       ├── real-kubernetes-preflight.yml
-│       ├── production-images.yml
-│       ├── final-release-gate.yml
-│       ├── pages.yml
-│       └── ...                      # Additional CI/runtime validation workflows
-│
-├── docker-compose.yml               # Enterprise runtime stack
-├── README.md                        # Primary project documentation
-├── SECURITY.md                      # Security policy
-└── LICENSE                          # Repository license
+├── apps/                                # Enterprise applications
+│       └── web/                             # Enterprise Next.js web application
+├── services/                            # Enterprise service layer
+│       ├── __pycache__/
+│       ├── ai_alignment/
+│       ├── api_gateway/                     # Unified enterprise API gateway
+│       ├── auth_service/                    # Authentication and authorization
+│       ├── backend_core/                    # Core enterprise backend services
+│       ├── collective_intelligence_engine/
+│       ├── consciousness_stream/
+│       ├── data/
+│       ├── digital_twin/
+│       ├── dream_engine/
+│       ├── empathy_engine/
+│       ├── evolution_engine/
+│       ├── federation_hub/
+│       ├── genealogy_service/
+│       ├── governance/                      # AI governance and policy controls
+│       ├── imagination_engine/
+│       ├── immune_system/
+│       ├── intelligence_economy/
+│       ├── intuition_engine/
+│       ├── knowledge_genome_engine/
+│       ├── llm_gateway/                     # LLM routing and provider gateway
+│       ├── mcp_server/
+│       ├── model_training/                  # Model training and lifecycle
+│       ├── multi_agents/                    # Multi-agent orchestration
+│       ├── narrative_engine/
+│       ├── pii_detector/                    # PII detection and security screening
+│       ├── precognition_engine/
+│       ├── proactive_intelligence/
+│       ├── quantum_decision_engine/
+│       ├── rag_engine/                      # Enterprise RAG and grounded answers
+│       ├── reflection_engine/
+│       ├── singularity_engine/
+│       ├── time_travel/
+│       ├── wisdom_marketplace/
+│       └── workflow_engine/                 # Enterprise workflow automation
+├── packages/                            # Shared platform packages
+│       ├── __pycache__/
+│       └── common/                          # Shared libraries and schemas
+├── infrastructure/                      # Platform infrastructure
+│       ├── alerting/
+│       ├── argocd/
+│       ├── chaos/
+│       ├── dashboards/
+│       ├── docker/                          # Docker and Compose infrastructure
+│       ├── feature-store/
+│       ├── grafana/
+│       ├── helm/                            # Helm charts
+│       ├── keycloak/
+│       ├── kubernetes/                      # Kubernetes deployment assets
+│       ├── loki/
+│       ├── minio/
+│       ├── monitoring/                      # Observability infrastructure
+│       ├── mtls/
+│       ├── multi-region/
+│       ├── nginx/
+│       ├── opa/
+│       ├── patroni/
+│       ├── postgres/
+│       ├── promtail/
+│       ├── qdrant-cluster/
+│       ├── redis-sentinel/
+│       ├── secrets/
+│       ├── service-mesh/
+│       ├── slo/
+│       ├── thanos/
+│       ├── vault/                           # Secrets-management infrastructure
+│       └── waf/
+├── alembic/                             # Database migrations
+├── benchmarks/                          # Engineering benchmarks
+├── evals/                               # Enterprise AI evaluation assets
+├── tests/                               # Automated validation suites
+├── deployment/                          # Deployment assets
+├── demo-runtime/                        # Lightweight demonstration runtime
+├── docs/                                # Architecture and engineering documentation
+├── runbooks/                            # Operational runbooks
+├── scripts/                             # Automation and validation scripts
+├── tools/                               # Engineering utilities
+├── site/                                # Search-optimized GitHub Pages site
+├── .github/                             # GitHub automation and CI/CD
+├── docker-compose.yml                   # Enterprise runtime stack
+├── README.md                            # Primary project documentation
+└── LICENSE                              # Repository license
 ```
 
 ### Architecture Overview
@@ -573,25 +570,25 @@ The final delivery package excludes private and runtime-only artifacts such as:
 
 ## Documentation
 
-
-- [Enterprise AI Platform FAQ](docs/ENTERPRISE_AI_FAQ.md)
 | Resource | Purpose |
-|---|---|
+| --- | --- |
+| [Enterprise AI Platform FAQ](docs/ENTERPRISE_AI_FAQ.md) | Enterprise AI product and platform FAQ |
 | `START_HERE_AR.md` | Arabic starting point and handover |
 | `QUICKSTART.md` | Getting started |
 | `CHANGELOG.md` | Release history |
 | `SECURITY.md` | Security policy |
 | `FINAL_PRODUCTION_READINESS_REPORT.md` | Readiness and validation evidence |
-| `docs/` | Architecture, APIs, security and engineering documentation |
+| `docs/` | Architecture, APIs, security, and engineering documentation |
 | `runbooks/` | Operational procedures |
 | `infrastructure/` | Deployment and infrastructure assets |
-| `.github/workflows/` | CI/CD and validation workflows |
+| `.github/workflows/` | CI/CD and automated validation workflows |
+| `site/` | Search-optimized GitHub Pages site |
+| `evals/` | Enterprise AI evaluation datasets and fixtures |
 
-Historical reports should be interpreted according to the release or commit for which they were generated.
+Historical reports should be interpreted according to the release or commit
+for which they were generated.
 
 Current CI and release evidence takes precedence over older validation snapshots.
-
----
 
 ## Repository Scope
 
@@ -608,13 +605,3 @@ Review `LICENSE` for applicable rights, restrictions and permitted usage.
 This README does not grant rights beyond those defined by the repository license.
 
 ---
-
-# HSAAI
-
-### Enterprise Artificial Intelligence Operating System
-
-**Enterprise AI · RAG · Agentic AI · AI Agents · Multi-Agent Systems · Knowledge Graphs · Workflow Automation · AI Governance · LLMOps · MLOps · DevSecOps · Kubernetes · Observability**
-
-منصة ذكاء اصطناعي مؤسسية متكاملة للمعرفة، وRAG، والوكلاء الأذكياء، والأنظمة متعددة الوكلاء، وأتمتة الأعمال، وحوكمة الذكاء الاصطناعي، وإدارة النماذج والبنية التحتية المؤسسية.
-
-**Current Release: HSAAI v4.0.0**
