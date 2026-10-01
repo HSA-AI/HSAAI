@@ -1,4 +1,67 @@
-# HSAAI — Enterprise AI Operating System
+# HSAAI — Private, Sovereign, Self-Hosted Enterprise AI Platform
+
+<!-- HSAAI-SEO-HERO:START -->
+
+**HSAAI** is a private, sovereign, self-hosted **Enterprise AI Platform** for secure generative AI, Enterprise RAG, local LLM inference, Arabic enterprise AI, AI agents, multi-agent workflows, AI governance, observability, and Kubernetes deployment.
+
+**HSAAI** هي منصة ذكاء اصطناعي مؤسسية خاصة وسيادية وذاتية الاستضافة، مخصصة لتشغيل نماذج اللغة المحلية، وEnterprise RAG، والوكلاء الأذكياء، والبحث في المعرفة المؤسسية، وحوكمة وأمن الذكاء الاصطناعي.
+
+### Validated Enterprise AI Quality
+
+| Capability | Validated result |
+| --- | --- |
+| Live Local LLM | ✅ Ollama + qwen2.5:7b-instruct |
+| Enterprise RAG | ✅ End-to-End validated |
+| Retrieval Precision | ✅ 100% on current controlled benchmark |
+| Retrieval Recall | ✅ 100% on current controlled benchmark |
+| Citation Precision | ✅ 100% |
+| Citation Recall | ✅ 100% |
+| Prompt Injection Accuracy | ✅ 100% on current benchmark |
+| LLM Grounded Rate | ✅ 100% |
+| Required Fact Recall | ✅ 86.61% |
+| Retrieval Security Gate | ✅ PASS |
+| Publishable Answer Quality | ✅ PASS |
+| Overall AI Quality Gate | ✅ PASS |
+| Benchmark Errors | ✅ 0 |
+| Real External Kubernetes | ⏳ External-cluster acceptance pending |
+
+HSAAI combines **Enterprise RAG, Local LLMs, AI Agents, LLM Gateway, Qdrant, Ollama, Keycloak, FastAPI, Next.js, PostgreSQL, Redis, Kafka, Neo4j, MinIO, Vault, MLflow, Prometheus, Grafana, Loki, Tempo, Thanos, Docker, and Kubernetes** in one enterprise AI architecture.
+
+> Benchmark percentages describe the current controlled HSAAI evaluation suite and are not claims of universal AI accuracy.
+
+<!-- HSAAI-SEO-HERO:END -->
+
+<!-- SEO-HERO:START -->
+
+**HSAAI** is a private, sovereign, self-hosted **Enterprise AI Platform** for secure generative AI, enterprise RAG, local LLM inference, Arabic enterprise AI, multi-agent orchestration, AI governance, observability, and Kubernetes-based deployment.
+
+**منصة HSAAI** هي منصة ذكاء اصطناعي مؤسسية خاصة وسيادية وذاتية الاستضافة، مصممة لتشغيل نماذج اللغة المحلية، والبحث المعزز بالتوليد RAG، والوكلاء الأذكياء، وحوكمة الذكاء الاصطناعي، ومعالجة المعرفة المؤسسية بأمان.
+
+### Validated Enterprise AI Capabilities
+
+| Capability | Current validated status |
+| --- | --- |
+| Live local LLM inference | ✅ Ollama + qwen2.5:7b-instruct |
+| Enterprise RAG | ✅ Validated end-to-end |
+| Retrieval precision | ✅ 100% on current controlled benchmark |
+| Retrieval recall | ✅ 100% on current controlled benchmark |
+| Citation precision | ✅ 100% |
+| Citation recall | ✅ 100% |
+| Prompt-injection protection | ✅ 100% on current benchmark |
+| LLM grounded-answer rate | ✅ 100% |
+| Required fact recall | ✅ 86.61% |
+| Live LLM overall quality gate | ✅ PASS |
+| Authentication and authorization | ✅ Keycloak + JWT |
+| Tenant / workspace isolation | ✅ |
+| PII protection | ✅ |
+| Kubernetes CI validation | ✅ |
+| Real external Kubernetes acceptance | ⏳ Pending external-cluster validation |
+
+HSAAI combines **Enterprise RAG, Local LLMs, AI Agents, LLM Gateway, Qdrant, Keycloak, Ollama, FastAPI, Next.js, PostgreSQL, Redis, Kafka, Neo4j, MinIO, Vault, MLflow, Prometheus, Grafana, Loki, Tempo, Thanos, Docker, and Kubernetes** in a unified enterprise AI architecture.
+
+> Benchmark percentages above describe the current controlled HSAAI evaluation suite and are not claims of universal model accuracy.
+
+<!-- SEO-HERO:END -->
 
 **Enterprise AI Platform for Secure RAG · Agentic AI · AI Agents · Multi-Agent Systems · Knowledge Graphs · Workflow Automation · AI Governance · LLMOps · MLOps · DevSecOps · Kubernetes**
 
@@ -486,6 +549,8 @@ The final delivery package excludes private and runtime-only artifacts such as:
 
 ## Documentation
 
+
+- [Enterprise AI Platform FAQ](docs/ENTERPRISE_AI_FAQ.md)
 | Resource | Purpose |
 |---|---|
 | `START_HERE_AR.md` | Arabic starting point and handover |
