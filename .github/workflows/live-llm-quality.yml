@@ -660,6 +660,24 @@ jobs:
         \        + verification.stderr[-200:]\n    ).replace(token, \"[REDACTED]\"\
         )\n\nelse:\n    raise SystemExit(\n        \"STOP: Persistence verification\
         \ failed\\n\"\n        + last_error\n    )\n\n\nPYCODE"
+    - name: Extend CI benchmark access-token lifetime
+      run: |
+        set -euo pipefail
+
+        docker compose exec -T keycloak sh -ec '
+          /opt/keycloak/bin/kcadm.sh config credentials \
+            --server http://localhost:8080 \
+            --realm master \
+            --user "$KEYCLOAK_ADMIN" \
+            --password "$KEYCLOAK_ADMIN_PASSWORD" \
+            >/dev/null
+
+          /opt/keycloak/bin/kcadm.sh update realms/hsaai \
+            -s accessTokenLifespan=1800
+
+          echo "PASS: CI-only access token lifespan set to 1800 seconds"
+        '
+
     - name: Run authenticated live LLM answer quality benchmark
       timeout-minutes: 20
       run: |
