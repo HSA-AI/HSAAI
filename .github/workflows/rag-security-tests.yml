@@ -9,7 +9,7 @@ jobs:
     timeout-minutes: 35
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
     - name: Prepare CI environment
       shell: bash
       run: "set -euo pipefail\n\nif [ -f .env.example ]; then\n  cp .env.example .env\n\
