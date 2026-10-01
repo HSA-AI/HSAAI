@@ -1,0 +1,232 @@
+name: HSAAI Live LLM Smoke
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/live-llm-smoke.yml"
+      - "docker-compose.yml"
+      - "services/llm_gateway/**"
+      - "services/rag_engine/**"
+
+permissions:
+  contents: read
+
+jobs:
+  live-ollama-smoke:
+    name: Live Ollama Model Smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      JWT_SECRET: hsaai-ci-live-llm-jwt-secret-not-production
+      KEYCLOAK_ADMIN_PASSWORD: hsaai-ci-live-llm-keycloak-not-production
+      MINIO_ROOT_PASSWORD: hsaai-ci-live-llm-minio-not-production
+      POSTGRES_PASSWORD: hsaai-ci-live-llm-postgres-not-production
+      SESSION_SECRET: hsaai-ci-live-llm-session-secret-not-production
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Free runner disk
+        run: |
+          set -euo pipefail
+
+          sudo rm -rf \
+            /usr/local/lib/android \
+            /usr/share/dotnet \
+            /opt/ghc \
+            /usr/local/share/boost \
+            "$AGENT_TOOLSDIRECTORY" || true
+
+          docker system prune -af || true
+
+          echo "===== DISK ====="
+          df -h
+
+          echo "===== MEMORY ====="
+          free -h
+
+      - name: Prepare CI environment file
+        run: |
+          set -euo pipefail
+
+          cat > .env <<EOF
+          JWT_SECRET=${JWT_SECRET}
+          KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
+          MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+          POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+          SESSION_SECRET=${SESSION_SECRET}
+          GRAFANA_PASSWORD=hsaai-ci-grafana-not-production
+          NEO4J_PASSWORD=hsaai-ci-neo4j-not-production
+          OPENAI_API_KEY=
+          EOF
+
+          chmod 600 .env
+          echo "PASS: CI-only .env created"
+
+      - name: Validate Compose
+        run: docker compose config >/dev/null
+
+      - name: Start Redis
+        run: |
+          set -euo pipefail
+          docker compose up -d --no-deps redis
+
+          for i in $(seq 1 30); do
+            if docker compose exec -T redis redis-cli ping | grep -q PONG; then
+              echo "PASS: Redis ready"
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "STOP: Redis not ready"
+          exit 1
+
+      - name: Start Ollama
+        run: |
+          set -euo pipefail
+
+          docker compose up -d --no-deps ollama
+
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:11434/api/tags >/dev/null; then
+              echo "PASS: Ollama ready"
+              exit 0
+            fi
+            sleep 2
+          done
+
+          docker compose logs --no-color ollama || true
+          exit 1
+
+      - name: Pull production model
+        timeout-minutes: 15
+        run: |
+          set -euo pipefail
+
+          docker compose exec -T ollama \
+            ollama pull qwen2.5:7b-instruct
+
+          docker compose exec -T ollama \
+            ollama list
+
+          echo "===== RESOURCE STATUS ====="
+          df -h
+          free -h
+
+      - name: Run direct Ollama inference
+        timeout-minutes: 8
+        run: |
+          set -euo pipefail
+
+          REQUEST="$RUNNER_TEMP/ollama-request.json"
+          RESPONSE="$RUNNER_TEMP/ollama-response.json"
+
+          cat > "$REQUEST" <<'JSON'
+          {
+            "model": "qwen2.5:7b-instruct",
+            "messages": [
+              {
+                "role": "system",
+                "content": "أجب باللغة العربية بإجابة قصيرة."
+              },
+              {
+                "role": "user",
+                "content": "قل فقط: اختبار HSAAI ناجح"
+              }
+            ],
+            "stream": false,
+            "options": {
+              "temperature": 0,
+              "num_predict": 40
+            }
+          }
+          JSON
+
+          curl             --fail             --silent             --show-error             --max-time 300             -H "Content-Type: application/json"             --data-binary @"$REQUEST"             http://127.0.0.1:11434/api/chat             > "$RESPONSE"
+
+          python - <<'PYVERIFY'
+          import json
+          from pathlib import Path
+          import os
+
+          response = Path(
+              os.environ["RUNNER_TEMP"]
+          ) / "ollama-response.json"
+
+          data = json.loads(
+              response.read_text(encoding="utf-8")
+          )
+
+          content = (
+              data.get("message", {}).get("content", "")
+              or data.get("response", "")
+          ).strip()
+
+          if not content:
+              raise SystemExit(
+                  "STOP: Ollama returned an empty response"
+              )
+
+          print("PASS: Real Ollama inference completed")
+          print("model:", data.get("model"))
+          print("response_chars:", len(content))
+          print("response_preview:", content[:200])
+          PYVERIFY
+
+      - name: Build LLM Gateway
+        run: |
+          set -euo pipefail
+          docker compose build llm-gateway
+
+      - name: Start LLM Gateway
+        run: |
+          set -euo pipefail
+
+          LOCAL_LLM_MODEL=qwen2.5:7b-instruct \
+          docker compose up -d --no-deps llm-gateway
+
+          for i in $(seq 1 60); do
+            id="$(docker compose ps -q llm-gateway)"
+
+            if [ -n "$id" ] && \
+               [ "$(docker inspect -f '{{.State.Status}}' "$id")" = "running" ]; then
+
+              if curl -fsS http://127.0.0.1:8090/health >/dev/null; then
+                echo "PASS: LLM Gateway healthy"
+                exit 0
+              fi
+            fi
+
+            sleep 2
+          done
+
+          docker compose logs --no-color llm-gateway || true
+          exit 1
+
+      - name: Show final resource usage
+        if: always()
+        run: |
+          df -h || true
+          free -h || true
+          docker stats --no-stream || true
+          docker compose ps --all || true
+
+      - name: Collect failure logs
+        if: failure()
+        run: |
+          docker compose logs \
+            --no-color \
+            --tail=150 \
+            ollama llm-gateway || true
+
+      - name: Shutdown
+        if: always()
+        run: |
+          docker compose down \
+            --remove-orphans \
+            --volumes || true
+
+          rm -f .env

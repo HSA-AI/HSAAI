@@ -85,7 +85,7 @@ MAX_UPLOAD_BYTES = int(os.getenv("RAG_MAX_UPLOAD_BYTES", str(25 * 1024 * 1024)))
 LLM_GATEWAY_URL = os.getenv("LLM_GATEWAY_URL", "http://llm_gateway:8090")
 RAG_ANSWER_USE_LLM = os.getenv("RAG_ANSWER_USE_LLM", "true").lower() == "true"
 # FIX v2.0: Aligned with llm_gateway/models.local.json:default ("qwen3:8b").
-RAG_ANSWER_MODEL = os.getenv("RAG_ANSWER_MODEL") or os.getenv("LOCAL_LLM_MODEL", "qwen3:8b")
+RAG_ANSWER_MODEL = os.getenv("RAG_ANSWER_MODEL") or os.getenv("LOCAL_LLM_MODEL", "qwen2.5:7b-instruct")
 
 # FIX: Persistent event storage instead of in-memory list
 EVENT_DB_PATH = Path(os.getenv("RAG_EVENT_DB", "/data/rag_events.db"))
