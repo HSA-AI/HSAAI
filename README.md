@@ -31,38 +31,6 @@ HSAAI combines **Enterprise RAG, Local LLMs, AI Agents, LLM Gateway, Qdrant, Oll
 
 <!-- HSAAI-SEO-HERO:END -->
 
-<!-- SEO-HERO:START -->
-
-**HSAAI** is a private, sovereign, self-hosted **Enterprise AI Platform** for secure generative AI, enterprise RAG, local LLM inference, Arabic enterprise AI, multi-agent orchestration, AI governance, observability, and Kubernetes-based deployment.
-
-**منصة HSAAI** هي منصة ذكاء اصطناعي مؤسسية خاصة وسيادية وذاتية الاستضافة، مصممة لتشغيل نماذج اللغة المحلية، والبحث المعزز بالتوليد RAG، والوكلاء الأذكياء، وحوكمة الذكاء الاصطناعي، ومعالجة المعرفة المؤسسية بأمان.
-
-### Validated Enterprise AI Capabilities
-
-| Capability | Current validated status |
-| --- | --- |
-| Live local LLM inference | ✅ Ollama + qwen2.5:7b-instruct |
-| Enterprise RAG | ✅ Validated end-to-end |
-| Retrieval precision | ✅ 100% on current controlled benchmark |
-| Retrieval recall | ✅ 100% on current controlled benchmark |
-| Citation precision | ✅ 100% |
-| Citation recall | ✅ 100% |
-| Prompt-injection protection | ✅ 100% on current benchmark |
-| LLM grounded-answer rate | ✅ 100% |
-| Required fact recall | ✅ 86.61% |
-| Live LLM overall quality gate | ✅ PASS |
-| Authentication and authorization | ✅ Keycloak + JWT |
-| Tenant / workspace isolation | ✅ |
-| PII protection | ✅ |
-| Kubernetes CI validation | ✅ |
-| Real external Kubernetes acceptance | ⏳ Pending external-cluster validation |
-
-HSAAI combines **Enterprise RAG, Local LLMs, AI Agents, LLM Gateway, Qdrant, Keycloak, Ollama, FastAPI, Next.js, PostgreSQL, Redis, Kafka, Neo4j, MinIO, Vault, MLflow, Prometheus, Grafana, Loki, Tempo, Thanos, Docker, and Kubernetes** in a unified enterprise AI architecture.
-
-> Benchmark percentages above describe the current controlled HSAAI evaluation suite and are not claims of universal model accuracy.
-
-<!-- SEO-HERO:END -->
-
 **Enterprise AI Platform for Secure RAG · Agentic AI · AI Agents · Multi-Agent Systems · Knowledge Graphs · Workflow Automation · AI Governance · LLMOps · MLOps · DevSecOps · Kubernetes**
 
 [![Release](https://img.shields.io/github/v/release/HSA-AI/HSAAI?display_name=tag)](https://github.com/HSA-AI/HSAAI/releases/latest)
@@ -368,8 +336,19 @@ HSAAI/
 
 ---
 
-## Enterprise Infrastructure
+### Architecture Overview
 
+HSAAI follows a modular Enterprise AI architecture built around secure identity,
+Enterprise RAG, local LLM inference, AI agents, multi-agent orchestration,
+workflow automation, governance, observability, and Kubernetes-oriented deployment.
+
+**Validated live AI path:**
+
+**Keycloak / JWT → Security Controls → Enterprise RAG → Qdrant →
+Cross-Encoder Relevance Gate → LLM Gateway → Ollama →
+qwen2.5:7b-instruct → Grounded Answer → Citation Validation**
+
+## Enterprise Infrastructure
 HSAAI integrates with enterprise infrastructure including:
 
 - **PostgreSQL** — relational application data
