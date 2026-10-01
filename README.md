@@ -6,7 +6,7 @@
 
 **HSAAI** هي منصة ذكاء اصطناعي مؤسسية خاصة وسيادية وذاتية الاستضافة، مخصصة لتشغيل نماذج اللغة المحلية، وEnterprise RAG، والوكلاء الأذكياء، والبحث في المعرفة المؤسسية، وحوكمة وأمن الذكاء الاصطناعي.
 
-### Validated Enterprise AI Quality
+## Validated Enterprise AI Quality
 
 | Capability | Validated result |
 | --- | --- |
@@ -25,11 +25,13 @@
 | Benchmark Errors | ✅ 0 |
 | Real External Kubernetes | ⏳ External-cluster acceptance pending |
 
-HSAAI combines **Enterprise RAG, Local LLMs, AI Agents, LLM Gateway, Qdrant, Ollama, Keycloak, FastAPI, Next.js, PostgreSQL, Redis, Kafka, Neo4j, MinIO, Vault, MLflow, Prometheus, Grafana, Loki, Tempo, Thanos, Docker, and Kubernetes** in one enterprise AI architecture.
+HSAAI combines Enterprise RAG, Local LLMs, AI Agents, LLM Gateway, Qdrant,
+Ollama, Keycloak, FastAPI, Next.js, PostgreSQL, Redis, Kafka, Neo4j, MinIO,
+Vault, MLflow, Prometheus, Grafana, Loki, Tempo, Thanos, Docker, and Kubernetes
+in one enterprise AI architecture.
 
-> Benchmark percentages describe the current controlled HSAAI evaluation suite and are not claims of universal AI accuracy.
-
-<!-- HSAAI-SEO-HERO:END -->
+> Benchmark percentages describe the current controlled HSAAI evaluation suite
+> and are not claims of universal AI accuracy.
 
 **Enterprise AI Platform for Secure RAG · Agentic AI · AI Agents · Multi-Agent Systems · Knowledge Graphs · Workflow Automation · AI Governance · LLMOps · MLOps · DevSecOps · Kubernetes**
 
@@ -66,8 +68,8 @@ Designed around the enterprise AI requirements of **Hayel Saeed Anam & Co. (HSA 
 ## Release & Validation Status
 
 | Area | Verified Status |
-|---|---|
-| Latest Published Release | ✅ `HSAAI v4.0.0 — Production Release` |
+| --- | --- |
+| Latest Published Release | ✅ HSAAI v4.0.0 — Production Release |
 | Release Commit | ✅ `80b7806` |
 | GitHub Release | ✅ Published |
 | Final Release Validation | ✅ 32/32 successful · 0 failing · 0 pending |
@@ -87,21 +89,6 @@ Designed around the enterprise AI requirements of **Hayel Saeed Anam & Co. (HSA 
 | Release Package Hygiene | ✅ Passing |
 | Artifact Integrity | ✅ SHA-256 published |
 | Real External Kubernetes | 🚧 Deployment-specific operator gate |
-
-**Release artifact:** `HSAAI_v4.0.0.zip`
-
-**SHA-256:**
-`4e8e69695537adccbc969c4f7a3047ffd844cc46439d3cc86d055da9b6e9c2d2`
-
-The `v4.0.0` software release has completed its repository-level engineering, security, dependency, coverage, enterprise runtime, authenticated E2E, production wiring, runtime-parity, image-supply-chain, package-integrity and final release validation.
-
-Real external Kubernetes deployment, production secrets, TLS, networking, persistent storage, backup/restore and disaster-recovery acceptance remain environment-specific operational responsibilities.
-
-[View HSAAI v4.0.0 Release](https://github.com/HSA-AI/HSAAI/releases/tag/v4.0.0)
-**Detailed release evidence:** [`docs/reports/CURRENT_RELEASE_STATUS.md`](docs/reports/CURRENT_RELEASE_STATUS.md)
-
-
----
 
 ## What is HSAAI?
 
