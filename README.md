@@ -115,25 +115,23 @@ The platform is designed so AI capabilities can operate under enterprise authent
 ## Core Capabilities
 
 | Domain | Capabilities |
-|---|---|
-| Enterprise AI | LLM integration, intelligent assistants and governed AI execution |
-| Enterprise RAG | Document ingestion, embeddings, retrieval, reranking and citations |
-| AI Agents | Specialized agents, routing, tools and task execution |
-| Multi-Agent Systems | Supervisor logic, agent coordination and orchestration |
+| --- | --- |
+| Enterprise AI | LLM integration, intelligent assistants, and governed AI execution |
+| Enterprise RAG | Document ingestion, embeddings, retrieval, reranking, and citations |
+| AI Agents | Specialized agents, routing, tools, and task execution |
+| Multi-Agent Systems | Supervisor logic, agent coordination, and orchestration |
 | Knowledge Management | Enterprise search and organizational knowledge discovery |
 | Knowledge Graphs | Neo4j-oriented graph integration and ontology |
-| Workflow Automation | Automated workflows, approvals and human-in-the-loop |
-| AI Governance | Policy, audit, evaluation and responsible AI controls |
-| Identity & Access | Authentication, JWT, RBAC, ABAC and Keycloak integration |
-| LLMOps | LLM routing, provider abstraction, controlled model access and evaluation |
-| MLOps | Training, experiment tracking, evaluation, registry and lifecycle |
+| Workflow Automation | Automated workflows, approvals, and human-in-the-loop |
+| AI Governance | Policy, audit, evaluation, and responsible AI controls |
+| Identity & Access | Authentication, JWT, RBAC, ABAC, and Keycloak integration |
+| LLMOps | LLM routing, provider abstraction, controlled model access, and evaluation |
+| MLOps | Training, experiment tracking, evaluation, registry, and lifecycle |
 | Enterprise Integrations | Extensible connectors and internal-system integration |
-| Observability | Metrics, logs, traces and dashboards |
-| DevSecOps | CI/CD, security validation, dependency auditing and image supply chain |
-| Cloud Native | Docker, Kubernetes, Helm and production infrastructure |
+| Observability | Metrics, logs, traces, and dashboards |
+| DevSecOps | CI/CD, security validation, dependency auditing, and image supply chain |
+| Cloud Native | Docker, Kubernetes, Helm, and production infrastructure |
 | Enterprise UX | Next.js web interface with Arabic and RTL-oriented support |
-
----
 
 ## Enterprise RAG
 
