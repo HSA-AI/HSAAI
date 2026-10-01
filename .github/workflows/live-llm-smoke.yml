@@ -47,6 +47,24 @@ jobs:
           echo "===== MEMORY ====="
           free -h
 
+      - name: Prepare CI environment file
+        run: |
+          set -euo pipefail
+
+          cat > .env <<EOF
+          JWT_SECRET=${JWT_SECRET}
+          KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
+          MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+          POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+          SESSION_SECRET=${SESSION_SECRET}
+          GRAFANA_PASSWORD=hsaai-ci-grafana-not-production
+          NEO4J_PASSWORD=hsaai-ci-neo4j-not-production
+          OPENAI_API_KEY=
+          EOF
+
+          chmod 600 .env
+          echo "PASS: CI-only .env created"
+
       - name: Validate Compose
         run: docker compose config >/dev/null
 
@@ -184,3 +202,5 @@ jobs:
           docker compose down \
             --remove-orphans \
             --volumes || true
+
+          rm -f .env
