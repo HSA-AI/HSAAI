@@ -6,6 +6,27 @@
 
 **HSAAI** هي منصة ذكاء اصطناعي مؤسسية خاصة وسيادية وذاتية الاستضافة، مخصصة لتشغيل نماذج اللغة المحلية، وEnterprise RAG، والوكلاء الأذكياء، والبحث في المعرفة المؤسسية، وحوكمة وأمن الذكاء الاصطناعي.
 
+<!-- HSAAI-PROJECT-LEADERSHIP:START -->
+## Project Leadership
+
+**HSAAI** was created and engineered by **Haithim Nasher**, serving as
+**Principal AI Platform Engineer and Lead Architect** for the platform.
+
+His work on HSAAI focuses on private, sovereign, and self-hosted
+Enterprise AI infrastructure, including Enterprise RAG, local LLMs,
+AI agents, multi-agent orchestration, AI governance, LLMOps, MLOps,
+DevSecOps, observability, and Kubernetes-oriented deployment.
+
+- **Project:** HSAAI — Enterprise AI Platform
+- **Engineer & Architect:** [Haithim Nasher](https://github.com/HaithimNasher)
+- **GitHub Organization:** HSA-AI
+- **Repository:** https://github.com/HSA-AI/HSAAI
+
+> Intellectual-property ownership, usage rights, and distribution terms
+> are governed exclusively by the repository's LICENSE.
+
+<!-- HSAAI-PROJECT-LEADERSHIP:END -->
+
 ## Validated Enterprise AI Quality
 
 | Capability | Validated result |
@@ -34,6 +55,27 @@ in one enterprise AI architecture.
 > and are not claims of universal AI accuracy.
 
 ## العربية
+
+
+<!-- HSAAI-PROJECT-LEADERSHIP-AR:START -->
+### قيادة المشروع
+
+تم إنشاء وهندسة منصة **HSAAI** بقيادة المهندس
+**هيثم ناشر (Haithim Nasher)** بصفته
+**Principal AI Platform Engineer وLead Architect** للمنصة.
+
+يركز عمله في HSAAI على بنية الذكاء الاصطناعي المؤسسي الخاصة والسيادية
+وذاتية الاستضافة، بما يشمل Enterprise RAG، والنماذج اللغوية المحلية،
+والوكلاء الأذكياء، والأنظمة متعددة الوكلاء، وحوكمة الذكاء الاصطناعي،
+وLLMOps، وMLOps، وDevSecOps، والمراقبة، وKubernetes.
+
+- **المشروع:** HSAAI — Enterprise AI Platform
+- **المهندس والمعماري:** [Haithim Nasher](https://github.com/HaithimNasher)
+
+> تخضع حقوق الملكية الفكرية والاستخدام والتوزيع حصريًا للشروط المحددة
+> في ملف LICENSE الخاص بالمستودع.
+
+<!-- HSAAI-PROJECT-LEADERSHIP-AR:END -->
 
 **HSAAI** منصة ذكاء اصطناعي مؤسسية متكاملة تجمع بين إدارة المعرفة، وRAG، والوكلاء الأذكياء، والأنظمة متعددة الوكلاء، والرسوم البيانية المعرفية، وأتمتة سير العمل، وحوكمة الذكاء الاصطناعي، وLLMOps، وMLOps، والبنية التحتية السحابية ضمن معمارية موحدة وآمنة وقابلة للتوسع.
 
