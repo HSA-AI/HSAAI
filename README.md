@@ -610,6 +610,27 @@ The final delivery package excludes private and runtime-only artifacts such as:
 
 ---
 
+<!-- HSAAI-ATTRIBUTION:START -->
+## Attribution & Citation
+
+Formal project attribution and citation metadata are available in:
+
+- [AUTHORS.md](AUTHORS.md) — project leadership and engineering attribution
+- [CITATION.cff](CITATION.cff) — machine-readable citation metadata
+- [NOTICE.md](NOTICE.md) — attribution and legal notice
+
+**Principal AI Platform Engineer & Lead Architect:**
+[Haithim Nasher](https://github.com/HaithimNasher)
+
+**Category:** Enterprise AI Platform
+
+**Domain:** Enterprise Artificial Intelligence
+
+> Intellectual-property ownership, usage rights, and distribution terms are
+> governed exclusively by the repository's `LICENSE`.
+
+<!-- HSAAI-ATTRIBUTION:END -->
+
 ## Documentation
 
 | Resource | Purpose |

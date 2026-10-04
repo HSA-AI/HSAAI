@@ -1,0 +1,34 @@
+cff-version: 1.2.0
+message: "If you reference HSAAI, please use the citation metadata provided here."
+title: "HSAAI — Enterprise AI Platform"
+type: software
+version: "4.0.0"
+
+authors:
+  - family-names: "Nasher"
+    given-names: "Haithim"
+
+repository-code: "https://github.com/HSA-AI/HSAAI"
+url: "https://hsa-ai.github.io/HSAAI/"
+
+abstract: >-
+  HSAAI is a private, sovereign, self-hosted Enterprise AI Platform for
+  Enterprise RAG, local LLM inference, AI agents, multi-agent orchestration,
+  AI governance, LLMOps, MLOps, observability, DevSecOps, and
+  Kubernetes-oriented deployment.
+
+keywords:
+  - enterprise AI
+  - enterprise AI platform
+  - enterprise RAG
+  - retrieval augmented generation
+  - local LLM
+  - AI agents
+  - agentic AI
+  - multi-agent systems
+  - Arabic AI
+  - AI governance
+  - LLMOps
+  - MLOps
+  - DevSecOps
+  - Kubernetes
