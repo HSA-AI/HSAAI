@@ -37,8 +37,6 @@ Engineering and architecture areas include:
 - **Domain:** Enterprise Artificial Intelligence
 - **GitHub Organization:** HSA-AI
 - **Repository:** https://github.com/HSA-AI/HSAAI
-- **Project Website:** https://hsa-ai.github.io/HSAAI/
-
 ## Legal Notice
 
 This file provides project attribution and engineering-role information only.

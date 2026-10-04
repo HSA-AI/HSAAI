@@ -13,10 +13,6 @@ Repository:
 
 https://github.com/HSA-AI/HSAAI
 
-Project website:
-
-https://hsa-ai.github.io/HSAAI/
-
 This notice provides project attribution and engineering-role information only.
 
 It does not grant, modify, transfer, or supersede any copyright,

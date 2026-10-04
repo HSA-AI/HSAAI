@@ -9,8 +9,7 @@ authors:
     given-names: "Haithim"
 
 repository-code: "https://github.com/HSA-AI/HSAAI"
-url: "https://hsa-ai.github.io/HSAAI/"
-
+url: "https://github.com/HSA-AI/HSAAI"
 abstract: >-
   HSAAI is a private, sovereign, self-hosted Enterprise AI Platform for
   Enterprise RAG, local LLM inference, AI agents, multi-agent orchestration,
