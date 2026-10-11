@@ -22,7 +22,7 @@ jobs:
     steps:
 
       - name: Checkout HSAAI Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
 
       - name: Prepare CI Environment Variables
