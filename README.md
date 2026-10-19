@@ -77,8 +77,10 @@ in one enterprise AI architecture.
 - **المشروع:** HSAAI — Enterprise AI Platform
 - **المهندس والمعماري:** [Haithim Nasher](https://github.com/HaithimNasher)
 
-> تخضع حقوق الملكية الفكرية والاستخدام والتوزيع حصريًا للشروط المحددة
-> في ملف LICENSE الخاص بالمستودع.
+> يخضع استخدام البرمجيات وتعديلها وتوزيعها لشروط
+> ملف LICENSE، بينما يتم توثيق تأليف المشروع
+> والإسناد إلى المساهمين في ملفات AUTHORS.md
+> وCITATION.cff وNOTICE.md.
 
 <!-- HSAAI-PROJECT-LEADERSHIP-AR:END -->
 
