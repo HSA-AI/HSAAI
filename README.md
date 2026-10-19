@@ -5,6 +5,7 @@
 **HSAAI** is a private, sovereign, self-hosted **Enterprise AI Platform** for secure generative AI, Enterprise RAG, local LLM inference, Arabic enterprise AI, AI agents, multi-agent workflows, AI governance, observability, and Kubernetes deployment.
 
 **HSAAI** هي منصة ذكاء اصطناعي مؤسسية خاصة وسيادية وذاتية الاستضافة، مخصصة لتشغيل نماذج اللغة المحلية، وEnterprise RAG، والوكلاء الأذكياء، والبحث في المعرفة المؤسسية، وحوكمة وأمن الذكاء الاصطناعي.
+<!-- HSAAI-SEO-HERO:END -->
 
 <!-- HSAAI-PROJECT-LEADERSHIP:START -->
 ## Project Leadership
@@ -666,10 +667,11 @@ Current CI and release evidence takes precedence over older validation snapshots
 ## Repository Scope
 
 HSAAI is an independent, sovereign, self-hosted
-Enterprise AI Platform developed by Haithim Nasher.
+Enterprise AI Platform founded and engineered by
+Haithim Nasher.
 
-HSAAI has been submitted as an independent AI initiative
-for consideration by Hayel Saeed Anam Group.
+The project has been submitted to Hayel Saeed Anam Group
+as an independent enterprise AI initiative for consideration.
 
 The platform is designed to address enterprise
 artificial intelligence requirements across
