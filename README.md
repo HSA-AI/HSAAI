@@ -632,8 +632,10 @@ Formal project attribution and citation metadata are available in:
 
 **Domain:** Enterprise Artificial Intelligence
 
-> Intellectual-property ownership, usage rights, and distribution terms are
-> governed exclusively by the repository's `LICENSE`.
+> Software use, modification, and distribution are subject
+> to the repository's LICENSE. Project authorship and
+> attribution are documented in AUTHORS.md, CITATION.cff,
+> and NOTICE.md.
 
 <!-- HSAAI-ATTRIBUTION:END -->
 
