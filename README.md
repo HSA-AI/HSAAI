@@ -5,6 +5,7 @@
 **HSAAI** is a private, sovereign, self-hosted **Enterprise AI Platform** for secure generative AI, Enterprise RAG, local LLM inference, Arabic enterprise AI, AI agents, multi-agent workflows, AI governance, observability, and Kubernetes deployment.
 
 **HSAAI** هي منصة ذكاء اصطناعي مؤسسية خاصة وسيادية وذاتية الاستضافة، مخصصة لتشغيل نماذج اللغة المحلية، وEnterprise RAG، والوكلاء الأذكياء، والبحث في المعرفة المؤسسية، وحوكمة وأمن الذكاء الاصطناعي.
+
 <!-- HSAAI-SEO-HERO:END -->
 
 <!-- HSAAI-PROJECT-LEADERSHIP:START -->
