@@ -655,9 +655,22 @@ Current CI and release evidence takes precedence over older validation snapshots
 
 ## Repository Scope
 
-HSAAI is designed around the enterprise AI requirements of **Hayel Saeed Anam & Co. (HSA Group)**.
+HSAAI is an independent, sovereign, self-hosted
+Enterprise AI Platform developed by Haithim Nasher.
 
-The platform demonstrates how enterprise knowledge, Retrieval-Augmented Generation, AI agents, multi-agent orchestration, knowledge graphs, workflow automation, AI governance, LLMOps, MLOps, DevSecOps and cloud-native infrastructure can operate within one unified **Enterprise AI Operating System**.
+The platform is designed to address enterprise
+artificial intelligence requirements across
+organizations and industries.
+
+HSAAI demonstrates how enterprise knowledge,
+Retrieval-Augmented Generation, AI agents,
+multi-agent orchestration, knowledge graphs,
+workflow automation, AI governance, LLMOps,
+MLOps, DevSecOps, and cloud-native infrastructure
+can operate within one unified Enterprise AI
+architecture.
+
+
 
 ---
 
