@@ -1,145 +1,471 @@
-HSAAI ENTERPRISE PROPRIETARY LICENSE
-Version 1.0 — October 2026
+HSAAI ENTERPRISE PROPRIETARY SOFTWARE LICENSE
+Version 1.1 — October 2026
 
 Copyright (c) 2026 Haithim Nasher.
 All Rights Reserved.
 
-Project: HSAAI — Enterprise Artificial Intelligence Platform
-Original Developer: Haithim Nasher
-Copyright Holder: Haithim Nasher
-License Type: Proprietary — All Rights Reserved
+================================================================
+PROJECT IDENTIFICATION
+================================================================
 
-Potential Enterprise Recipient:
-Hayel Saeed Anam Group (HSA Group)
+Project Name:
+HSAAI
 
-1. OWNERSHIP AND INTELLECTUAL PROPERTY
+Project Description:
+Private, Sovereign, Self-Hosted Enterprise Artificial
+Intelligence Platform
 
-All rights, title, and interest in the original HSAAI
-Software, including its source code, architecture,
+Project Category:
+Enterprise AI Platform
+
+Original Founder and Developer:
+Haithim Nasher (هيثم ناشر)
+
+Project Leadership:
+Principal AI Platform Engineer & Lead Architect
+
+Copyright Holder:
+Haithim Nasher
+
+Official Repository:
+https://github.com/HSA-AI/HSAAI
+
+License Classification:
+Proprietary Software — All Rights Reserved
+
+================================================================
+1. PURPOSE AND SCOPE
+================================================================
+
+This License establishes the terms governing the
+proprietary HSAAI software platform.
+
+HSAAI is an independently developed Enterprise AI
+Platform designed to support private, sovereign,
+and self-hosted artificial intelligence workloads.
+
+The platform architecture encompasses technologies
+and capabilities including:
+
+- Enterprise Artificial Intelligence
+- Retrieval-Augmented Generation (Enterprise RAG)
+- Local Large Language Models
+- Arabic Enterprise AI
+- AI Agents
+- Multi-Agent Systems
+- Enterprise Knowledge Management
+- Knowledge Graphs
+- Workflow Automation
+- AI Governance
+- LLMOps and MLOps
+- DevSecOps
+- Observability
+- Kubernetes-oriented Deployment
+
+These descriptions identify the technical scope of
+the project and do not constitute a representation
+that every capability is available or production-ready
+in every deployment configuration.
+
+This License applies only to software and materials
+for which the Copyright Holder possesses the
+necessary licensing rights.
+
+================================================================
+2. OWNERSHIP AND INTELLECTUAL PROPERTY
+================================================================
+
+All rights, title, and interest in the original
+HSAAI software, source code, architecture,
 documentation, and other protectable intellectual
-property, remain with Haithim Nasher to the extent
+property remain with Haithim Nasher to the extent
 legally owned by him.
 
-Third-party software and materials remain subject
-to their respective licenses and ownership rights.
+Ownership of third-party software, frameworks,
+libraries, models, datasets, and other materials
+remains with their respective rights holders.
 
-2. RESERVATION OF RIGHTS
+Nothing in this License transfers ownership of
+HSAAI intellectual property to any person,
+company, institution, or organization.
 
-No permission is granted to reproduce, modify,
-redistribute, sublicense, sell, or commercially
-exploit the proprietary Software without prior
-written authorization from the Copyright Holder,
-except as permitted by applicable law.
+Public availability of the repository does not
+constitute a transfer of intellectual property.
 
-Public availability of the source code does not
-constitute an open-source license.
+================================================================
+3. RESERVATION OF RIGHTS
+================================================================
 
-3. FUTURE TRANSFER TO HSA GROUP
+All rights are reserved.
+
+Except as expressly authorized in writing by the
+Copyright Holder or permitted by applicable law,
+no permission is granted to:
+
+- Reproduce the proprietary Software
+- Modify or create derivative works
+- Redistribute the proprietary Software
+- Sublicense the proprietary Software
+- Sell or commercially exploit the Software
+- Incorporate proprietary components into
+  commercial products
+- Offer unauthorized hosted services based
+  on the proprietary Software
+- Deploy the proprietary Software for
+  unauthorized commercial production use
+
+Access to publicly available source code does
+not itself grant a license to use, modify,
+redistribute, or commercially exploit that code.
+
+Any rights granted under a separate valid
+written agreement remain governed by that
+agreement.
+
+================================================================
+4. ENTERPRISE EVALUATION AND SUBMISSION
+================================================================
+
+HSAAI may be presented or submitted to
+enterprises, institutions, investors, research
+organizations, or other potential recipients
+for technical or commercial consideration.
+
+Submission, presentation, demonstration,
+or disclosure of project information does not,
+by itself, grant permission to reproduce,
+modify, redistribute, commercially exploit,
+or deploy the proprietary Software.
+
+Any evaluation requiring rights beyond those
+permitted by applicable law must be authorized
+through a separate written agreement.
+
+Such an agreement may define:
+
+- Evaluation purpose
+- Authorized participants
+- Evaluation period
+- Permitted technical activities
+- Access restrictions
+- Confidentiality obligations
+- Security requirements
+- Intellectual property protections
+- Data handling requirements
+- Evaluation termination conditions
+
+No ownership transfer arises solely from
+submission or evaluation.
+
+================================================================
+5. ENTERPRISE INITIATIVE SUBMISSION
+================================================================
+
+HSAAI has been submitted as an independent
+enterprise artificial intelligence initiative
+to Hayel Saeed Anam Group (HSA Group)
+for consideration.
+
+The submission is identified solely to
+document the project's initiative history.
+
+Submission does not, by itself, establish:
+
+- Ownership by HSA Group
+- Official endorsement
+- Sponsorship
+- Partnership
+- Commercial authorization
+- Technology adoption
+- A binding contractual relationship
+- Assignment of intellectual property
+
+Any future relationship shall be determined
+by separately executed agreements between
+the relevant parties.
+
+References to HSA Group are descriptive
+and do not imply that HSAAI is an official
+product, subsidiary, or platform of the Group.
+
+================================================================
+6. FUTURE ENTERPRISE LICENSING
+================================================================
+
+The Copyright Holder may negotiate separate
+enterprise licensing arrangements.
+
+Such arrangements may include:
+
+- Enterprise evaluation licenses
+- Internal deployment licenses
+- Commercial software licenses
+- Technical support agreements
+- Maintenance agreements
+- Integration agreements
+- Source code access agreements
+- Technology transfer agreements
+
+Any such arrangement must be documented
+in a separate legally valid agreement.
+
+Nothing in this License obligates the
+Copyright Holder to enter into any
+commercial arrangement.
+
+================================================================
+7. FUTURE INTELLECTUAL PROPERTY TRANSFER
+================================================================
 
 The Copyright Holder may negotiate a future
-assignment or transfer of intellectual property
-rights to Hayel Saeed Anam Group.
+assignment or transfer of intellectual
+property rights to an enterprise or other
+eligible legal entity.
 
-Any transfer requires a separate written agreement
-signed by the Copyright Holder and an authorized
-representative of the relevant HSA Group legal entity.
+Any transfer requires a separate valid
+written agreement executed by the
+appropriate parties.
 
-The agreement must identify the transferred assets,
-scope of rights, effective date, applicable financial
-terms, retained rights, and governing law.
+The agreement should identify:
 
-Until such agreement becomes legally effective,
-ownership remains with the Copyright Holder.
+- The legal identities of the parties
+- The intellectual property being transferred
+- The scope of transferred rights
+- The effective date
+- Applicable financial terms
+- Retained rights, if any
+- Third-party rights and restrictions
+- Confidentiality obligations
+- Governing law
+- Dispute resolution procedures
+
+Until such an agreement becomes legally
+effective, ownership remains with the
+respective existing rights holders.
 
 No transfer shall be automatic or implied.
 
-4. ENTERPRISE EVALUATION
+================================================================
+8. THIRD-PARTY COMPONENTS
+================================================================
 
-HSAAI may be submitted to HSA Group for evaluation.
+HSAAI may incorporate, integrate with,
+or depend upon third-party technologies.
 
-Submission does not automatically grant permission
-for production deployment, commercial exploitation,
-modification, or redistribution.
+These may include software libraries,
+frameworks, infrastructure components,
+AI models, datasets, and external services.
 
-Any evaluation requiring additional rights must be
-authorized through a separate written agreement.
+All third-party components remain subject
+to their respective licenses and applicable
+legal requirements.
 
-5. THIRD-PARTY COMPONENTS
+Nothing in this License overrides rights
+granted by applicable third-party licenses.
 
-Third-party libraries, frameworks, models, and
-services remain governed by their own licenses.
+Recipients are responsible for complying
+with applicable third-party licensing
+requirements when exercising rights
+lawfully available to them.
 
-Nothing in this License overrides rights granted
-under applicable third-party licenses.
+The proprietary classification of HSAAI
+does not convert independently licensed
+third-party components into proprietary
+property of the Copyright Holder.
 
-6. CONFIDENTIALITY
+================================================================
+9. CONFIDENTIALITY
+================================================================
 
-Non-public information shall be protected where
-required by applicable law or a binding agreement.
+Non-public information relating to HSAAI
+shall be protected where required by
+applicable law or a binding agreement.
 
-Publicly available information is not confidential
-solely because it relates to HSAAI.
+Confidential information may include
+non-public technical documentation,
+security information, architecture details,
+commercial proposals, or other information
+properly designated or protected as
+confidential.
 
-7. ORIGINAL AUTHORSHIP
+Information already lawfully available
+to the public is not confidential solely
+because it relates to HSAAI.
 
-Haithim Nasher is identified as the Original
-Developer of HSAAI.
+This provision does not independently
+create confidentiality obligations
+beyond those enforceable under applicable
+law or agreement.
 
-Any future assignment may establish attribution
-obligations, subject to applicable law.
+================================================================
+10. SECURITY AND RESPONSIBLE USE
+================================================================
 
-Non-transferable moral rights remain protected
-where recognized by applicable law.
+Nothing in this License authorizes
+unauthorized access to systems, data,
+credentials, infrastructure, or services.
 
-8. NO IMPLIED AFFILIATION
+Any permitted evaluation or deployment
+must comply with applicable security,
+privacy, data protection, and other
+legal requirements.
 
-References to HSA Group do not imply sponsorship,
-endorsement, ownership, approval, or an existing
-contractual relationship.
+Enterprise deployments may require
+separate technical, security, operational,
+and compliance approvals.
 
-9. WARRANTY DISCLAIMER
+================================================================
+11. ORIGINAL AUTHORSHIP AND ATTRIBUTION
+================================================================
 
-TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW,
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY
-OF ANY KIND, EXPRESS OR IMPLIED.
+Haithim Nasher (هيثم ناشر) is identified
+as the Original Founder and Developer
+of HSAAI.
 
-10. LIMITATION OF LIABILITY
+His project role is identified as:
 
-TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW,
-THE COPYRIGHT HOLDER SHALL NOT BE LIABLE FOR
-INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL,
-OR PUNITIVE DAMAGES ARISING FROM THE SOFTWARE.
+Principal AI Platform Engineer
+& Lead Architect
 
-NOTHING EXCLUDES LIABILITY THAT CANNOT LAWFULLY
-BE EXCLUDED.
+Project attribution information may also
+be documented in:
 
-11. GOVERNING LAW
+- README.md
+- AUTHORS.md
+- CITATION.cff
+- NOTICE.md
 
-Mandatory provisions of applicable law remain
-unaffected.
+Any future assignment or licensing
+agreement may establish applicable
+attribution obligations.
 
-Any future enterprise agreement shall specify
-its governing law and dispute resolution procedures.
+Non-transferable moral rights remain
+protected where recognized by
+applicable law.
 
-12. FUTURE OWNERSHIP CHANGES
+This provision does not override the
+rights of other lawful contributors
+or third-party rights holders.
 
-Any future transfer of HSAAI intellectual property
-rights shall be governed exclusively by a valid
-written agreement.
+================================================================
+12. NO IMPLIED AFFILIATION
+================================================================
 
-This License does not itself constitute an
-assignment or obligation to transfer ownership.
+References to enterprises, organizations,
+institutions, or potential recipients
+do not, by themselves, imply:
 
-13. LICENSING CONTACT
+- Official affiliation
+- Sponsorship
+- Endorsement
+- Ownership
+- Partnership
+- Product adoption
+- Commercial approval
+- Contractual authorization
 
-Copyright Holder: Haithim Nasher
-Project: HSAAI
-Repository: https://github.com/HSA-AI/HSAAI
+Any official relationship must be
+supported by appropriate authorization
+or a valid agreement.
+
+================================================================
+13. WARRANTY DISCLAIMER
+================================================================
+
+TO THE MAXIMUM EXTENT PERMITTED BY
+APPLICABLE LAW, THE PROPRIETARY
+SOFTWARE IS PROVIDED "AS IS",
+WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED.
+
+NO WARRANTY IS PROVIDED REGARDING
+MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE, NON-INFRINGEMENT,
+OR UNINTERRUPTED OPERATION, TO THE
+EXTENT SUCH WARRANTIES MAY LAWFULLY
+BE DISCLAIMED.
+
+================================================================
+14. LIMITATION OF LIABILITY
+================================================================
+
+TO THE MAXIMUM EXTENT PERMITTED BY
+APPLICABLE LAW, THE COPYRIGHT HOLDER
+SHALL NOT BE LIABLE FOR INDIRECT,
+INCIDENTAL, SPECIAL, CONSEQUENTIAL,
+OR PUNITIVE DAMAGES ARISING FROM
+THE SOFTWARE OR ITS USE.
+
+NOTHING IN THIS LICENSE EXCLUDES OR
+LIMITS LIABILITY THAT CANNOT LAWFULLY
+BE EXCLUDED OR LIMITED.
+
+================================================================
+15. GOVERNING LAW AND DISPUTES
+================================================================
+
+Mandatory provisions of applicable law
+remain unaffected.
+
+Any future enterprise licensing,
+evaluation, commercialization,
+or intellectual property transfer
+agreement should specify its
+governing law and dispute
+resolution procedures.
+
+This License does not independently
+establish a governing law for
+every potential dispute.
+
+================================================================
+16. FUTURE OWNERSHIP CHANGES
+================================================================
+
+Any future transfer of HSAAI intellectual
+property rights shall be governed by
+a valid written agreement.
+
+This License does not itself constitute:
+
+- An assignment of ownership
+- An obligation to transfer ownership
+- An exclusive license
+- A partnership agreement
+- A commercial deployment authorization
+- A technology acquisition agreement
+
+Rights remain with their lawful holders
+unless and until legally transferred.
+
+================================================================
+17. COMMERCIAL LICENSING CONTACT
+================================================================
+
+Copyright Holder:
+Haithim Nasher
+
+Project:
+HSAAI — Enterprise Artificial Intelligence Platform
+
+Official Repository:
+https://github.com/HSA-AI/HSAAI
 
 Commercial licensing, enterprise deployment,
-and intellectual property transfer require
-written authorization from the Copyright Holder
-or a duly authorized successor.
+source code licensing, and intellectual
+property transfer require authorization
+from the lawful rights holder or a
+duly authorized successor.
+
+================================================================
+18. COPYRIGHT NOTICE
+================================================================
 
 Copyright (c) 2026 Haithim Nasher.
 All Rights Reserved.
+
+HSAAI is an independent Enterprise AI
+Platform founded and engineered by
+Haithim Nasher.
+
+END OF LICENSE
