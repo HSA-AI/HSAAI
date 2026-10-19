@@ -9,8 +9,10 @@
 <!-- HSAAI-PROJECT-LEADERSHIP:START -->
 ## Project Leadership
 
-**HSAAI** was created and engineered by **Haithim Nasher**, serving as
-**Principal AI Platform Engineer and Lead Architect** for the platform.
+**HSAAI** was conceived, founded, and engineered by
+**Haithim Nasher (هيثم ناشر)**, who serves as
+**Principal AI Platform Engineer & Lead Architect**
+for the platform.
 
 His work on HSAAI focuses on private, sovereign, and self-hosted
 Enterprise AI infrastructure, including Enterprise RAG, local LLMs,
@@ -60,9 +62,10 @@ in one enterprise AI architecture.
 <!-- HSAAI-PROJECT-LEADERSHIP-AR:START -->
 ### قيادة المشروع
 
-تم إنشاء وهندسة منصة **HSAAI** بقيادة المهندس
-**هيثم ناشر (Haithim Nasher)** بصفته
-**Principal AI Platform Engineer وLead Architect** للمنصة.
+تم ابتكار وتأسيس وهندسة منصة **HSAAI** بواسطة المهندس
+**هيثم ناشر (Haithim Nasher)**، بصفته
+**Principal AI Platform Engineer & Lead Architect**
+للمنصة.
 
 يركز عمله في HSAAI على بنية الذكاء الاصطناعي المؤسسي الخاصة والسيادية
 وذاتية الاستضافة، بما يشمل Enterprise RAG، والنماذج اللغوية المحلية،
