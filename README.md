@@ -127,9 +127,10 @@ Real external Kubernetes deployment, production secrets, TLS, networking,
 persistent storage, backup/restore, and disaster-recovery acceptance remain
 environment-specific operational responsibilities.
 
-View HSAAI v4.0.0 Release.
+[View HSAAI v4.0.0 Release](https://github.com/HSA-AI/HSAAI/releases/tag/v4.0.0)
 
-Detailed release evidence: `docs/reports/CURRENT_RELEASE_STATUS.md`
+Detailed release evidence:
+[Current Release Status](docs/reports/CURRENT_RELEASE_STATUS.md)
 
 ## What is HSAAI?
 
