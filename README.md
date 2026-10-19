@@ -668,6 +668,9 @@ Current CI and release evidence takes precedence over older validation snapshots
 HSAAI is an independent, sovereign, self-hosted
 Enterprise AI Platform developed by Haithim Nasher.
 
+HSAAI has been submitted as an independent AI initiative
+for consideration by Hayel Saeed Anam Group.
+
 The platform is designed to address enterprise
 artificial intelligence requirements across
 organizations and industries.
