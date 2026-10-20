@@ -697,3 +697,8 @@ Review `LICENSE` for applicable rights, restrictions and permitted usage.
 This README does not grant rights beyond those defined by the repository license.
 
 ---
+## Technical Portfolio & Independent Verification
+
+Explore the architecture, reproducible tests, security controls, AI quality benchmarks, and engineering contributions:
+
+📘 [Technical Portfolio & Verification Guide](docs/TECHNICAL_PORTFOLIO.md)
