@@ -164,9 +164,14 @@ def process_message(user: str, message: str, workspace_id: str = "default", tena
     }
 
 async def _tokens(text: str):
-    for token in text.split():
-        yield f"data: {token}\n\n"
+    import re
+
+    for token in re.findall(r"\s+|\S+", text):
+        for line in token.split("\n"):
+            yield f"data: {line}\n"
+        yield "\n"
         await asyncio.sleep(0.02)
+
     yield "data: [DONE]\n\n"
 
 def stream_message(user: str, message: str, workspace_id: str = "default", tenant_id: str = "default", claims: dict[str, Any] | None = None):

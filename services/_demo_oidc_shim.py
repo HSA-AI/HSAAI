@@ -104,6 +104,115 @@ def _bearer_from_cookie(request: Request) -> str | None:
     return f"Bearer {token}" if token else None
 
 
+
+
+# HSAAI_LOCAL_LLM_BRIDGE_V1
+# Local demo only. Does not modify the production AI pipeline.
+async def _local_hsa_llm(message: str, workspace_id: str) -> dict:
+    from pathlib import Path
+    import httpx
+
+    folder = Path(
+        os.environ.get(
+            "HSAAI_HSA_CONTEXT_DIR",
+            "/data/data/com.termux/files/home/HSAAI_HSA_Demo"
+        )
+    )
+    system_file = folder / "system_prompt.txt"
+    context_file = folder / "company_context.txt"
+
+    system = system_file.read_text(encoding="utf-8").strip()
+    reference = context_file.read_text(encoding="utf-8").strip()
+
+    greetings = {
+        "مرحبا", "مرحباً", "السلام عليكم",
+        "اهلا", "أهلا", "اهلاً", "hello", "hi"
+    }
+
+    if message.strip().lower() in greetings:
+        return {
+            "response": "مرحباً بك في HSAAI! أنا مساعدك الذكي المحلي. كيف يمكنني مساعدتك اليوم؟",
+            "agent": "local_llm",
+            "agent_name": "HSAAI Local AI",
+            "source": "local_rule",
+            "rag_found": 0,
+            "sources": [],
+            "workspace_id": workspace_id,
+            "local_demo": True,
+        }
+
+    greetings = {
+        "مرحبا", "مرحباً", "السلام عليكم",
+        "اهلا", "أهلا", "اهلاً", "hello", "hi"
+    }
+
+    if message.strip().lower() in greetings:
+        return {
+            "response": "مرحباً بك في HSAAI! أنا مساعدك الذكي المحلي. كيف يمكنني مساعدتك اليوم؟",
+            "agent": "local_llm",
+            "agent_name": "HSAAI Local AI",
+            "source": "local_rule",
+            "rag_found": 0,
+            "sources": [],
+            "workspace_id": workspace_id,
+            "local_demo": True,
+        }
+
+    if not system or not reference:
+        raise ValueError("HSA demo customization files are empty")
+
+    endpoint = os.environ.get(
+        "HSAAI_LOCAL_LLM_URL",
+        "http://127.0.0.1:8081/v1/chat/completions",
+    )
+
+    body = {
+        "messages": [
+            {
+                "role": "system",
+                "content": system,
+            },
+            {
+                "role": "user",
+                "content": (
+                    "Reference data:\\n"
+                    + reference
+                    + "\\n\\nQuestion:\\n"
+                    + message
+                    + "\\n\\nAnswer briefly in English. "
+                    "Use only verified reference facts."
+                ),
+            },
+        ],
+        "max_tokens": 48,
+        "temperature": 0,
+        "repeat_penalty": 1.2,
+        "frequency_penalty": 0.5,
+        "stream": False,
+    }
+
+    async with httpx.AsyncClient(timeout=120) as client:
+        response = await client.post(endpoint, json=body)
+        response.raise_for_status()
+        data = response.json()
+
+    answer = data["choices"][0]["message"]["content"].strip()
+
+    if not answer:
+        raise ValueError("Local LLM returned an empty answer")
+
+    return {
+        "response": answer,
+        "agent": "local_llm",
+        "agent_name": "HSAAI Local AI",
+        "source": "local_llm",
+        "model": data.get("model", "SmolLM2-135M"),
+        "rag_found": 0,
+        "sources": [],
+        "workspace_id": workspace_id,
+        "local_demo": True,
+    }
+
 @app.post("/v1/chat")
 async def demo_v1_chat(request: Request):
     """Gateway-contract bridge: POST /v1/chat -> engine, auth via cookie."""
@@ -114,6 +223,26 @@ async def demo_v1_chat(request: Request):
     tenant_id = claims.get("tenant_id", "default")
     workspace_id = claims.get("workspace_id") or payload.get("workspace_id", "default")
     user = claims.get("sub") or payload.get("user", "demo-user")
+
+    # Local inference is opt-in and follows authorization.
+    if os.environ.get("HSAAI_LOCAL_LLM", "").lower() == "true":
+        if not isinstance(message, str) or not message.strip():
+            return JSONResponse(
+                status_code=400,
+                content={"detail": "Message must not be empty"},
+            )
+        try:
+            result = await _local_hsa_llm(message, workspace_id)
+            return JSONResponse(result)
+        except Exception:
+            import logging
+            logging.getLogger(__name__).exception(
+                "HSAAI local inference failed"
+            )
+            return JSONResponse(
+                status_code=503,
+                content={"detail": "Local AI temporarily unavailable"},
+            )
 
     db = SessionLocal()
     try:
