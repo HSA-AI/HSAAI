@@ -124,6 +124,156 @@ async def _local_hsa_llm(message: str, workspace_id: str) -> dict:
     system = system_file.read_text(encoding="utf-8").strip()
     reference = context_file.read_text(encoding="utf-8").strip()
 
+
+    # HSAAI_FINANCIAL_FACT_GUARD_V1
+    # Demo-only protection against unsupported revenue claims.
+    import re
+
+    normalized_question = message.casefold().strip()
+
+    revenue_terms = (
+        "revenue",
+        "annual income",
+        "turnover",
+        "الإيرادات",
+        "الايرادات",
+        "الإيراد",
+        "الايراد",
+        "الدخل السنوي",
+    )
+
+    if (
+        "hsaai" in normalized_question
+        and any(term in normalized_question for term in revenue_terms)
+    ):
+        return {
+            "response": (
+                "No verified annual revenue figures for HSAAI "
+                "are available in the provided reference data."
+            ),
+            "agent": "local_llm",
+            "agent_name": "HSAAI Local AI",
+            "source": "verified_context",
+            "rag_found": 0,
+            "sources": [],
+            "workspace_id": workspace_id,
+            "local_demo": True,
+        }
+
+
+    # HSAAI_VERIFIED_PROJECT_FACTS_V2
+    # Demo-only verified reference responses.
+    _verified_question = message.strip().casefold().replace("؟", "?")
+
+    _relationship_questions = (
+        "relationship between hsaai and hsa",
+        "relationship of hsaai to hsa",
+        "hsaai and hsa group",
+        "علاقة hsaai",
+        "علاقة المشروع بمجموعة",
+        "هل hsaai تابع",
+        "هل المشروع تابع",
+    )
+
+    if any(p in _verified_question for p in _relationship_questions):
+        return {
+            "response": (
+                "HSAAI is an independent, sovereign, self-hosted "
+                "enterprise AI platform developed by Haithim Nasher. "
+                "It was submitted to HSA Group for consideration "
+                "as an independent initiative. Submission does not "
+                "imply ownership, endorsement, partnership, or "
+                "adoption by HSA Group."
+            ),
+            "agent": "local_llm",
+            "source": "verified_context",
+            "sources": ["company_context.txt"],
+            "workspace_id": workspace_id,
+        }
+
+    _technology_questions = (
+        "what technologies does hsaai use",
+        "technologies used by hsaai",
+        "hsaai technology stack",
+        "hsaai tech stack",
+        "تقنيات hsaai",
+        "ما هي تقنيات hsaai",
+        "ما التقنيات التي يستخدمها hsaai",
+    )
+
+    if any(p in _verified_question for p in _technology_questions):
+        from pathlib import Path as _VerifiedPath
+
+        _context_dir = _VerifiedPath(
+            os.environ.get(
+                "HSAAI_HSA_CONTEXT_DIR",
+                str(_VerifiedPath.home() / "HSAAI_HSA_Demo"),
+            )
+        )
+        _technology_file = _context_dir / "technology_context.txt"
+
+        if not _technology_file.is_file():
+            return {
+                "response": "Verified technology reference is unavailable.",
+                "agent": "local_llm",
+                "source": "reference_unavailable",
+                "sources": [],
+                "workspace_id": workspace_id,
+            }
+
+        _technology_answer = _technology_file.read_text(
+            encoding="utf-8"
+        ).strip()
+
+        return {
+            "response": _technology_answer,
+            "agent": "local_llm",
+            "source": "verified_context",
+            "sources": ["technology_context.txt"],
+            "workspace_id": workspace_id,
+        }
+
+    # HSAAI_VERIFIED_FACT_LOOKUP_V1
+    # Demo-only deterministic lookup from the local reference file.
+    import re
+
+    question = message.strip().lower()
+
+    developer_questions = (
+        "who developed hsaai",
+        "who created hsaai",
+        "who founded hsaai",
+        "من طور hsaai",
+        "من طور منصة hsaai",
+        "من مؤسس hsaai",
+        "من أنشأ hsaai",
+    )
+
+    if any(q in question for q in developer_questions):
+        match = re.search(
+            r"^Founder and developer:\s*(.+)$",
+            reference,
+            flags=re.IGNORECASE | re.MULTILINE,
+        )
+
+        if match:
+            developer = match.group(1).strip()
+
+            # Use the English name before any Arabic translation.
+            developer = developer.split("(")[0].strip()
+
+            if developer:
+                return {
+                    "response": f"HSAAI was developed by {developer}.",
+                    "agent": "local_llm",
+                    "agent_name": "HSAAI Local AI",
+                    "source": "verified_context",
+                    "rag_found": 0,
+                    "sources": ["company_context.txt"],
+                    "workspace_id": workspace_id,
+                    "local_demo": True,
+                }
+
     greetings = {
         "مرحبا", "مرحباً", "السلام عليكم",
         "اهلا", "أهلا", "اهلاً", "hello", "hi"
@@ -175,11 +325,11 @@ async def _local_hsa_llm(message: str, workspace_id: str) -> dict:
             {
                 "role": "user",
                 "content": (
-                    "Reference data:\\n"
+                    "Reference data:\n"
                     + reference
-                    + "\\n\\nQuestion:\\n"
+                    + "\n\nQuestion:\n"
                     + message
-                    + "\\n\\nAnswer briefly in English. "
+                    + "\n\nAnswer briefly in English. "
                     "Use only verified reference facts."
                 ),
             },
