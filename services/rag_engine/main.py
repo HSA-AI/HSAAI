@@ -65,7 +65,15 @@ except Exception:
     QdrantClient = None
 
 APP_VERSION = "4.0.0"  # FIX B-09: aligned with VERSION file
+QDRANT_MODE = os.getenv("QDRANT_MODE", "server").lower()
 QDRANT_URL = os.getenv("QDRANT_URL", "http://qdrant:6333")
+QDRANT_LOCAL_PATH = os.getenv(
+    "QDRANT_LOCAL_PATH",
+    str(Path.home() / "hsaai-qdrant-local"),
+)
+
+if QDRANT_MODE not in {"server", "local"}:
+    raise ValueError("QDRANT_MODE must be 'server' or 'local'")
 COLLECTION = os.getenv("QDRANT_COLLECTION", "hsaai_knowledge")
 STORAGE = Path(os.getenv("LOCAL_FILE_STORAGE", "/data/local_uploads"))
 try:
@@ -275,7 +283,13 @@ def get_qdrant(vector_size: int | None = None):
             raise HTTPException(503, "qdrant-client library is required but not installed")
         return None
     try:
-        client = QdrantClient(url=QDRANT_URL, timeout=10)
+        if QDRANT_MODE == "local":
+            local_path = Path(QDRANT_LOCAL_PATH)
+            local_path.mkdir(parents=True, exist_ok=True)
+            client = QdrantClient(path=str(local_path))
+        else:
+            client = QdrantClient(url=QDRANT_URL, timeout=10)
+
         cols = [x.name for x in client.get_collections().collections]
         if COLLECTION not in cols:
             size = vector_size or embedding_status()["vector_size"]
