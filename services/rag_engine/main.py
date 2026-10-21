@@ -271,6 +271,9 @@ class HighlightRequest(SearchRequest):
     doc_id: str | None = None
 
 
+_local_qdrant_client = None
+
+
 def get_qdrant(vector_size: int | None = None):
     """
     Get a Qdrant client with collection initialization.
@@ -286,7 +289,10 @@ def get_qdrant(vector_size: int | None = None):
         if QDRANT_MODE == "local":
             local_path = Path(QDRANT_LOCAL_PATH)
             local_path.mkdir(parents=True, exist_ok=True)
-            client = QdrantClient(path=str(local_path))
+            global _local_qdrant_client
+            if _local_qdrant_client is None:
+                _local_qdrant_client = QdrantClient(path=str(local_path))
+            client = _local_qdrant_client
         else:
             client = QdrantClient(url=QDRANT_URL, timeout=10)
 
