@@ -64,7 +64,7 @@ try:
 except Exception:
     QdrantClient = None
 
-APP_VERSION = "4.0.0"  # FIX B-09: aligned with VERSION file
+APP_VERSION = "4.1.0"  # FIX B-09: aligned with VERSION file
 QDRANT_MODE = os.getenv("QDRANT_MODE", "server").lower()
 QDRANT_URL = os.getenv("QDRANT_URL", "http://qdrant:6333")
 QDRANT_LOCAL_PATH = os.getenv(
