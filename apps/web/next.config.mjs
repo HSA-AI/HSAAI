@@ -8,7 +8,7 @@ const securityHeaders = [
     "default-src 'self'", "base-uri 'self'", "object-src 'none'", "frame-ancestors 'none'",
     `script-src 'self' 'unsafe-inline'${production ? '' : " 'unsafe-eval'"}`,
     "style-src 'self' 'unsafe-inline'", "img-src 'self' data: blob:", "font-src 'self' data:",
-    `connect-src 'self'${production ? '' : ' http://localhost:* http://127.0.0.1:* ws://localhost:*'}`,
+    `connect-src 'self'${process.env.HSAAI_LOCAL_DEMO === 'true' ? ' http://127.0.0.1:8080' : production ? '' : ' http://localhost:* http://127.0.0.1:* ws://localhost:*'}`,
     "form-action 'self'"
   ].join('; ') },
 ];

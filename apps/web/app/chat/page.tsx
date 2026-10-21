@@ -67,7 +67,13 @@ function loadConversations(): Conversation[] {
 }
 
 function saveConversations(items: Conversation[]) {
-  if (typeof window !== "undefined") window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  if (typeof window === "undefined") return;
+
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  } catch (error) {
+    console.error("HSAAI conversation storage failed:", error);
+  }
 }
 
 function makeConversation(workspaceId: string): Conversation {
@@ -280,7 +286,7 @@ export default function ChatPage() {
           for (const evt of events) {
             for (const line of evt.split("\n")) {
               if (!line.startsWith("data:")) continue;
-              const payload = line.slice(5).trim();
+              const payload = line.slice(5).replace(/^ /, "");
               if (!payload || payload === "[DONE]") continue;
               try {
                 const chunk = JSON.parse(payload);

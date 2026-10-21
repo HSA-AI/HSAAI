@@ -22,6 +22,11 @@ function LoginForm() {
   const reason = params.get("reason");
   const { login, isAuthenticated, isLoading } = useAuth();
   const [redirecting, setRedirecting] = useState(false);
+  const [reactMounted, setReactMounted] = useState(false);
+
+  useEffect(() => {
+    setReactMounted(true);
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated && !isLoading) {
@@ -77,7 +82,17 @@ function LoginForm() {
               </div>
             )}
 
-            <Button
+
+              <div
+                data-testid="auth-debug"
+                className="mt-4 rounded-lg border border-blue-300 bg-blue-50 p-3 text-center text-xs text-blue-900"
+              >
+                React: {reactMounted ? "MOUNTED" : "NOT MOUNTED"} | isLoading: {String(isLoading)}
+                | isAuthenticated: {String(isAuthenticated)}
+                | redirecting: {String(redirecting)}
+              </div>
+
+<Button
               onClick={handleLogin}
               disabled={redirecting || isLoading}
               className="mt-6 min-h-12 w-full text-base"
