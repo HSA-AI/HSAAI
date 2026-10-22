@@ -122,6 +122,30 @@ The six successful workflows validate the release commit in
 the repository CI environment. They do not independently
 establish acceptance on an external production Kubernetes cluster.
 
+### Post-release Backend Coverage Evidence
+
+The following backend coverage result was obtained from a
+successful post-release GitHub Actions workflow.
+
+| Area | Verified Result |
+| --- | --- |
+| Validation Scope | Post-release branch validation |
+| Backend Coverage | 80.06% |
+| Required Coverage Threshold | >=80% |
+| Coverage Gate | PASS |
+| Covered Statements | 13,940 |
+| Missing Statements | 3,472 |
+| Total Statements | 17,412 |
+| Validation Commit | `9dfa666197ad46e51999e6ef9853daff68140fac` |
+| Workflow | HSAAI Full Backend Coverage |
+| GitHub Actions Run | `39803990414` |
+
+[View Backend Coverage Evidence](https://github.com/HSA-AI/HSAAI/actions/runs/39803990414)
+
+This result belongs to a post-release validation commit.
+It must not be represented as coverage measured directly
+on the published v4.1.0 release commit.
+
 ### Previous Release Evidence — v4.0.0
 
 | Area | Historical Verified Result |
