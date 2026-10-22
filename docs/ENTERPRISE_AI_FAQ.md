@@ -40,7 +40,8 @@ HSAAI Enterprise RAG includes:
 
 ## What are the current HSAAI AI quality results?
 
-On the current controlled live benchmark:
+The following numerical results are from the previously documented
+HSAAI v4.0.0 controlled benchmark, not a newly measured v4.1.0 evaluation:
 
 - Retrieval Precision: 100%
 - Retrieval Recall: 100%
@@ -52,7 +53,7 @@ On the current controlled live benchmark:
 - Overall AI Quality Gate: PASS
 - Errors: 0
 
-These values apply to the current controlled evaluation suite and should not be interpreted as universal AI accuracy.
+These historical benchmark results are not guarantees of universal AI accuracy. HSAAI v4.1.0 has separate Enterprise RAG End-to-End and authenticated Live LLM quality CI validation.
 
 ## Does HSAAI support Arabic Enterprise AI?
 

@@ -33,17 +33,17 @@ DevSecOps, observability, and Kubernetes-oriented deployment.
 
 <!-- HSAAI-PROJECT-LEADERSHIP:END -->
 
-## Validated Enterprise AI Quality
+## Validated Enterprise AI Quality — Historical Benchmark & Current Runtime
 
 | Capability | Validated result |
 | --- | --- |
 | Live Local LLM | ✅ Ollama + qwen2.5:7b-instruct |
 | Enterprise RAG | ✅ End-to-End validated |
-| Retrieval Precision | ✅ 100% on current controlled benchmark |
-| Retrieval Recall | ✅ 100% on current controlled benchmark |
+| Retrieval Precision | ✅ 100% — historical controlled benchmark |
+| Retrieval Recall | ✅ 100% — historical controlled benchmark |
 | Citation Precision | ✅ 100% |
 | Citation Recall | ✅ 100% |
-| Prompt Injection Accuracy | ✅ 100% on current benchmark |
+| Prompt Injection Accuracy | ✅ 100% — historical controlled benchmark |
 | LLM Grounded Rate | ✅ 100% |
 | Required Fact Recall | ✅ 86.61% |
 | Retrieval Security Gate | ✅ PASS |
@@ -57,8 +57,10 @@ Ollama, Keycloak, FastAPI, Next.js, PostgreSQL, Redis, Kafka, Neo4j, MinIO,
 Vault, MLflow, Prometheus, Grafana, Loki, Tempo, Thanos, Docker, and Kubernetes
 in one enterprise AI architecture.
 
-> Benchmark percentages describe the current controlled HSAAI evaluation suite
-> and are not claims of universal AI accuracy.
+> The numerical AI quality metrics above are from the previously documented
+> HSAAI v4.0.0 controlled benchmark. They are not newly measured v4.1.0
+> results or guarantees of universal AI accuracy.
+> The v4.1.0 release has separate Enterprise RAG and Live LLM CI evidence.
 
 ## العربية
 
