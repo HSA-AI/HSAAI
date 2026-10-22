@@ -6,6 +6,33 @@ HSAAI is an independent, sovereign, self-hosted Enterprise AI Platform. This por
 
 > **Evidence reviewed:** 20 October 2026. Results below distinguish repository-reported measurements from observed workflow status. No new tests were executed while preparing this document. Links and historical measurements should be rechecked against the repository before relying on them.
 
+## Current Release Update — 22 October 2026
+
+**Current published release:** HSAAI v4.1.0 —
+Enterprise RAG Local Runtime.
+
+**Release commit:** `23c45bb066497d31bbd135bafddc0e3ef5194a91`
+
+**Release:** https://github.com/HSA-AI/HSAAI/releases/tag/v4.1.0
+
+**Engineering validation:**
+
+- PR #29: 45/45 successful checks.
+- Main branch: six successful GitHub Actions workflows.
+- Authenticated live LLM answer-quality workflow: PASS.
+- RAG document end-to-end workflow: PASS.
+- Kubernetes production acceptance workflow: PASS
+  within the CI environment.
+- External production Kubernetes acceptance: pending.
+
+The earlier evidence review dated 20 October 2026
+is retained below as a historical assessment.
+Its benchmark measurements and reproduction commands
+must not be assumed to represent a new v4.1.0
+measurement or validation run.
+
+---
+
 ## Architecture
 
 This diagram summarizes the documented authenticated RAG path. Active services depend on the deployment profile.
@@ -30,7 +57,7 @@ Reference: [Repository architecture](https://github.com/HSA-AI/HSAAI#architectur
 
 | Item | Evidence and interpretation |
 | --- | --- |
-| Published release | [v4.0.0](https://github.com/HSA-AI/HSAAI/releases/tag/v4.0.0), release commit `80b7806`. |
+| Previously reviewed release | [v4.0.0](https://github.com/HSA-AI/HSAAI/releases/tag/v4.0.0), release commit `80b7806`. |
 | Release validation | [Release report](https://github.com/HSA-AI/HSAAI/blob/main/docs/reports/CURRENT_RELEASE_STATUS.md) reports 32/32 successful validations and 80.43% backend coverage. This does not establish that there are only 32 individual test cases. |
 | Live local-model execution | [Run 36801647368](https://github.com/HSA-AI/HSAAI/actions/runs/36801647368), commit `3d0eb0b`: GitHub reportedly shows Success, 25m 6s, and one artifact. Artifact contents were not inspected for this portfolio. |
 | External Kubernetes deployment | Environment-specific acceptance remains pending. |
