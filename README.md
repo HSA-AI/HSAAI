@@ -33,17 +33,17 @@ DevSecOps, observability, and Kubernetes-oriented deployment.
 
 <!-- HSAAI-PROJECT-LEADERSHIP:END -->
 
-## Validated Enterprise AI Quality
+## Validated Enterprise AI Quality — Historical Benchmark & Current Runtime
 
 | Capability | Validated result |
 | --- | --- |
 | Live Local LLM | ✅ Ollama + qwen2.5:7b-instruct |
 | Enterprise RAG | ✅ End-to-End validated |
-| Retrieval Precision | ✅ 100% on current controlled benchmark |
-| Retrieval Recall | ✅ 100% on current controlled benchmark |
+| Retrieval Precision | ✅ 100% — historical controlled benchmark |
+| Retrieval Recall | ✅ 100% — historical controlled benchmark |
 | Citation Precision | ✅ 100% |
 | Citation Recall | ✅ 100% |
-| Prompt Injection Accuracy | ✅ 100% on current benchmark |
+| Prompt Injection Accuracy | ✅ 100% — historical controlled benchmark |
 | LLM Grounded Rate | ✅ 100% |
 | Required Fact Recall | ✅ 86.61% |
 | Retrieval Security Gate | ✅ PASS |
@@ -57,8 +57,10 @@ Ollama, Keycloak, FastAPI, Next.js, PostgreSQL, Redis, Kafka, Neo4j, MinIO,
 Vault, MLflow, Prometheus, Grafana, Loki, Tempo, Thanos, Docker, and Kubernetes
 in one enterprise AI architecture.
 
-> Benchmark percentages describe the current controlled HSAAI evaluation suite
-> and are not claims of universal AI accuracy.
+> The numerical AI quality metrics above are from the previously documented
+> HSAAI v4.0.0 controlled benchmark. They are not newly measured v4.1.0
+> results or guarantees of universal AI accuracy.
+> The v4.1.0 release has separate Enterprise RAG and Live LLM CI evidence.
 
 ## العربية
 
@@ -121,6 +123,30 @@ in one enterprise AI architecture.
 The six successful workflows validate the release commit in
 the repository CI environment. They do not independently
 establish acceptance on an external production Kubernetes cluster.
+
+### Post-release Backend Coverage Evidence
+
+The following backend coverage result was obtained from a
+successful post-release GitHub Actions workflow.
+
+| Area | Verified Result |
+| --- | --- |
+| Validation Scope | Post-release branch validation |
+| Backend Coverage | 80.06% |
+| Required Coverage Threshold | >=80% |
+| Coverage Gate | PASS |
+| Covered Statements | 13,940 |
+| Missing Statements | 3,472 |
+| Total Statements | 17,412 |
+| Validation Commit | `9dfa666197ad46e51999e6ef9853daff68140fac` |
+| Workflow | HSAAI Full Backend Coverage |
+| GitHub Actions Run | `39803990414` |
+
+[View Backend Coverage Evidence](https://github.com/HSA-AI/HSAAI/actions/runs/39803990414)
+
+This result belongs to a post-release validation commit.
+It must not be represented as coverage measured directly
+on the published v4.1.0 release commit.
 
 ### Previous Release Evidence — v4.0.0
 

@@ -112,7 +112,7 @@ The [repository overview](https://github.com/HSA-AI/HSAAI#validated-enterprise-a
 | LLM grounded rate | 100% |
 | Required fact recall | 86.61% |
 
-These percentages describe the controlled evaluation suite. They are not guarantees for arbitrary documents, questions, or deployment environments.
+These percentages belong to the previously documented HSAAI v4.0.0 controlled benchmark. They are not newly measured v4.1.0 results or guarantees for arbitrary documents, questions, or deployment environments. The v4.1.0 release has separate live runtime validation evidence.
 
 To reproduce live evaluation, open GitHub Actions → **HSAAI Live LLM Answer Quality** → **Run workflow**. Select the intended review branch and record the resolved commit.
 

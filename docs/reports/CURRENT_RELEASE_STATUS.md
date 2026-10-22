@@ -29,6 +29,26 @@ These results apply to the repository validation environment.
 They do not independently establish successful deployment
 to an external production Kubernetes cluster.
 
+## Historical AI Quality Benchmark
+
+The following numerical AI quality metrics were reported
+for the previously documented HSAAI v4.0.0 controlled benchmark:
+
+| Metric | Historical Result |
+| --- | --- |
+| Retrieval Precision | 100% |
+| Retrieval Recall | 100% |
+| Citation Precision | 100% |
+| Citation Recall | 100% |
+| Prompt Injection Accuracy | 100% |
+| LLM Grounded Rate | 100% |
+| Required Fact Recall | 86.61% |
+| Overall AI Quality Gate | PASS |
+| Benchmark Errors | 0 |
+
+These are historical controlled-benchmark results, not
+new measurements for the published v4.1.0 release.
+
 ## Previous Release Evidence — v4.0.0
 
 The following results belong to the previous production release
