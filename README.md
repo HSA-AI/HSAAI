@@ -50,6 +50,7 @@ DevSecOps, observability, and Kubernetes-oriented deployment.
 | Publishable Answer Quality | ✅ PASS |
 | Overall AI Quality Gate | ✅ PASS |
 | Benchmark Errors | ✅ 0 |
+| Kubernetes Runtime Acceptance (Kind CI) | ✅ PASS — 12/12 Deployments, 18/18 Pods Ready, 0 Restarts |
 | Real External Kubernetes | ⏳ External-cluster acceptance pending |
 
 HSAAI combines Enterprise RAG, Local LLMs, AI Agents, LLM Gateway, Qdrant,
@@ -121,6 +122,39 @@ in one enterprise AI architecture.
 The six successful workflows validate the release commit in
 the repository CI environment. They do not independently
 establish acceptance on an external production Kubernetes cluster.
+
+### Kubernetes Runtime Acceptance — Verified CI Evidence
+
+| Verification | Result |
+| --- | --- |
+| Kubernetes Runtime Acceptance (Kind CI) | ✅ PASS |
+| Kubernetes Version | v1.32.2 |
+| Kubernetes Nodes | 1/1 Ready |
+| Helm Runtime Deployment | PASS |
+| Application Deployments | 12/12 Available |
+| Application Pods | 12/12 Ready |
+| Data Plane Pods | 6/6 Ready |
+| Total Application and Data Plane Pods | 18/18 Running |
+| Container Restarts | 0 |
+| Internal Service Readiness Probes | PASS |
+| Tested Container Image Tag | `sha-33ff3f81702c` |
+| GitHub Actions Run | [39791353596](https://github.com/HSA-AI/HSAAI/actions/runs/39791353596) |
+| Test Date | 2026-10-22 |
+| External Kubernetes Deployment | PENDING |
+| v4.1.0 Image-Specific Runtime Acceptance | Not established by this run |
+
+This test deployed HSAAI to an ephemeral Kind Kubernetes cluster
+inside GitHub Actions. All 12 application deployments became
+Available, all 18 application and data-plane Pods were Ready,
+and the recorded container restart count was zero.
+
+Transient startup readiness warnings were observed for some
+components; subsequent readiness checks passed.
+
+The tested images used tag `sha-33ff3f81702c`.
+This evidence must not be represented as runtime validation
+of the v4.1.0 release images or as external production
+Kubernetes acceptance.
 
 ### Previous Release Evidence — v4.0.0
 
