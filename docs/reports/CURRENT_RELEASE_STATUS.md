@@ -2,11 +2,43 @@
 
 **Authoritative software release status**
 
+## Current Published Release — v4.1.0
+
+- Release: `v4.1.0`
+- Name: **HSAAI v4.1.0 — Enterprise RAG Local Runtime**
+- Published: **2026-10-22**
+- Classification: **Published stable software release**
+- Release commit: `23c45bb066497d31bbd135bafddc0e3ef5194a91`
+- Pull request: **#29 — 45/45 successful checks**
+- Main branch workflows: **6/6 successful**
+
+Official release:
+https://github.com/HSA-AI/HSAAI/releases/tag/v4.1.0
+
+### Validated CI Workflows
+
+- Continuous Integration: PASS
+- Docker Build Validation: PASS
+- Kubernetes Production Acceptance: PASS
+- RAG Document End-to-End: PASS
+- Live LLM Answer Quality: PASS
+- Production Image Supply Chain: PASS
+
+These results apply to the repository validation environment.
+
+They do not independently establish successful deployment
+to an external production Kubernetes cluster.
+
+## Previous Release Evidence — v4.0.0
+
+The following results belong to the previous production release
+and must not be represented as newly measured v4.1.0 results.
+
 - Release: `v4.0.0`
 - Classification: **Production Release**
-- Published release artifact: `HSAAI_v4.0.0.zip`
 - Release commit: `80b7806`
-- Backend test coverage: **80.43%**
+- Published artifact: `HSAAI_v4.0.0.zip`
+- Backend coverage: **80.43%**
 - Final release validation: **32/32 successful**
 - Package hygiene: **Passed**
 - Dependency validation: **Passed**
@@ -17,40 +49,42 @@
 - Production runtime parity: **Passed**
 - Kubernetes CI acceptance: **Passed**
 - Production image supply chain: **Passed**
-- Artifact integrity: **SHA-256 published**
 
-## Release Artifact Integrity
+### Historical Artifact Integrity
 
-SHA-256:
+SHA-256 for `HSAAI_v4.0.0.zip`:
 
 `4e8e69695537adccbc969c4f7a3047ffd844cc46439d3cc86d055da9b6e9c2d2`
 
+Previous release:
+https://github.com/HSA-AI/HSAAI/releases/tag/v4.0.0
+
 ## Kubernetes Scope
 
-Repository-level Kubernetes validation and CI acceptance have passed.
+Repository-level Kubernetes validation and CI acceptance
+have passed for the documented workflows.
 
-Real external Kubernetes deployment remains an environment-specific
-operator acceptance gate because production secrets, TLS, storage,
-networking, backup/restore, capacity, failover, and customer infrastructure
-cannot be validated solely by repository CI.
+Real external Kubernetes deployment remains an
+environment-specific operator acceptance gate.
 
-This does not change the software classification of HSAAI v4.0.0 as the
-published Production Release.
+Production secrets, TLS, persistent storage, networking,
+backup/restore, capacity, failover, and customer
+infrastructure require separate operational verification.
 
 ## Historical Reports
 
-Reports referring to `4.0.0-rc.2`, `HSAAI_v1.zip`, or
-`Production Candidate` represent earlier engineering snapshots and are
-retained for traceability only.
-
-They must not be interpreted as the current release status.
+Reports referring to `4.0.0-rc.2`, `HSAAI_v1.zip`,
+or `Production Candidate` represent earlier engineering
+snapshots retained for traceability.
 
 ## Source of Truth
 
-For current repository status, use:
+For the current published release, use:
 
-1. `README.md`
-2. `docs/reports/CURRENT_RELEASE_STATUS.md`
-3. GitHub Release `v4.0.0`
+1. GitHub Release `v4.1.0`
+2. `README.md`
+3. `docs/reports/CURRENT_RELEASE_STATUS.md`
+4. The corresponding GitHub Actions workflow runs
 
-Older validation reports and evidence remain historical engineering records.
+Historical metrics must remain associated with their
+original release commits and evaluation environments.

@@ -88,9 +88,9 @@ in one enterprise AI architecture.
 
 **HSAAI** منصة ذكاء اصطناعي مؤسسية متكاملة تجمع بين إدارة المعرفة، وRAG، والوكلاء الأذكياء، والأنظمة متعددة الوكلاء، والرسوم البيانية المعرفية، وأتمتة سير العمل، وحوكمة الذكاء الاصطناعي، وLLMOps، وMLOps، والبنية التحتية السحابية ضمن معمارية موحدة وآمنة وقابلة للتوسع.
 
-**الإصدار الحالي: `HSAAI v4.0.0 — Production Release`**
+**الإصدار الحالي: `HSAAI v4.1.0 — Enterprise RAG Local Runtime`**
 
-اجتاز الإصدار بوابات الجودة والهندسة والأمان والاعتماديات والتغطية واختبارات Enterprise E2E وProduction Runtime Parity وسلسلة بناء الصور والتحقق النهائي من حزمة الإصدار.
+اجتاز الإصدار v4.1.0 اختبارات التكامل المستمر والتشغيل المعتمد لنموذج اللغة المحلي، واختبارات RAG Document End-to-End، والتحقق من بناء الصور وسلسلة التوريد وقبول Kubernetes داخل بيئة CI. أما نتائج التغطية والتحقق النهائي الخاصة بالإصدار v4.0.0 فهي محفوظة أدناه كسجل تاريخي.
 
 يبقى الاختبار على **Kubernetes Cluster خارجي حقيقي** خطوة قبول تشغيلية مرتبطة ببيئة النشر المستهدفة.
 
@@ -98,48 +98,66 @@ in one enterprise AI architecture.
 
 ## Release & Validation Status
 
+### Current Published Release — v4.1.0
+
 | Area | Verified Status |
 | --- | --- |
-| Latest Published Release | ✅ HSAAI v4.0.0 — Production Release |
-| Release Commit | ✅ `80b7806` |
-| GitHub Release | ✅ Published |
-| Final Release Validation | ✅ 32/32 successful · 0 failing · 0 pending |
-| Backend Coverage | ✅ 80.43% |
-| Required Coverage Threshold | ✅ ≥80% |
-| Docker Build Validation | ✅ Passing |
-| Continuous Integration | ✅ Passing |
-| Dependency Audits | ✅ Passing |
-| Security Validation | ✅ Passing |
-| Enterprise Runtime Acceptance | ✅ Passing |
-| Authenticated Enterprise E2E | ✅ Passing |
-| Production Enterprise Wiring | ✅ Passing |
-| Production Runtime Parity | ✅ Passing |
-| Kubernetes CI Acceptance | ✅ Passing |
-| Production Image Supply Chain | ✅ Passing |
-| Final Release Gate | ✅ Passing |
-| Release Package Hygiene | ✅ Passing |
-| Artifact Integrity | ✅ SHA-256 published |
-| Real External Kubernetes | 🚧 Deployment-specific operator gate |
+| Latest Published Release | HSAAI v4.1.0 — Enterprise RAG Local Runtime |
+| Release Status | Published — 2026-10-22 |
+| Release Tag | `v4.1.0` |
+| Release Commit | `23c45bb066497d31bbd135bafddc0e3ef5194a91` |
+| Pull Request | PR #29 — 45/45 successful checks |
+| Main Branch Validation | 6/6 successful workflows |
+| Continuous Integration | PASS |
+| Docker Build Validation | PASS |
+| Kubernetes Production Acceptance | PASS |
+| RAG Document End-to-End | PASS |
+| Authenticated Live LLM Answer Quality | PASS |
+| Production Image Supply Chain | PASS |
+| External Kubernetes Deployment | Environment-specific acceptance pending |
 
-Release artifact: `HSAAI_v4.0.0.zip`
+[View HSAAI v4.1.0 Release](https://github.com/HSA-AI/HSAAI/releases/tag/v4.1.0)
 
-SHA-256:
+The six successful workflows validate the release commit in
+the repository CI environment. They do not independently
+establish acceptance on an external production Kubernetes cluster.
+
+### Previous Release Evidence — v4.0.0
+
+| Area | Historical Verified Result |
+| --- | --- |
+| Release | HSAAI v4.0.0 — Production Release |
+| Release Commit | `80b7806` |
+| Final Release Validation | 32/32 successful |
+| Backend Coverage | 80.43% |
+| Required Coverage Threshold | >=80% |
+| Security Validation | PASS |
+| Dependency Audits | PASS |
+| Authenticated Enterprise E2E | PASS |
+| Production Runtime Parity | PASS |
+| Kubernetes CI Acceptance | PASS |
+| Release Package Hygiene | PASS |
+| Artifact Integrity | SHA-256 recorded |
+
+Historical release artifact: `HSAAI_v4.0.0.zip`
+
+Historical SHA-256:
 
 `4e8e69695537adccbc969c4f7a3047ffd844cc46439d3cc86d055da9b6e9c2d2`
 
-The v4.0.0 software release has completed its repository-level engineering,
-security, dependency, coverage, enterprise runtime, authenticated E2E,
-production wiring, runtime-parity, image-supply-chain, package-integrity,
-and final release validation.
-
-Real external Kubernetes deployment, production secrets, TLS, networking,
-persistent storage, backup/restore, and disaster-recovery acceptance remain
-environment-specific operational responsibilities.
-
 [View HSAAI v4.0.0 Release](https://github.com/HSA-AI/HSAAI/releases/tag/v4.0.0)
 
-Detailed release evidence:
+### Deployment Acceptance Boundary
+
+Real external Kubernetes deployment, production secrets,
+TLS, networking, persistent storage, backup and restore,
+and disaster-recovery acceptance remain environment-specific
+operational responsibilities.
+
+Detailed engineering evidence:
 [Current Release Status](docs/reports/CURRENT_RELEASE_STATUS.md)
+
+---
 
 ## What is HSAAI?
 
@@ -590,9 +608,21 @@ Production image workflows validate buildability and release-oriented image supp
 
 ## Release Integrity
 
-Current stable release:
+Current published release:
 
-**HSAAI v4.0.0 — Production Release**
+**HSAAI v4.1.0 — Enterprise RAG Local Runtime**
+
+Release tag: `v4.1.0`
+
+Release commit: `23c45bb066497d31bbd135bafddc0e3ef5194a91`
+
+The v4.1.0 release passed six main-branch GitHub Actions
+workflows, including authenticated live LLM answer quality,
+RAG document end-to-end, Kubernetes production acceptance,
+Docker build validation, continuous integration, and
+production image supply-chain validation.
+
+Previous production release: **HSAAI v4.0.0**.
 
 Release controls include:
 
