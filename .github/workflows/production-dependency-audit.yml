@@ -31,7 +31,7 @@ jobs:
         run: python -m pip_audit --strict .
 
   frontend-dependency-audit:
-    name: Frontend dependency vulnerability audit
+    name: Frontend production dependency vulnerability audit
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -45,6 +45,6 @@ jobs:
           node-version: '24'
           package-manager-cache: false
 
-      - name: Audit frontend dependencies
+      - name: Audit frontend production dependencies
         working-directory: apps/web
-        run: npm audit --audit-level=high
+        run: npm audit --omit=dev --audit-level=high
